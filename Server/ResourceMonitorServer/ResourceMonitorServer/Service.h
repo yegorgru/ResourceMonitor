@@ -7,7 +7,7 @@
 
 namespace ResourceMonitorServer {
 
-class Service {
+class Service : public std::enable_shared_from_this<Service> {
 public:
     using TcpSocketPtr = std::shared_ptr<boost::asio::ip::tcp::socket>;
 public:
@@ -23,6 +23,9 @@ private:
     void onFinish();
     std::string processRequest(RequestBuf& request);
 private:
+    using ServicePtr = std::shared_ptr<Service>;
+private:
+    ServicePtr mSelfPtr;
     TcpSocketPtr mSocket;
     std::string mResponse;
     RequestBuf mRequestBuf;

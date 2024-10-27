@@ -11,6 +11,7 @@ Service::Service(TcpSocketPtr socket)
 }
 
 void Service::startHandling() {
+    mSelfPtr = shared_from_this();
     boost::asio::async_read_until(*mSocket.get(), mRequestBuf, '\n',
         [this](const boost::system::error_code& ec, std::size_t bytes_transferred)
         {
@@ -51,7 +52,7 @@ void Service::onResponseSent(const Error& ec, std::size_t bytesTransferred) {
 }
 
 void Service::onFinish() {
-    delete this;
+    mSelfPtr.reset();
 }
 
 std::string Service::processRequest(RequestBuf& request) {

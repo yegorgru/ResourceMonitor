@@ -34,7 +34,8 @@ void Acceptor::initAccept() {
 void Acceptor::onAccept(const Error& ec, TcpSocketPtr sock)
 {
     if (ec.value() == 0) {
-        (new Service(sock))->startHandling();
+        auto service = std::make_shared<Service>(sock);
+        service->startHandling();
     }
     else {
         std::cout << "Error occured! Error code = " << ec.value() << ". Message: " << ec.message();
