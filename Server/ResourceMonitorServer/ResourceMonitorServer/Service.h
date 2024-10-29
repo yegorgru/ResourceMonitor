@@ -18,9 +18,6 @@ public:
 public:
     void startHandling();
 private:
-    using RequestBuf = boost::asio::streambuf;
-    using ErrorCode = boost::system::error_code;
-private:
     void processRequestLine();
     void processHeaders();
     void processRequest();
@@ -28,6 +25,8 @@ private:
     const std::string& getStatusLine(HttpCode code);
     void onFinish();
 private:
+    using RequestBuf = boost::asio::streambuf;
+    using ErrorCode = boost::system::error_code;
     using ServicePtr = std::shared_ptr<Service>;
     using HttpHeaders = std::map<std::string, std::string>;
 private:

@@ -11,14 +11,38 @@ int main()
     using namespace ResourceMonitorClient;
     try {
         Client client;
-        client.emulateLongComputationOp(10, "127.0.0.1", 3333, 1);
-        std::this_thread::sleep_for(std::chrono::seconds(10));
+
+        auto request_one = client.createRequest(1);
+
+        request_one->set_host("localhost");
+        request_one->set_uri("/index.html");
+        request_one->set_port(3333);
+
+        request_one->execute();
+
+        /*auto request_two = client.createRequest(2);
+
+        request_two->set_host("localhost");
+        request_two->set_uri("/example.html");
+        request_two->set_port(3333);
+
+        request_two->execute();
+
+        request_two->cancel();*/
+
+        // Do nothing for 15 seconds, letting the
+        // request complete.
+        std::this_thread::sleep_for(std::chrono::seconds(15));
+
+        // Closing the client and exiting the application.
         client.close();
     }
     catch (boost::system::system_error& e) {
         std::cout << "Error occured! Error code = " << e.code() << ". Message: " << e.what();
+
         return e.code().value();
     }
 
     return 0;
 };
+

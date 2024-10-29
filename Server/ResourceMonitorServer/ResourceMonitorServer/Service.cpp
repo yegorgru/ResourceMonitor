@@ -100,6 +100,7 @@ void Service::sendResponse() {
     responseHeadersString += "\r\n";
 
     std::vector<boost::asio::const_buffer> responseBuffers;
+    responseBuffers.reserve(3);
     responseBuffers.push_back(boost::asio::buffer(responseStatusLine));
     responseBuffers.push_back(boost::asio::buffer(responseHeadersString));
 
@@ -107,7 +108,9 @@ void Service::sendResponse() {
         responseBuffers.push_back(boost::asio::buffer(mResponse));
     }
 
-    boost::asio::async_write(*mSocket.get(), responseBuffers,
+    mResponse = responseStatusLine + responseHeadersString + mResponse;
+
+    boost::asio::async_write(*mSocket.get(), boost::asio::buffer(mResponse),
         [this] (const boost::system::error_code& ec, std::size_t bytes_transferred) {
             if (ec.value() != 0) {
                 std::cout << "Error occured! Error code = "

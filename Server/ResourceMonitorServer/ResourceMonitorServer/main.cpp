@@ -21,7 +21,7 @@ int main()
 
         srv.start(thread_pool_size);
 
-        std::this_thread::sleep_for(std::chrono::seconds(20));
+        std::this_thread::sleep_for(std::chrono::seconds(2000));
 
         srv.stop();
     }

@@ -156,12 +156,14 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Client.cpp" />
+    <ClCompile Include="HttpRequest.cpp" />
+    <ClCompile Include="HttpResponse.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="Session.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Client.h" />
-    <ClInclude Include="Session.h" />
+    <ClInclude Include="HttpRequest.h" />
+    <ClInclude Include="HttpResponse.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

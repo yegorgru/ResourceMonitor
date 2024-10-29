@@ -6,7 +6,7 @@ namespace ResourceMonitorServer {
 
 Acceptor::Acceptor(IoService& ios, unsigned short port_num)
     : mIos(ios)
-    , mAcceptor(mIos, boost::asio::ip::tcp::endpoint(boost::asio::ip::address_v4::any(), port_num)), mIsStopped(false)
+    , mAcceptor(mIos, boost::asio::ip::tcp::endpoint(boost::asio::ip::address::from_string("127.0.0.1"), port_num)), mIsStopped(false)
 {
 }
 
