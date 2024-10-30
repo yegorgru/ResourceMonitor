@@ -3,7 +3,7 @@
 namespace ResourceMonitorServer {
 
 Server::Server(unsigned short portNum)
-    : mWork(mIoService)
+    : mWork(boost::asio::make_work_guard(mIoService))
     , mAcceptor(mIoService, portNum)
 {
 }
@@ -22,7 +22,7 @@ void Server::start(unsigned int thread_pool_size) {
 
 void Server::stop() {
     mAcceptor.stop();
-    mIoService.stop();
+    mWork.reset();
     for (auto& th : mThreadPool) {
         th.join();
     }

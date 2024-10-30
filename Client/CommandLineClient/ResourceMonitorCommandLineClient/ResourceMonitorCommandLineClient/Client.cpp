@@ -3,7 +3,7 @@
 namespace ResourceMonitorClient {
 
 Client::Client()
-    : mWork(mIoService)
+    : mWork(boost::asio::make_work_guard(mIoService))
     , mThread([this]() { mIoService.run(); })
 {
 }
@@ -14,7 +14,7 @@ Client::HttpRequestPtr Client::createRequest(Http::Request::Id id)
 }
 
 void Client::close() {
-    mIoService.stop();
+    mWork.reset();
     mThread.join();
 }
 

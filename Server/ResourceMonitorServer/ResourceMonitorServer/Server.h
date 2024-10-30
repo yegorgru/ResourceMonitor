@@ -17,7 +17,7 @@ public:
     void stop();
 private:
     using IoService = boost::asio::io_service;
-    using Work = boost::asio::io_service::work;
+    using Work = boost::asio::executor_work_guard<boost::asio::io_context::executor_type>;
     using ThreadPool = std::vector<std::thread>;
 private:
     IoService mIoService;
