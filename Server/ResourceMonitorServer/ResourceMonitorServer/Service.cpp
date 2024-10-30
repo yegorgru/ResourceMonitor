@@ -27,7 +27,7 @@ void Service::startHandling() {
                     return;
                 }
                 else {
-                    onFinish();
+                    finish();
                     return;
                 }
             }
@@ -79,7 +79,7 @@ void Service::processRequestLine()
                     return;
                 }
                 else {
-                    onFinish();
+                    finish();
                     return;
                 }
             }
@@ -119,7 +119,7 @@ void Service::sendResponse() {
             }
 
             mSocket->shutdown(boost::asio::ip::tcp::socket::shutdown_both);
-            onFinish();
+            finish();
         }
     );
 }
@@ -161,7 +161,7 @@ const std::string& Service::getStatusLine(HttpCode code) {
     return httpStatusTable.at(code);
 }
 
-void Service::onFinish() {
+void Service::finish() {
     mSelfPtr.reset();
 }
 

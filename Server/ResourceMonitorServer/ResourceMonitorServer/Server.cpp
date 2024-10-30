@@ -2,7 +2,7 @@
 
 namespace ResourceMonitorServer {
 
-Server::Server(unsigned short portNum)
+Server::Server(Port portNum)
     : mWork(boost::asio::make_work_guard(mIoService))
     , mAcceptor(mIoService, portNum)
 {

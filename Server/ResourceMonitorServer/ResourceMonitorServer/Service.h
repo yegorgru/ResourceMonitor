@@ -23,7 +23,7 @@ private:
     void processRequest();
     void sendResponse();
     const std::string& getStatusLine(HttpCode code);
-    void onFinish();
+    void finish();
 private:
     using RequestBuf = boost::asio::streambuf;
     using ErrorCode = boost::system::error_code;

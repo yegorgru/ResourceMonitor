@@ -12,8 +12,9 @@ class Acceptor {
 public:
     using IoService = boost::asio::io_service;
     using TcpAcceptor = boost::asio::ip::tcp::acceptor;
+    using Port = unsigned int;
 public:
-    Acceptor(IoService& ios, unsigned short port_num);
+    Acceptor(IoService& ios, Port portNum);
 public:
     void start();
     void stop();

@@ -11,7 +11,9 @@ namespace ResourceMonitorServer {
 
 class Server {
 public:
-    Server(unsigned short portNum);
+    using Port = unsigned int;
+public:
+    Server(Port portNum);
 public:
     void start(unsigned int thread_pool_size);
     void stop();

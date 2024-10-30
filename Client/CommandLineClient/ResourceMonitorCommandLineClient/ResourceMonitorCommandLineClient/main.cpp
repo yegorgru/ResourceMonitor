@@ -14,9 +14,9 @@ int main()
 
         auto request_one = client.createRequest(1);
 
-        request_one->set_host("localhost");
-        request_one->set_uri("/index.html");
-        request_one->set_port(3333);
+        request_one->setHost("localhost");
+        request_one->setUri("/index.html");
+        request_one->setPort(3333);
 
         request_one->execute();
 
