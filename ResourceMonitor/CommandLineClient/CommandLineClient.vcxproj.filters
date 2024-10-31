@@ -15,27 +15,27 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Client.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="HttpRequest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="HttpResponse.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Acceptor.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Service.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Server.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Acceptor.h">
+    <ClInclude Include="Client.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Service.h">
+    <ClInclude Include="HttpRequest.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Server.h">
+    <ClInclude Include="HttpResponse.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
