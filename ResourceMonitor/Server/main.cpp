@@ -3,13 +3,14 @@
 
 #include "Server.h"
 
-#include "Logger.h"
+#include "Log.h"
 
 const unsigned int DEFAULT_THREAD_POOL_SIZE = 2;
 
 int main()
 {
-    fnRMUtils();
+    LOG::initConsoleLogger(LogLevel::Info);
+
     using namespace ResourceMonitorServer;
 
     Server::Port portNum = 3333;
