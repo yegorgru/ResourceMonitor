@@ -8,18 +8,19 @@ const unsigned int DEFAULT_THREAD_POOL_SIZE = 2;
 int main()
 {
     using namespace ResourceMonitorServer;
-    unsigned short portNum = 3333;
+
+    Server::Port portNum = 3333;
 
     try {
         Server srv(portNum);
 
-        unsigned int thread_pool_size = std::thread::hardware_concurrency();
+        unsigned int threadPoolSize = std::thread::hardware_concurrency();
 
-        if (thread_pool_size == 0) {
-            thread_pool_size = DEFAULT_THREAD_POOL_SIZE;
+        if (threadPoolSize == 0) {
+            threadPoolSize = DEFAULT_THREAD_POOL_SIZE;
         }
 
-        srv.start(thread_pool_size);
+        srv.start(threadPoolSize);
 
         std::this_thread::sleep_for(std::chrono::seconds(2000));
 

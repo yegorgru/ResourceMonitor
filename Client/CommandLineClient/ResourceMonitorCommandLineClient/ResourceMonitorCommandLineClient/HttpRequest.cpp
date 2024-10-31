@@ -7,7 +7,7 @@ Request::Request(IoService& ios, Id id) :
     mId(id),
     mSock(ios),
     mResolver(ios),
-    mWasCancelled(false),
+    mWasCanceled(false),
     mIoService(ios)
 {
 }
@@ -49,10 +49,7 @@ void Request::execute() {
         mHost, std::to_string(mPort), boost::asio::ip::tcp::resolver::query::numeric_service
     );
 
-    std::unique_lock<std::mutex> cancelLock(mCancelMux);
-
-    if (mWasCancelled) {
-        cancelLock.unlock();
+    if (mWasCanceled) {
         finish(boost::system::error_code(boost::asio::error::operation_aborted));
         return;
     }
@@ -69,8 +66,7 @@ void Request::execute() {
 }
 
 void Request::cancel() {
-    std::unique_lock<std::mutex> cancelLock(mCancelMux);
-    mWasCancelled = true;
+    mWasCanceled = true;
     mResolver.cancel();
     if (mSock.is_open()) {
         mSock.cancel();
@@ -78,10 +74,7 @@ void Request::cancel() {
 }
 
 void Request::connect(boost::asio::ip::tcp::resolver::iterator iterator) {
-    std::unique_lock<std::mutex> cancelLock(mCancelMux);
-
-    if (mWasCancelled) {
-        cancelLock.unlock();
+    if (mWasCanceled) {
         finish(boost::system::error_code(boost::asio::error::operation_aborted));
         return;
     }
@@ -102,10 +95,7 @@ void Request::sendRequest() {
     mRequestBuf += "Host: " + mHost + "\r\n";
     mRequestBuf += "\r\n";
 
-    std::unique_lock<std::mutex> cancelLock(mCancelMux);
-
-    if (mWasCancelled) {
-        cancelLock.unlock();
+    if (mWasCanceled) {
         finish(boost::system::error_code(boost::asio::error::operation_aborted));
         return;
     }
@@ -126,11 +116,7 @@ void Request::readResponse()
 {
     mSock.shutdown(boost::asio::ip::tcp::socket::shutdown_send);
 
-    std::unique_lock<std::mutex>
-        cancel_lock(mCancelMux);
-
-    if (mWasCancelled) {
-        cancel_lock.unlock();
+    if (mWasCanceled) {
         finish(boost::system::error_code(boost::asio::error::operation_aborted));
         return;
     }
@@ -180,10 +166,7 @@ void Request::readStatusLine()
     mResponse.setStatusCode(statusCode);
     mResponse.setStatusMessage(statusMessage);
 
-    std::unique_lock<std::mutex> cancelLock(mCancelMux);
-
-    if (mWasCancelled) {
-        cancelLock.unlock();
+    if (mWasCanceled) {
         finish(boost::system::error_code(boost::asio::error::operation_aborted));
         return;
     }
@@ -224,10 +207,7 @@ void Request::readHeaders()
         }
     }
 
-    std::unique_lock<std::mutex> cancelLock(mCancelMux);
-
-    if (mWasCancelled) {
-        cancelLock.unlock();
+    if (mWasCanceled) {
         finish(boost::system::error_code(boost::asio::error::operation_aborted));
         return;
     }

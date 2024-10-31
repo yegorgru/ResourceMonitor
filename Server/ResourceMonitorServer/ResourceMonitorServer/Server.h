@@ -15,7 +15,7 @@ public:
 public:
     Server(Port portNum);
 public:
-    void start(unsigned int thread_pool_size);
+    void start(unsigned int threadPoolSize);
     void stop();
 private:
     using IoService = boost::asio::io_service;

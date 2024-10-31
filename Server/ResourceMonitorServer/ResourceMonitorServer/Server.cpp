@@ -8,10 +8,10 @@ Server::Server(Port portNum)
 {
 }
 
-void Server::start(unsigned int thread_pool_size) {
-    assert(thread_pool_size > 0);
+void Server::start(unsigned int threadPoolSize) {
+    assert(threadPoolSize > 0);
     mAcceptor.start();
-    for (unsigned int i = 0; i < thread_pool_size; i++) {
+    for (unsigned int i = 0; i < threadPoolSize; i++) {
         mThreadPool.emplace_back(
             [this]() {
                 mIoService.run();

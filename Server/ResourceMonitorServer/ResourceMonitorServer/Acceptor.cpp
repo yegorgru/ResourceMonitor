@@ -6,7 +6,8 @@ namespace ResourceMonitorServer {
 
 Acceptor::Acceptor(IoService& ios, Port portNum)
     : mIos(ios)
-    , mAcceptor(mIos, boost::asio::ip::tcp::endpoint(boost::asio::ip::address::from_string("127.0.0.1"), portNum)), mIsStopped(false)
+    , mAcceptor(mIos, boost::asio::ip::tcp::endpoint(boost::asio::ip::address::from_string("127.0.0.1"), portNum))
+    , mIsStopped(false)
 {
 }
 
@@ -16,7 +17,7 @@ void Acceptor::start() {
 }
 
 void Acceptor::stop() {
-    mIsStopped.store(true);
+    mIsStopped = true;
 }
 
 void Acceptor::initAccept() {
@@ -41,7 +42,7 @@ void Acceptor::onAccept(const Error& ec, TcpSocketPtr sock)
         std::cout << "Error occured! Error code = " << ec.value() << ". Message: " << ec.message();
     }
 
-    if (!mIsStopped.load()) {
+    if (!mIsStopped) {
         initAccept();
     }
     else {

@@ -38,6 +38,7 @@ private:
 private:
     using TcpSocket = boost::asio::ip::tcp::socket;
     using TcpResolver = boost::asio::ip::tcp::resolver;
+    using AtomicFlag = std::atomic<bool>;
 private:
     std::string mHost;
     unsigned int mPort;
@@ -52,8 +53,7 @@ private:
 
     Response mResponse;
 
-    bool mWasCancelled;
-    std::mutex mCancelMux;
+    AtomicFlag mWasCanceled;
 
     IoService& mIoService;
 };
