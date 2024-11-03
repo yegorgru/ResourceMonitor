@@ -95,7 +95,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>libssl.lib;libcrypto.lib;RMUtils.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>C:\Program Files\OpenSSL-Win64\lib\VC\x64\MDd;D:\GitHub\ResourceMonitor\ResourceMonitor\x64\Debug</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\Program Files\OpenSSL-Win64\lib\VC\x64\MDd;D:\GitHub\ResourceMonitor\ResourceMonitor\x64\Debug;C:\local\boost_1_86_0\lib64-msvc-14.3</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -115,7 +115,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>libssl.lib;libcrypto.lib;RMUtils.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>C:\Program Files\OpenSSL-Win64\lib\VC\x64\MD;D:\GitHub\ResourceMonitor\ResourceMonitor\x64\Release</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\Program Files\OpenSSL-Win64\lib\VC\x64\MD;D:\GitHub\ResourceMonitor\ResourceMonitor\x64\Release;C:\local\boost_1_86_0\lib64-msvc-14.3</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -131,7 +131,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>libssl.lib;libcrypto.lib;RMUtils.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>C:\Program Files\OpenSSL-Win64\lib\VC\x64\MDd;D:\GitHub\ResourceMonitor\ResourceMonitor\x64\Debug</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\Program Files\OpenSSL-Win64\lib\VC\x64\MDd;D:\GitHub\ResourceMonitor\ResourceMonitor\x64\Debug;C:\local\boost_1_86_0\lib64-msvc-14.3</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -151,17 +151,21 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>libssl.lib;libcrypto.lib;RMUtils.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>C:\Program Files\OpenSSL-Win64\lib\VC\x64\MD;D:\GitHub\ResourceMonitor\ResourceMonitor\x64\Release</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\Program Files\OpenSSL-Win64\lib\VC\x64\MD;D:\GitHub\ResourceMonitor\ResourceMonitor\x64\Release;C:\local\boost_1_86_0\lib64-msvc-14.3</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Acceptor.cpp" />
+    <ClCompile Include="ArgumentParser.cpp" />
+    <ClCompile Include="Controller.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Server.cpp" />
     <ClCompile Include="Service.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Acceptor.h" />
+    <ClInclude Include="ArgumentParser.h" />
+    <ClInclude Include="Controller.h" />
     <ClInclude Include="Server.h" />
     <ClInclude Include="Service.h" />
   </ItemGroup>

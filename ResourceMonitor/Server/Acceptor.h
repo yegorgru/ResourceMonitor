@@ -1,6 +1,7 @@
 #pragma once
 
 #include <atomic>
+#include <memory>
 
 #include <boost/asio.hpp>
 
@@ -13,18 +14,19 @@ public:
     using IoService = boost::asio::io_service;
     using Port = unsigned int;
 public:
-    Acceptor(IoService& ios, Port portNum);
+    Acceptor(IoService& ios);
 public:
-    void start();
+    void start(const std::string& rawIp, Port portNum);
     void stop();
 private:
     using TcpAcceptor = boost::asio::ip::tcp::acceptor;
+    using TcpAcceptorPtr = std::unique_ptr<TcpAcceptor>;
     using AtomicFlag = std::atomic<bool>;
 private:
     void initAccept();
 private:
     IoService& mIos;
-    TcpAcceptor mAcceptor;
+    TcpAcceptorPtr mAcceptor;
     AtomicFlag mIsStopped;
 };
 

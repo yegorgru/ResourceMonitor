@@ -1,20 +1,22 @@
 #include "Server.h"
 #include "Log.h"
 
+#include <iostream>
+
 namespace ResourceMonitorServer {
 
-Server::Server(Port portNum)
+Server::Server()
     : mWork(boost::asio::make_work_guard(mIoService))
-    , mAcceptor(mIoService, portNum)
+    , mAcceptor(mIoService)
 {
 }
 
-void Server::start(unsigned int threadPoolSize) {
+void Server::start(Port portNum, unsigned int threadPoolSize) {
     LOG::Info("Start server");
-    if (threadPoolSize == 0) {
-        LOG::Throw("threadPoolSize should be > 0");
+    if (threadPoolSize < 2) {
+        LOG::Throw("threadPoolSize should be > 1");
     }
-    mAcceptor.start();
+    mAcceptor.start("127.0.0.1", portNum);
     for (unsigned int i = 0; i < threadPoolSize; i++) {
         mThreadPool.emplace_back(
             [this]() {
@@ -22,15 +24,15 @@ void Server::start(unsigned int threadPoolSize) {
             }
         );
     }
-    LOG::Debug("Server started");
+    LOG::Info("Server started");
 }
 
 void Server::stop() {
     LOG::Info("Stop server");
     mAcceptor.stop();
     mWork.reset();
-    for (auto& th : mThreadPool) {
-        th.join();
+    for (size_t i = 1; i < mThreadPool.size(); ++i) {
+        mThreadPool[i].join();
     }
     LOG::Debug("Server stopped");
 }

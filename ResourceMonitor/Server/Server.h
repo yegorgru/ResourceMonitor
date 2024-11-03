@@ -1,6 +1,5 @@
 #pragma once
 
-#include <memory>
 #include <vector>
 
 #include <boost/asio.hpp>
@@ -13,9 +12,9 @@ class Server {
 public:
     using Port = unsigned int;
 public:
-    Server(Port portNum);
+    Server();
 public:
-    void start(unsigned int threadPoolSize);
+    void start(Port portNum, unsigned int threadPoolSize);
     void stop();
 private:
     using IoService = boost::asio::io_service;
