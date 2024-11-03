@@ -71,16 +71,16 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <ExternalIncludePath>C:\local\boost_1_86_0;$(ExternalIncludePath)</ExternalIncludePath>
+    <ExternalIncludePath>C:\local\boost_1_86_0;D:\GitHub\ResourceMonitor\SingleInclude;$(ExternalIncludePath)</ExternalIncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <ExternalIncludePath>C:\local\boost_1_86_0;$(ExternalIncludePath)</ExternalIncludePath>
+    <ExternalIncludePath>C:\local\boost_1_86_0;D:\GitHub\ResourceMonitor\SingleInclude;$(ExternalIncludePath)</ExternalIncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <ExternalIncludePath>C:\local\boost_1_86_0;$(ExternalIncludePath)</ExternalIncludePath>
+    <ExternalIncludePath>C:\local\boost_1_86_0;D:\GitHub\ResourceMonitor\SingleInclude;$(ExternalIncludePath)</ExternalIncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <ExternalIncludePath>C:\local\boost_1_86_0;$(ExternalIncludePath)</ExternalIncludePath>
+    <ExternalIncludePath>C:\local\boost_1_86_0;D:\GitHub\ResourceMonitor\SingleInclude;$(ExternalIncludePath)</ExternalIncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -158,6 +158,7 @@
     <ClCompile Include="Acceptor.cpp" />
     <ClCompile Include="ArgumentParser.cpp" />
     <ClCompile Include="Controller.cpp" />
+    <ClCompile Include="DatabaseManager.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Server.cpp" />
     <ClCompile Include="Service.cpp" />
@@ -166,6 +167,7 @@
     <ClInclude Include="Acceptor.h" />
     <ClInclude Include="ArgumentParser.h" />
     <ClInclude Include="Controller.h" />
+    <ClInclude Include="DatabaseManager.h" />
     <ClInclude Include="Server.h" />
     <ClInclude Include="Service.h" />
   </ItemGroup>

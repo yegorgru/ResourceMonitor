@@ -7,6 +7,9 @@
 #ifndef PCH_H
 #define PCH_H
 
-
+#include "Log.h";
+#include "JsonAdapter.h"
+#include "MachineState.h"
+#include "Singleton.h"
 
 #endif //PCH_H

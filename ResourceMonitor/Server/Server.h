@@ -5,6 +5,7 @@
 #include <boost/asio.hpp>
 
 #include "Acceptor.h"
+#include "DatabaseManager.h"
 
 namespace ResourceMonitorServer {
 
@@ -25,6 +26,7 @@ private:
     Work mWork;
     Acceptor mAcceptor;
     ThreadPool mThreadPool;
+    DatabaseManager mDatabaseManager;
 };
 
 } // namespace ResourceMonitorServer
