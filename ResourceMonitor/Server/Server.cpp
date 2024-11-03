@@ -31,7 +31,7 @@ void Server::stop() {
     LOG::Info("Stop server");
     mAcceptor.stop();
     mWork.reset();
-    for (size_t i = 1; i < mThreadPool.size(); ++i) {
+    for (size_t i = 0; i < mThreadPool.size(); ++i) {
         mThreadPool[i].join();
     }
     LOG::Debug("Server stopped");

@@ -65,8 +65,8 @@ void LOG::log(LogLevel messageLogLevel, const std::string& message, std::source_
 		}
 		std::filesystem::path filePath(location.file_name());
 		oss << " " << filePath.filename().string() << ":" << location.line() << " | ";
-		auto now = std::chrono::system_clock::now();
-		oss << std::format("{0:%F_%T}", now);
+		auto now = std::chrono::time_point_cast<std::chrono::seconds>(std::chrono::system_clock::now());
+		oss << std::format("{:%Y-%m-%d %H:%M:%S}", now);
 		oss << " | " << message;
 		mLogger->printMessage(messageLogLevel, oss.str());
 		if (messageLogLevel == LogLevel::Throw) {

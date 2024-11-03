@@ -15,8 +15,6 @@ public:
 	void init(int argc, char* argv[]);
 	void run();
 private:
-	void processCommand(const std::string& str);
-private:
 	Server& mServer;
 	ArgumentParser mArgumentParser;
 };

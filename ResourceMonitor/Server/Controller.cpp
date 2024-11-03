@@ -29,10 +29,24 @@ void Controller::run() {
     const auto threadCount = mArgumentParser.getThreadCount();
     
     LOG::Debug(LOG::makeLogMessage("Got command-line arguments:", "Port:", port, "Threads count:", threadCount));
-}
 
-void Controller::processCommand(const std::string& str) {
+    mServer.start(port, threadCount);
 
+    std::string command;
+    while (true) {
+        std::cout << "> ";
+        std::cin >> command;
+        if (command == "exit") {
+            std::cout << "Stopping server..." << std::endl;
+            mServer.stop();
+            LOG::Info("Exiting application");
+            return;
+        }
+        else {
+            std::cout << "Unknown command" << std::endl;
+            LOG::Debug(LOG::makeLogMessage("Unknown command entered:", command));
+        }
+    }
 }
 
 } // namespace ResourceMonitorServer

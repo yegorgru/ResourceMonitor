@@ -22,11 +22,14 @@ private:
     using TcpAcceptor = boost::asio::ip::tcp::acceptor;
     using TcpAcceptorPtr = std::unique_ptr<TcpAcceptor>;
     using AtomicFlag = std::atomic<bool>;
+    using TcpSocket = boost::asio::ip::tcp::socket;
+    using TcpSocketPtr = std::shared_ptr<TcpSocket>;
 private:
     void initAccept();
 private:
     IoService& mIos;
     TcpAcceptorPtr mAcceptor;
+    TcpSocketPtr mNextSocket;
     AtomicFlag mIsStopped;
 };
 

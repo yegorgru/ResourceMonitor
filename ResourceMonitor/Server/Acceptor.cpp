@@ -19,29 +19,29 @@ void Acceptor::start(const std::string& rawIp, Port portNum) {
 
 void Acceptor::stop() {
     LOG::Info("Stop Acceptor");
+    if (mNextSocket) {
+        mNextSocket->close();
+    }
+    mAcceptor->close();
     mIsStopped = true;
 }
 
 void Acceptor::initAccept() {
     LOG::Debug("Waiting for new connection");
-    auto socket = std::make_shared<boost::asio::ip::tcp::socket>(mIos);
+    mNextSocket = std::make_shared<boost::asio::ip::tcp::socket>(mIos);
 
-    mAcceptor->async_accept(*socket.get(), 
-        [this, socket](const boost::system::error_code& ec) {
+    mAcceptor->async_accept(*mNextSocket.get(),
+        [this](const boost::system::error_code& ec) {
             if (ec.value() == 0) {
                 LOG::Debug("New connection accepted");
-                auto service = std::make_shared<Service>(socket);
+                auto service = std::make_shared<Service>(mNextSocket);
                 service->startHandling();
             }
             else {
-                LOG::Error(LOG::makeLogMessage("Error occured!Error code = ", ec.value(), ". Message: ", ec.message()));
+                LOG::Error(LOG::makeLogMessage("Error occured! Error code = ", ec.value(), ". Message: ", ec.message()));
             }
-
             if (!mIsStopped) {
                 initAccept();
-            }
-            else {
-                mAcceptor->close();
             }
         }
     );
