@@ -8,6 +8,7 @@
 #include <memory>
 #include <stdexcept>
 #include <chrono>
+#include <source_location>
 
 enum class LogLevel {
 	Debug = 0,
@@ -19,22 +20,19 @@ enum class LogLevel {
 
 class LOG {
 public:
+	static void Debug(const std::string& message, std::source_location location = std::source_location::current());
+	static void Info(const std::string& message, std::source_location location = std::source_location::current());
+	static void Warning(const std::string& message, std::source_location location = std::source_location::current());
+	static void Error(const std::string& message, std::source_location location = std::source_location::current());
+	static void Throw(const std::string& message, std::source_location location = std::source_location::current());
+public:
 	template <typename... Args>
-	static void Debug(Args&&... args);
-	template <typename... Args>
-	static void Info(Args&&... args);
-	template <typename... Args>
-	static void Warning(Args&&... args);
-	template <typename... Args>
-	static void Error(Args&&... args);
-	template <typename... Args>
-	static void Throw(Args&&... args);
+	static std::string makeLogMessage(Args&&... args);
 public:
 	static void initConsoleLogger(LogLevel logLevel);
 	static void initFileLogger(LogLevel logLevel, const std::string fileName);
 private:
-	template <typename... Args>
-	static void log(LogLevel messageLogLevel, Args&&... args);
+	static void log(LogLevel messageLogLevel, const std::string& message, std::source_location location);
 private:
 	class Logger {
 	protected:
@@ -68,62 +66,12 @@ private:
 };
 
 template <typename... Args>
-void LOG::Debug(Args&&... args) {
-	log(LogLevel::Debug, std::forward<Args>(args)...);
-}
-
-template <typename... Args>
-void LOG::Info(Args&&... args) {
-	log(LogLevel::Info, std::forward<Args>(args)...);
-}
-
-template <typename... Args>
-void LOG::Warning(Args&&... args) {
-	log(LogLevel::Warning, std::forward<Args>(args)...);
-}
-
-template <typename... Args>
-void LOG::Error(Args&&... args) {
-	log(LogLevel::Error, std::forward<Args>(args)...);
-}
-
-template <typename... Args>
-void LOG::Throw(Args&&... args) {
-	log(LogLevel::Throw, std::forward<Args>(args)...);
-}
-
-template <typename... Args>
-void LOG::log(LogLevel messageLogLevel, Args&&... args) {
-	if (!mLogger) {
-		throw std::runtime_error("Logger is not initialized");
+std::string LOG::makeLogMessage(Args&&... args) {
+	std::ostringstream oss;
+	((oss << args << " "), ...);
+	std::string message = oss.str();
+	if (message.length() > 0) {
+		message.pop_back();
 	}
-	if (messageLogLevel >= mLogLevel) {
-		std::ostringstream oss;
-		switch (messageLogLevel) {
-		case LogLevel::Debug:
-			oss << "DEBUG\t";
-			break;
-		case LogLevel::Info:
-			oss << "INFO\t";
-			break;
-		case LogLevel::Warning:
-			oss << "WARNING\t";
-			break;
-		case LogLevel::Error:
-			oss << "ERROR\t";
-			break;
-		case LogLevel::Throw:
-			oss << "THROW\t";
-			break;
-		}
-		oss << " | ";
-		auto now = std::chrono::system_clock::now();
-		oss << std::format("{0:%F_%T}", now);
-		oss << " |";
-		((oss << ' ' << args), ...);
-		mLogger->printMessage(messageLogLevel, oss.str());
-		if (messageLogLevel == LogLevel::Throw) {
-			throw std::runtime_error(oss.str());
-		}
-	}
+	return message;
 }

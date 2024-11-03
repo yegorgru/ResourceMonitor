@@ -1,4 +1,5 @@
 #include "Server.h"
+#include "Log.h"
 
 namespace ResourceMonitorServer {
 
@@ -9,7 +10,10 @@ Server::Server(Port portNum)
 }
 
 void Server::start(unsigned int threadPoolSize) {
-    assert(threadPoolSize > 0);
+    LOG::Info("Start server");
+    if (threadPoolSize == 0) {
+        LOG::Throw("threadPoolSize should be > 0");
+    }
     mAcceptor.start();
     for (unsigned int i = 0; i < threadPoolSize; i++) {
         mThreadPool.emplace_back(
@@ -18,14 +22,17 @@ void Server::start(unsigned int threadPoolSize) {
             }
         );
     }
+    LOG::Debug("Server started");
 }
 
 void Server::stop() {
+    LOG::Info("Stop server");
     mAcceptor.stop();
     mWork.reset();
     for (auto& th : mThreadPool) {
         th.join();
     }
+    LOG::Debug("Server stopped");
 }
 
 } // namespace ResourceMonitorServer

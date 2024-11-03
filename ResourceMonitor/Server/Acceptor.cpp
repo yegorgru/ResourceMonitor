@@ -1,6 +1,5 @@
 #include "Acceptor.h"
-
-#include <iostream>
+#include "Log.h"
 
 namespace ResourceMonitorServer {
 
@@ -12,42 +11,39 @@ Acceptor::Acceptor(IoService& ios, Port portNum)
 }
 
 void Acceptor::start() {
+    LOG::Info("Start Acceptor");
     mAcceptor.listen();
     initAccept();
 }
 
 void Acceptor::stop() {
+    LOG::Info("Stop Acceptor");
     mIsStopped = true;
 }
 
 void Acceptor::initAccept() {
-    auto socket = std::make_shared<TcpSocket>(mIos);
+    LOG::Debug("Waiting for new connection");
+    auto socket = std::make_shared<boost::asio::ip::tcp::socket>(mIos);
 
     mAcceptor.async_accept(*socket.get(), 
-        [this, socket](
-            const boost::system::error_code& error)
-        {
-            onAccept(error, socket);
+        [this, socket](const boost::system::error_code& ec) {
+            if (ec.value() == 0) {
+                LOG::Debug("New connection accepted");
+                auto service = std::make_shared<Service>(socket);
+                service->startHandling();
+            }
+            else {
+                LOG::Error(LOG::makeLogMessage("Error occured!Error code = ", ec.value(), ". Message: ", ec.message()));
+            }
+
+            if (!mIsStopped) {
+                initAccept();
+            }
+            else {
+                mAcceptor.close();
+            }
         }
     );
-}
-
-void Acceptor::onAccept(const Error& ec, TcpSocketPtr sock)
-{
-    if (ec.value() == 0) {
-        auto service = std::make_shared<Service>(sock);
-        service->startHandling();
-    }
-    else {
-        std::cout << "Error occured! Error code = " << ec.value() << ". Message: " << ec.message();
-    }
-
-    if (!mIsStopped) {
-        initAccept();
-    }
-    else {
-        mAcceptor.close();
-    }
 }
 
 } // namespace ResourceMonitorServer

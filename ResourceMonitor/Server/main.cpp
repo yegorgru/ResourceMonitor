@@ -5,8 +5,6 @@
 
 #include "Log.h"
 
-const unsigned int DEFAULT_THREAD_POOL_SIZE = 2;
-
 int main()
 {
     LOG::initConsoleLogger(LogLevel::Info);
@@ -18,8 +16,8 @@ int main()
     try {
         Server srv(portNum);
 
+        const unsigned int DEFAULT_THREAD_POOL_SIZE = 2;
         unsigned int threadPoolSize = std::thread::hardware_concurrency();
-
         if (threadPoolSize == 0) {
             threadPoolSize = DEFAULT_THREAD_POOL_SIZE;
         }

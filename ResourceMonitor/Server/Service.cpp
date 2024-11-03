@@ -1,6 +1,6 @@
 #include "Service.h"
+#include "Log.h"
 
-#include <iostream>
 #include <map>
 
 namespace ResourceMonitorServer {
@@ -18,15 +18,16 @@ void Service::startHandling() {
     boost::asio::async_read_until(*mSocket.get(), mRequestBuf, "\r\n",
         [this](const boost::system::error_code& ec, std::size_t bytes_transferred)
         {
+            LOG::Debug("Start handling new connection");
             if (ec.value() != 0) {
-                std::cout << "Error occured! Error code = " << ec.value() << ". Message: " << ec.message();
-
                 if (ec == boost::asio::error::not_found) {
+                    LOG::Warning("Content Too Large");
                     mResponseStatusCode = 413;
                     sendResponse();
                     return;
                 }
                 else {
+                    LOG::Error(LOG::makeLogMessage("Error occured! Error code = ", ec.value(), ". Message: ", ec.message()));
                     finish();
                     return;
                 }
@@ -38,10 +39,11 @@ void Service::startHandling() {
 
 void Service::processRequestLine()
 {
+    LOG::Debug("Start reading request line");
+
     std::string requestLine;
     std::istream requestStream(&mRequestBuf);
     std::getline(requestStream, requestLine, '\r');
-
     requestStream.get(); // Remove symbol '\n' from the buffer.
 
     std::string requestMethod;
@@ -71,7 +73,7 @@ void Service::processRequestLine()
         "\r\n\r\n",
         [this] (const boost::system::error_code& ec, std::size_t bytes_transferred) {
             if (ec.value() != 0) {
-                std::cout << "Error occured! Error code = " << ec.value() << ". Message: " << ec.message();
+                LOG::Error(LOG::makeLogMessage("Error occured! Error code = ", ec.value(), ". Message: ", ec.message()));
 
                 if (ec == boost::asio::error::not_found) {
                     mResponseStatusCode = 413;
@@ -89,6 +91,8 @@ void Service::processRequestLine()
 }
 
 void Service::sendResponse() {
+    LOG::Debug("Start sending response");
+
     mSocket->shutdown(boost::asio::ip::tcp::socket::shutdown_receive);
 
     std::string responseStatusLine = std::string("HTTP/1.1 ") + getStatusLine(mResponseStatusCode) + "\r\n";
@@ -113,9 +117,7 @@ void Service::sendResponse() {
     boost::asio::async_write(*mSocket.get(), boost::asio::buffer(mResponse),
         [this] (const boost::system::error_code& ec, std::size_t bytes_transferred) {
             if (ec.value() != 0) {
-                std::cout << "Error occured! Error code = "
-                    << ec.value()
-                    << ". Message: " << ec.message();
+                LOG::Error(LOG::makeLogMessage("Error occured! Error code = ", ec.value(), ". Message: ", ec.message()));
             }
 
             mSocket->shutdown(boost::asio::ip::tcp::socket::shutdown_both);
@@ -125,6 +127,8 @@ void Service::sendResponse() {
 }
 
 void Service::processHeaders() {
+    LOG::Debug("Start headers processing");
+
     std::istream requestStream(&mRequestBuf);
     std::string headerName, headerValue;
 
@@ -144,6 +148,8 @@ void Service::processHeaders() {
 }
 
 void Service::processRequest() {
+    LOG::Debug("Request processing");
+
     mResponse = "Content";
     mResponseHeaders["content-length"] = std::to_string(mResponse.length());
 }
@@ -162,6 +168,7 @@ const std::string& Service::getStatusLine(HttpCode code) {
 }
 
 void Service::finish() {
+    LOG::Debug("Finish service");
     mSelfPtr.reset();
 }
 
