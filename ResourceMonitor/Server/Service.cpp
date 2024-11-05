@@ -46,11 +46,15 @@ void Service::processRequestLine()
     std::getline(requestStream, requestLine, '\r');
     requestStream.get(); // Remove symbol '\n' from the buffer.
 
+    LOG::Debug(LOG::makeLogMessage("Request line: ", requestLine));
+
     std::string requestMethod;
     std::istringstream requestLineStream(requestLine);
     requestLineStream >> requestMethod;
 
-    if (requestMethod.compare("GET") != 0) {
+    LOG::Debug(LOG::makeLogMessage("Request method: ", requestMethod));
+
+    if (requestMethod != "GET") {
         mResponseStatusCode = 501;
         sendResponse();
         return;
@@ -58,10 +62,14 @@ void Service::processRequestLine()
 
     requestLineStream >> mRequestedResource;
 
-    std::string request_http_version;
-    requestLineStream >> request_http_version;
+    LOG::Debug(LOG::makeLogMessage("Requested resource: ", mRequestedResource));
 
-    if (request_http_version.compare("HTTP/1.1") != 0) {
+    std::string requestHttpVersion;
+    requestLineStream >> requestHttpVersion;
+
+    LOG::Debug(LOG::makeLogMessage("Request http version: ", requestHttpVersion));
+
+    if (requestHttpVersion.compare("HTTP/1.1") != 0) {
         mResponseStatusCode = 505;
         sendResponse();
 
@@ -130,7 +138,8 @@ void Service::processHeaders() {
     LOG::Debug("Start headers processing");
 
     std::istream requestStream(&mRequestBuf);
-    std::string headerName, headerValue;
+    std::string headerName;
+    std::string headerValue;
 
     while (!requestStream.eof()) {
         std::getline(requestStream, headerName, ':');
@@ -138,6 +147,7 @@ void Service::processHeaders() {
             std::getline(requestStream, headerValue, '\r');
             requestStream.get();
             mRequestHeaders[headerName] = headerValue;
+            LOG::Debug(LOG::makeLogMessage("Add header:", headerName, ":", headerValue));
         }
     }
 
@@ -151,6 +161,9 @@ void Service::processRequest() {
     LOG::Debug("Request processing");
 
     mResponse = "Content";
+
+    LOG::Debug(LOG::makeLogMessage("Set response:", mResponse));
+
     mResponseHeaders["content-length"] = std::to_string(mResponse.length());
 }
 
