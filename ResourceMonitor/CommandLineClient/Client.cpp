@@ -26,7 +26,7 @@ void Client::makeRequest() {
     mCurrentRequest = std::make_shared<Http::Request>(mIoService);
     mCurrentRequest->setHost("localhost");
     mCurrentRequest->setUri("/index.html");
-    mCurrentRequest->setPort(3333);
+    mCurrentRequest->setPort(8080);
     mCurrentRequest->execute();
 }
 

@@ -86,16 +86,16 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <ExternalIncludePath>C:\local\boost_1_86_0;$(ExternalIncludePath)</ExternalIncludePath>
+    <ExternalIncludePath>C:\local\boost_1_86_0;D:\GitHub\ResourceMonitor\SingleInclude;$(ExternalIncludePath)</ExternalIncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <ExternalIncludePath>C:\local\boost_1_86_0;$(ExternalIncludePath)</ExternalIncludePath>
+    <ExternalIncludePath>C:\local\boost_1_86_0;D:\GitHub\ResourceMonitor\SingleInclude;$(ExternalIncludePath)</ExternalIncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <ExternalIncludePath>C:\local\boost_1_86_0;$(ExternalIncludePath)</ExternalIncludePath>
+    <ExternalIncludePath>C:\local\boost_1_86_0;D:\GitHub\ResourceMonitor\SingleInclude;$(ExternalIncludePath)</ExternalIncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <ExternalIncludePath>C:\local\boost_1_86_0;$(ExternalIncludePath)</ExternalIncludePath>
+    <ExternalIncludePath>C:\local\boost_1_86_0;D:\GitHub\ResourceMonitor\SingleInclude;$(ExternalIncludePath)</ExternalIncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>

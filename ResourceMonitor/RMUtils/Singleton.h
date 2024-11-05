@@ -2,6 +2,7 @@
 
 #include <memory>
 #include <stdexcept>
+#include <utility>
 
 template <typename T>
 class Singleton {
@@ -13,19 +14,26 @@ public:
     virtual ~Singleton() = default;
 public:
     template <typename... Args>
-    static void Init(Args&... args) {
-        mInstance = std::make_unique<T>(args...);
-    }
-    static T& Get() {
-        if (!mInstance) {
-            throw std::runtime_error("Singleton is not initialized");
-        }
-        return *mInstance;
-    }
+    static void Init(Args&&... args);
+    static T& Get();
 protected:
     using Instance = std::unique_ptr<T>;
 protected:
     Singleton() = default;
 protected:
-    static Instance mInstance;
+    inline static Instance mInstance = nullptr;
 };
+
+template <typename T>
+template <typename... Args>
+void Singleton<T>::Init(Args&&... args) {
+    mInstance = std::unique_ptr<T>(new T(std::forward<Args>(args)...));
+}
+
+template <typename T>
+T& Singleton<T>::Get() {
+    if (!mInstance) {
+        throw std::runtime_error("Singleton is not initialized");
+    }
+    return *mInstance;
+}

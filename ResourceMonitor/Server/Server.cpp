@@ -24,6 +24,7 @@ Server::~Server()
 
 void Server::start(Port portNum, unsigned int threadPoolSize) {
     LOG::Info("Start server");
+    DatabaseManager::Init();
     if (threadPoolSize < 2) {
         LOG::Throw("threadPoolSize should be > 1");
     }

@@ -1,5 +1,7 @@
 #include "Service.h"
 #include "Log.h"
+#include "DatabaseManager.h"
+#include "JsonAdapter.h"
 
 #include <map>
 
@@ -160,7 +162,9 @@ void Service::processHeaders() {
 void Service::processRequest() {
     LOG::Debug("Request processing");
 
-    mResponse = "Content";
+    const auto& machineState = DatabaseManager::Get().getMachineState("machine");
+    const auto& jsonObject = JsonAdapter::machineStateToJson(machineState);
+    mResponse = jsonObject.dump();
 
     LOG::Debug(LOG::makeLogMessage("Set response:", mResponse));
 

@@ -27,7 +27,6 @@ private:
     Work mWork;
     Acceptor mAcceptor;
     ThreadPool mThreadPool;
-    DatabaseManager mDatabaseManager;
 };
 
 } // namespace ResourceMonitorServer

@@ -1,6 +1,7 @@
 #include "HttpRequest.h"
 
 #include "Log.h"
+#include "JsonAdapter.h"
 
 namespace ResourceMonitorClient::Http {
 
@@ -224,7 +225,7 @@ void Request::readHeaders()
             headerName = header.substr(0, separatorPos);
             headerValue = separatorPos < header.length() - 1 ? header.substr(separatorPos + 1) : "";
             mResponse.setHeader(headerName, headerValue);
-            LOG::Debug(LOG::makeLogMessage("Get new heade.", headerName, ":", headerValue));
+            LOG::Debug(LOG::makeLogMessage("Get new header", headerName, ":", headerValue));
         }
     }
 
@@ -254,7 +255,21 @@ void Request::finish(const boost::system::error_code& ec) {
         std::cout << message << std::endl;
     }
     else {
-        auto message = LOG::makeLogMessage("Request processed successfully. Response:", mResponse.getResponse().rdbuf());
+        std::ostringstream oss;
+        oss << mResponse.getResponse().rdbuf();
+        std::string responseStr = oss.str();
+        auto machineState = JsonAdapter::jsonToMachineState(responseStr);
+
+        LOG::Info(LOG::makeLogMessage("Name:", machineState.mName));
+        LOG::Info(LOG::makeLogMessage("CpuUsage:", machineState.mCpuUsage));
+        LOG::Info(LOG::makeLogMessage("MemoryUsage:", machineState.mMemoryUsage));
+        LOG::Info(LOG::makeLogMessage("TotalMemory:", machineState.mTotalMemory));
+        LOG::Info(LOG::makeLogMessage("MemoryUsed:", machineState.mMemoryUsed));
+        LOG::Info(LOG::makeLogMessage("DiskUsage:", machineState.mDiskUsage));
+        LOG::Info(LOG::makeLogMessage("TotalDisk:", machineState.mTotalDisk));
+        LOG::Info(LOG::makeLogMessage("DiskUsed:", machineState.mDiskUsed));
+
+        auto message = LOG::makeLogMessage("Request processed successfully");
         LOG::Info(message);
         std::cout << message << std::endl;
     }
