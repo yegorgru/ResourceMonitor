@@ -14,6 +14,7 @@ public:
     using Port = unsigned int;
 public:
     Server();
+    ~Server();
 public:
     void start(Port portNum, unsigned int threadPoolSize);
     void stop();

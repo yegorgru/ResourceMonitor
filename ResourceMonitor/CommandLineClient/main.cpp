@@ -5,27 +5,32 @@
 #include <map>
 
 #include "Client.h"
+#include "Controller.h"
 
-int main()
+int main(int argc, char* argv[])
 {
     using namespace ResourceMonitorClient;
+
     try {
         Client client;
-
-        auto request_one = client.createRequest(1);
-
-        request_one->setHost("localhost");
-        request_one->setUri("/index.html");
-        request_one->setPort(3333);
-
-        request_one->execute();
-
-        client.close();
+        Controller controller(client);
+        controller.init(argc, argv);
+        controller.run();
     }
     catch (boost::system::system_error& e) {
-        std::cout << "Error occured! Error code = " << e.code() << ". Message: " << e.what();
-
-        return e.code().value();
+        auto message = LOG::makeLogMessage("Boost error occured! Error code =", e.code(), ". Message:", e.what());
+        std::cout << message << std::endl;
+        LOG::Error(message);
+    }
+    catch (std::exception& e) {
+        auto message = LOG::makeLogMessage("Std error occured! Message:", e.what());
+        std::cout << message << std::endl;
+        LOG::Error(message);
+    }
+    catch (...) {
+        std::string message = "Unknown error occured!";
+        std::cout << message << std::endl;
+        LOG::Error(message);
     }
 
     return 0;

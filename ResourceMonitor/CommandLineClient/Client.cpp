@@ -1,4 +1,5 @@
 #include "Client.h"
+#include "Log.h"
 
 namespace ResourceMonitorClient {
 
@@ -8,12 +9,30 @@ Client::Client()
 {
 }
 
-Client::HttpRequestPtr Client::createRequest(Http::Request::Id id)
+Client::~Client()
 {
-    return std::make_shared<Http::Request>(mIoService, id);
+    LOG::Debug("Destroying client");
+    if (mWork.owns_work()) {
+        close();
+    }
+}
+
+void Client::makeRequest(Http::Request::Id id)
+{
+    LOG::Debug("Making request");
+    if (mCurrentRequest && !mCurrentRequest->isCompleted()) {
+        LOG::Warning("Client has active request");
+        return;
+    }
+    mCurrentRequest = std::make_shared<Http::Request>(mIoService, id);
+    mCurrentRequest->setHost("localhost");
+    mCurrentRequest->setUri("/index.html");
+    mCurrentRequest->setPort(3333);
+    mCurrentRequest->execute();
 }
 
 void Client::close() {
+    LOG::Debug("Client close");
     mWork.reset();
     mThread.join();
 }

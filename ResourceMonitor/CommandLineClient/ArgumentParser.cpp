@@ -2,18 +2,16 @@
 
 #include <iostream>
 
-namespace ResourceMonitorServer {
+namespace ResourceMonitorClient {
 
-ArgumentParser::ArgumentParser() 
-	: mDescription("Allowed options")
+ArgumentParser::ArgumentParser()
+    : mDescription("Allowed options")
 {
     namespace po = boost::program_options;
     mDescription.add_options()
         ("help,h", "produce help message")
-        ("port,p", po::value<int>()->default_value(3333), "server's port")
         ("log-level,l", po::value<std::string>()->default_value("info")->notifier(ArgumentParser::validateLogLevel), "logging level: throw/error/warning/info/debug")
-        ("log-file,L", po::value<std::string>()->default_value(""), "logging file")
-        ("threads-count,t", po::value<int>()->default_value(2), "number of threads in server's pool");
+        ("log-file,L", po::value<std::string>()->default_value(""), "logging file");
 }
 
 bool ArgumentParser::parseCommandLine(int argc, char* argv[]) {
@@ -40,7 +38,7 @@ const std::string& ArgumentParser::getLogFilename() const {
 }
 
 LogLevel ArgumentParser::getLogLevel() const {
-    const std::map<std::string, LogLevel> logLevelMap {
+    const std::map<std::string, LogLevel> logLevelMap{
         {"throw", LogLevel::Throw},
         {"error", LogLevel::Error},
         {"warning", LogLevel::Warning},
@@ -51,14 +49,6 @@ LogLevel ArgumentParser::getLogLevel() const {
     return logLevelMap.at(logLevelStr);
 }
 
-int ArgumentParser::getPort() const {
-    return mVariablesMap["port"].as<int>();
-}
-
-int ArgumentParser::getThreadCount() const {
-    return mVariablesMap["threads-count"].as<int>();
-}
-
 void ArgumentParser::validateLogLevel(const std::string& input) {
     namespace po = boost::program_options;
     const std::set<std::string> allowed_names = { "throw", "error", "warning", "info", "debug" };
@@ -67,4 +57,4 @@ void ArgumentParser::validateLogLevel(const std::string& input) {
     }
 }
 
-} // namespace ResourceMonitorServer
+} // namespace ResourceMonitorClient

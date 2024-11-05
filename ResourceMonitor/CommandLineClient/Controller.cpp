@@ -1,12 +1,9 @@
 #include "Controller.h"
-#include "Log.h"
 
-#include <iostream>
+namespace ResourceMonitorClient {
 
-namespace ResourceMonitorServer {
-
-Controller::Controller(Server& server)
-    : mServer(server)
+Controller::Controller(Client& client)
+    : mClient(client)
     , mIsValidState(true)
 {
 }
@@ -19,6 +16,7 @@ void Controller::run() {
     if (!mIsValidState) {
         return;
     }
+
     const auto logFilename = mArgumentParser.getLogFilename();
     const auto logLevel = mArgumentParser.getLogLevel();
     if (logFilename == "") {
@@ -29,22 +27,18 @@ void Controller::run() {
     }
     LOG::Debug("Logger is initialized");
 
-    const auto port = mArgumentParser.getPort();
-    const auto threadCount = mArgumentParser.getThreadCount();
-    
-    LOG::Debug(LOG::makeLogMessage("Got command-line arguments:", "Port:", port, "Threads count:", threadCount));
-
-    mServer.start(port, threadCount);
-
     std::string command;
     while (true) {
         std::cout << "> ";
         std::cin >> command;
         if (command == "exit") {
-            std::cout << "Stopping server..." << std::endl;
-            mServer.stop();
+            std::cout << "Stopping client..." << std::endl;
+            mClient.close();
             LOG::Info("Exiting application");
             return;
+        }
+        else if (command == "request") {
+            mClient.makeRequest(1);
         }
         else {
             std::cout << "Unknown command" << std::endl;
@@ -53,4 +47,4 @@ void Controller::run() {
     }
 }
 
-} // namespace ResourceMonitorServer
+} // namespace ResourceMonitorClient

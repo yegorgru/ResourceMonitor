@@ -25,6 +25,7 @@ public:
     Port getPort() const;
     void setUri(const std::string& uri);
     const std::string& getUri() const;
+    bool isCompleted() const;
 public:
     void execute();
     void cancel();
@@ -40,6 +41,8 @@ private:
     using TcpResolver = boost::asio::ip::tcp::resolver;
     using AtomicFlag = std::atomic<bool>;
 private:
+    bool mIsCompleted;
+
     std::string mHost;
     unsigned int mPort;
     std::string mUri;

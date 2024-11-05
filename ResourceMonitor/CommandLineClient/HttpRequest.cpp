@@ -1,8 +1,11 @@
 #include "HttpRequest.h"
 
+#include "Log.h"
+
 namespace ResourceMonitorClient::Http {
 
 Request::Request(IoService& ios, Id id) :
+    mIsCompleted(false),
     mPort(DEFAULT_PORT),
     mId(id),
     mSock(ios),
@@ -40,10 +43,15 @@ const std::string& Request::getUri() const {
     return mUri;
 }
 
+bool Request::isCompleted() const {
+    return mIsCompleted;
+}
+
 void Request::execute() {
-    assert(mPort > 0);
-    assert(mHost.length() > 0);
-    assert(mUri.length() > 0);
+    if (mPort == 0 || mHost == "" || mUri == "") {
+        LOG::Throw(LOG::makeLogMessage("Incorrect request parameters. Port:", mPort, "host:", mHost, "uri:", mUri));
+    }
+    LOG::Debug(LOG::makeLogMessage("Start request executing. Port:", mPort, "host:", mHost, "uri:", mUri));
 
     boost::asio::ip::tcp::resolver::query resolverQuery(
         mHost, std::to_string(mPort), boost::asio::ip::tcp::resolver::query::numeric_service
@@ -71,9 +79,11 @@ void Request::cancel() {
     if (mSock.is_open()) {
         mSock.cancel();
     }
+    mIsCompleted = true;
 }
 
 void Request::connect(boost::asio::ip::tcp::resolver::iterator iterator) {
+    LOG::Debug("Start connecting to server");
     if (mWasCanceled) {
         finish(boost::system::error_code(boost::asio::error::operation_aborted));
         return;
@@ -91,6 +101,8 @@ void Request::connect(boost::asio::ip::tcp::resolver::iterator iterator) {
 }
 
 void Request::sendRequest() {
+    LOG::Debug("Start request creation");
+
     mRequestBuf += "GET " + mUri + " HTTP/1.1\r\n";
     mRequestBuf += "Host: " + mHost + "\r\n";
     mRequestBuf += "\r\n";
@@ -107,6 +119,7 @@ void Request::sendRequest() {
                 finish(ec);
                 return;
             }
+            LOG::Debug("Request sent");
             readResponse();
         }
     );
@@ -120,6 +133,8 @@ void Request::readResponse()
         finish(boost::system::error_code(boost::asio::error::operation_aborted));
         return;
     }
+
+    LOG::Debug("Start response reading");
 
     boost::asio::async_read_until(mSock, mResponse.getResponseBuf(), "\r\n",
         [this](const boost::system::error_code& ec, std::size_t bytes_transferred)
@@ -135,6 +150,8 @@ void Request::readResponse()
 
 void Request::readStatusLine()
 {
+    LOG::Debug("Start response status line reading");
+
     std::string httpVersion;
     std::string strStatusCode;
     std::string statusMessage;
@@ -142,12 +159,16 @@ void Request::readStatusLine()
     std::istream responseStream(&mResponse.getResponseBuf());
     responseStream >> httpVersion;
 
+    LOG::Debug(LOG::makeLogMessage("Http version:", httpVersion));
+
     if (httpVersion != "HTTP/1.1") {
         finish(boost::system::error_code());
         return;
     }
 
     responseStream >> strStatusCode;
+
+    LOG::Debug(LOG::makeLogMessage("Status code:", strStatusCode));
 
     unsigned int statusCode = 200;
 
@@ -162,6 +183,8 @@ void Request::readStatusLine()
     std::getline(responseStream, statusMessage, '\r');
     // Remove symbol '\n' from the buffer.
     responseStream.get();
+
+    LOG::Debug(LOG::makeLogMessage("Status message:", statusMessage));
 
     mResponse.setStatusCode(statusCode);
     mResponse.setStatusMessage(statusMessage);
@@ -186,6 +209,8 @@ void Request::readStatusLine()
 
 void Request::readHeaders()
 {
+    LOG::Debug("Start response headers reading");
+
     std::string header;
     std::string headerName;
     std::string headerValue;
@@ -204,6 +229,7 @@ void Request::readHeaders()
             headerName = header.substr(0, separatorPos);
             headerValue = separatorPos < header.length() - 1 ? header.substr(separatorPos + 1) : "";
             mResponse.setHeader(headerName, headerValue);
+            LOG::Debug(LOG::makeLogMessage("Get new heade.", headerName, ":", headerValue));
         }
     }
 
@@ -226,12 +252,18 @@ void Request::readHeaders()
 }
 
 void Request::finish(const boost::system::error_code& ec) {
+    LOG::Debug("Finish request");
     if (ec.value() != 0) {
-        std::cout << "Error occured! Error code = " << ec.value() << ". Message: " << ec.message();
+        auto message = LOG::makeLogMessage("Error occured! Error code =", ec.value(), ". Message:", ec.message());
+        LOG::Error(message);
+        std::cout << message << std::endl;
     }
     else {
-        std::cout << mResponse.getResponse().rdbuf() << std::endl;
+        auto message = LOG::makeLogMessage("Request processed successfully. Response:", mResponse.getResponse().rdbuf());
+        LOG::Info(message);
+        std::cout << message << std::endl;
     }
+    mIsCompleted = true;
 }
 
 } // namespace ResourceMonitorClient::Http

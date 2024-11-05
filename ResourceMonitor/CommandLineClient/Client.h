@@ -17,8 +17,9 @@ private:
     using HttpRequestPtr = std::shared_ptr<Http::Request>;
 public:
     Client();
+    ~Client();
 public:
-    HttpRequestPtr createRequest(Http::Request::Id id);
+    void makeRequest(Http::Request::Id id);
     void close();
 private:
     using IoService = boost::asio::io_service;
@@ -27,6 +28,7 @@ private:
     IoService mIoService;
     Work mWork;
     std::thread mThread;
+    HttpRequestPtr mCurrentRequest;
 };
 
 } // namespace ResourceMonitorClient

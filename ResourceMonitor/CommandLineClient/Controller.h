@@ -1,23 +1,21 @@
 #pragma once
 
-#include "Server.h"
+#include "Client.h"
 #include "ArgumentParser.h"
 
-#include <boost/program_options.hpp>
-
-namespace ResourceMonitorServer {
+namespace ResourceMonitorClient {
 
 class Controller
 {
 public:
-	Controller(Server& server);
+	Controller(Client& client);
 public:
 	void init(int argc, char* argv[]);
 	void run();
 private:
-	Server& mServer;
+	Client& mClient;
 	ArgumentParser mArgumentParser;
 	bool mIsValidState;
 };
 
-} // namespace ResourceMonitorServer
+} // namespace ResourceMonitorClient

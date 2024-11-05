@@ -14,6 +14,14 @@ Server::Server()
 {
 }
 
+Server::~Server()
+{
+    LOG::Debug("Destroying server");
+    if (mWork.owns_work()) {
+        stop();
+    }
+}
+
 void Server::start(Port portNum, unsigned int threadPoolSize) {
     LOG::Info("Start server");
     if (threadPoolSize < 2) {
