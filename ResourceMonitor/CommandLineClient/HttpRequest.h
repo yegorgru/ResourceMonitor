@@ -11,14 +11,12 @@ namespace ResourceMonitorClient::Http {
 class Request {
 public:
     using IoService = boost::asio::io_service;
-    using Id = unsigned int;
     using Port = unsigned int;
 public:
     static const Port DEFAULT_PORT = 80;
 public:
-    Request(IoService& ios, Id id);
+    Request(IoService& ios);
 public:
-    Id getId() const;
     void setHost(const std::string& host);
     std::string getHost() const;
     void setPort(Port port);
@@ -46,8 +44,6 @@ private:
     std::string mHost;
     unsigned int mPort;
     std::string mUri;
-
-    Id mId;
 
     std::string mRequestBuf;
 

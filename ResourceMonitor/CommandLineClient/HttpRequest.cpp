@@ -4,19 +4,14 @@
 
 namespace ResourceMonitorClient::Http {
 
-Request::Request(IoService& ios, Id id) :
-    mIsCompleted(false),
-    mPort(DEFAULT_PORT),
-    mId(id),
-    mSock(ios),
-    mResolver(ios),
-    mWasCanceled(false),
-    mIoService(ios)
+Request::Request(IoService& ios) 
+    : mIsCompleted(false)
+    , mPort(DEFAULT_PORT)
+    , mSock(ios)
+    , mResolver(ios)
+    , mWasCanceled(false)
+    , mIoService(ios)
 {
-}
-
-Request::Id Request::getId() const {
-    return mId;
 }
 
 void Request::setHost(const std::string& host) {

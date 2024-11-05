@@ -17,18 +17,27 @@ Client::~Client()
     }
 }
 
-void Client::makeRequest(Http::Request::Id id)
-{
+void Client::makeRequest() {
     LOG::Debug("Making request");
     if (mCurrentRequest && !mCurrentRequest->isCompleted()) {
         LOG::Warning("Client has active request");
         return;
     }
-    mCurrentRequest = std::make_shared<Http::Request>(mIoService, id);
+    mCurrentRequest = std::make_shared<Http::Request>(mIoService);
     mCurrentRequest->setHost("localhost");
     mCurrentRequest->setUri("/index.html");
     mCurrentRequest->setPort(3333);
     mCurrentRequest->execute();
+}
+
+void Client::cancelRequest() {
+    LOG::Debug("Canceling request");
+    if (!mCurrentRequest || mCurrentRequest->isCompleted()) {
+        LOG::Warning("Client has no active request");
+        return;
+    }
+    mCurrentRequest->cancel();
+    mCurrentRequest.reset();
 }
 
 void Client::close() {

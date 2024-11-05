@@ -54,7 +54,7 @@ void LOG::log(LogLevel messageLogLevel, const std::string& message, std::source_
 			oss << "[INFO]\t";
 			break;
 		case LogLevel::Warning:
-			oss << "[WARNING]\t";
+			oss << "[WARN]\t";
 			break;
 		case LogLevel::Error:
 			oss << "[ERROR]\t";

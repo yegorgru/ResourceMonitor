@@ -19,7 +19,8 @@ public:
     Client();
     ~Client();
 public:
-    void makeRequest(Http::Request::Id id);
+    void makeRequest();
+    void cancelRequest();
     void close();
 private:
     using IoService = boost::asio::io_service;

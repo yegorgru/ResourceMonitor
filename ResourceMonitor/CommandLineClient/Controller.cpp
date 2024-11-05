@@ -38,7 +38,10 @@ void Controller::run() {
             return;
         }
         else if (command == "request") {
-            mClient.makeRequest(1);
+            mClient.makeRequest();
+        }
+        else if (command == "cancel") {
+            mClient.cancelRequest();
         }
         else {
             std::cout << "Unknown command" << std::endl;
