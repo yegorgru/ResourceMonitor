@@ -50,21 +50,20 @@ void Service::processRequestLine()
 
     LOG::Debug(LOG::makeLogMessage("Request line: ", requestLine));
 
-    std::string requestMethod;
     std::istringstream requestLineStream(requestLine);
-    requestLineStream >> requestMethod;
+    requestLineStream >> mRequestMethod;
 
-    LOG::Debug(LOG::makeLogMessage("Request method: ", requestMethod));
+    LOG::Debug(LOG::makeLogMessage("Request method: ", mRequestMethod));
 
-    if (requestMethod != "GET") {
+    if (mRequestMethod != "GET" && mRequestMethod != "PUT") {
         mResponseStatusCode = 501;
         sendResponse();
         return;
     }
 
-    requestLineStream >> mRequestedResource;
+    requestLineStream >> mMachineName;
 
-    LOG::Debug(LOG::makeLogMessage("Requested resource: ", mRequestedResource));
+    LOG::Debug(LOG::makeLogMessage("Requested resource: ", mMachineName));
 
     std::string requestHttpVersion;
     requestLineStream >> requestHttpVersion;
@@ -95,9 +94,63 @@ void Service::processRequestLine()
                     return;
                 }
             }
-            processHeaders();
+            processHeadersAndContent();
         }
     );
+}
+
+void Service::processHeadersAndContent() {
+    LOG::Debug("Start headers processing");
+
+    std::istream requestStream(&mRequestBuf);
+    std::string line;
+
+    while (std::getline(requestStream, line, '\n')) {
+        if (!line.empty() && line.back() == '\r') {
+            line.pop_back();
+        }
+        if (line.empty()) {
+            break;
+        }
+        std::size_t colonPos = line.find(':');
+        if (colonPos != std::string::npos) {
+            std::string headerName = line.substr(0, colonPos);
+            std::string headerValue = line.substr(colonPos + 1);
+            headerValue.erase(0, headerValue.find_first_not_of(" \t"));
+            mRequestHeaders[headerName] = headerValue;
+            LOG::Debug(LOG::makeLogMessage("Add header:", headerName, ":", headerValue));
+        }
+    }
+
+    std::string content((std::istreambuf_iterator<char>(requestStream)), std::istreambuf_iterator<char>());
+    LOG::Debug(LOG::makeLogMessage("Content:", content));
+
+    if (mRequestMethod == "PUT") {
+        auto machineState = JsonAdapter::jsonToMachineState(content);
+        LOG::Debug(LOG::makeLogMessage("Machine cpu:", machineState.mCpuUsage));
+    }
+
+    processRequest();
+    sendResponse();
+
+    return;
+}
+
+void Service::processRequest() {
+    if (mRequestMethod == "GET") {
+        LOG::Debug("Request processing");
+
+        const auto& machineState = DatabaseManager::Get().getMachineState("machine");
+        const auto& jsonObject = JsonAdapter::machineStateToJson(machineState);
+        mResponse = jsonObject.dump();
+
+        LOG::Debug(LOG::makeLogMessage("Set response:", mResponse));
+
+        mResponseHeaders["content-length"] = std::to_string(mResponse.length());
+    }
+    else if (mRequestMethod == "PUT") {
+
+    }
 }
 
 void Service::sendResponse() {
@@ -106,10 +159,10 @@ void Service::sendResponse() {
     mSocket->shutdown(boost::asio::ip::tcp::socket::shutdown_receive);
 
     std::string responseStatusLine = std::string("HTTP/1.1 ") + getStatusLine(mResponseStatusCode) + "\r\n";
-    
+
     std::string responseHeadersString;
     for (const auto& [key, value] : mResponseHeaders) {
-        responseHeadersString += key + ": " + value +"\r\n";
+        responseHeadersString += key + ": " + value + "\r\n";
     }
     responseHeadersString += "\r\n";
 
@@ -125,7 +178,7 @@ void Service::sendResponse() {
     mResponse = responseStatusLine + responseHeadersString + mResponse;
 
     boost::asio::async_write(*mSocket.get(), boost::asio::buffer(mResponse),
-        [this] (const boost::system::error_code& ec, std::size_t bytes_transferred) {
+        [this](const boost::system::error_code& ec, std::size_t bytes_transferred) {
             if (ec.value() != 0) {
                 LOG::Error(LOG::makeLogMessage("Error occured! Error code = ", ec.value(), ". Message: ", ec.message()));
             }
@@ -134,41 +187,6 @@ void Service::sendResponse() {
             finish();
         }
     );
-}
-
-void Service::processHeaders() {
-    LOG::Debug("Start headers processing");
-
-    std::istream requestStream(&mRequestBuf);
-    std::string headerName;
-    std::string headerValue;
-
-    while (!requestStream.eof()) {
-        std::getline(requestStream, headerName, ':');
-        if (!requestStream.eof()) {
-            std::getline(requestStream, headerValue, '\r');
-            requestStream.get();
-            mRequestHeaders[headerName] = headerValue;
-            LOG::Debug(LOG::makeLogMessage("Add header:", headerName, ":", headerValue));
-        }
-    }
-
-    processRequest();
-    sendResponse();
-
-    return;
-}
-
-void Service::processRequest() {
-    LOG::Debug("Request processing");
-
-    const auto& machineState = DatabaseManager::Get().getMachineState("machine");
-    const auto& jsonObject = JsonAdapter::machineStateToJson(machineState);
-    mResponse = jsonObject.dump();
-
-    LOG::Debug(LOG::makeLogMessage("Set response:", mResponse));
-
-    mResponseHeaders["content-length"] = std::to_string(mResponse.length());
 }
 
 const std::string& Service::getStatusLine(HttpCode code) {

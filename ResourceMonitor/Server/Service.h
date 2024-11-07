@@ -19,7 +19,7 @@ public:
     void startHandling();
 private:
     void processRequestLine();
-    void processHeaders();
+    void processHeadersAndContent();
     void processRequest();
     void sendResponse();
     const std::string& getStatusLine(HttpCode code);
@@ -35,9 +35,10 @@ private:
     std::string mResponse;
     RequestBuf mRequestBuf;
     HttpHeaders mRequestHeaders;
-    std::string mRequestedResource;
+    std::string mMachineName;
     HttpCode mResponseStatusCode;
     HttpHeaders mResponseHeaders;
+    std::string mRequestMethod;
 };
 
 } // namespace ResourceMonitorServer

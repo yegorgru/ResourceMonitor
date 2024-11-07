@@ -4,8 +4,8 @@ import json
 import time
 import threading
 
-machine_name = "MachineName"
-url = f"http://localhost:8080/{machine_name}/update_stats"
+machine_name = "machine"
+url = f"http://localhost:8080/{machine_name}"
 
 send_requests = False
 running = True
