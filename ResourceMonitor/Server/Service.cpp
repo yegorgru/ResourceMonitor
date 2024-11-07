@@ -127,7 +127,8 @@ void Service::processHeadersAndContent() {
 
     if (mRequestMethod == "PUT") {
         auto machineState = JsonAdapter::jsonToMachineState(content);
-        LOG::Debug(LOG::makeLogMessage("Machine cpu:", machineState.mCpuUsage));
+        DatabaseManager::Get().setMachineState(machineState);
+        LOG::Debug("Set new machine state");
     }
 
     processRequest();
@@ -140,7 +141,7 @@ void Service::processRequest() {
     if (mRequestMethod == "GET") {
         LOG::Debug("Request processing");
 
-        const auto& machineState = DatabaseManager::Get().getMachineState("machine");
+        const auto& machineState = DatabaseManager::Get().getMachineState();
         const auto& jsonObject = JsonAdapter::machineStateToJson(machineState);
         mResponse = jsonObject.dump();
 
