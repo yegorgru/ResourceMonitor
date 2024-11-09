@@ -1,4 +1,6 @@
-*.vcxproj*
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
 
 Database/
 
