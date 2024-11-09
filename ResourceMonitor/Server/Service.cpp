@@ -158,6 +158,7 @@ void Service::sendResponse(std::string&& response) {
 
     std::string responseStatusLine = std::string("HTTP/1.1 ") + getStatusLine(mResponseStatusCode) + "\r\n";
 
+    mResponseHeaders["Content-Length"] = std::to_string(mResponse.length());
     std::string responseHeadersString;
     for (const auto& [key, value] : mResponseHeaders) {
         responseHeadersString += key + ": " + value + "\r\n";

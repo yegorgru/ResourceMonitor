@@ -211,32 +211,27 @@ void Request::readHeaders()
 {
     LOG::Debug("Start response headers reading");
 
-    std::string header;
-    std::string headerName;
-    std::string headerValue;
-    std::istream responseStream(&mResponse.getResponseBuf());
+    std::istream requestStream(&mResponse.getResponseBuf());
+    std::string line;
 
-    while (true) {
-        std::getline(responseStream, header, '\r');
-        responseStream.get();
-
-        if (header == "") {
+    while (std::getline(requestStream, line, '\n')) {
+        if (!line.empty() && line.back() == '\r') {
+            line.pop_back();
+        }
+        if (line.empty()) {
             break;
         }
-
-        size_t separatorPos = header.find(':');
-        if (separatorPos != std::string::npos) {
-            headerName = header.substr(0, separatorPos);
-            headerValue = separatorPos < header.length() - 1 ? header.substr(separatorPos + 1) : "";
+        std::size_t colonPos = line.find(':');
+        if (colonPos != std::string::npos) {
+            std::string headerName = line.substr(0, colonPos);
+            std::string headerValue = line.substr(colonPos + 1);
+            headerValue.erase(0, headerValue.find_first_not_of(" \t"));
             mResponse.setHeader(headerName, headerValue);
-            LOG::Debug(LOG::makeLogMessage("Get new header", headerName, ":", headerValue));
+            LOG::Debug(LOG::makeLogMessage("Add header:", headerName, ":", headerValue));
         }
     }
 
-    if (mWasCanceled) {
-        finish(boost::system::error_code(boost::asio::error::operation_aborted));
-        return;
-    }
+    mResponse.setBody(std::string((std::istreambuf_iterator<char>(requestStream)), std::istreambuf_iterator<char>()));
 
     boost::asio::async_read(mSock, mResponse.getResponseBuf(),
         [this](const boost::system::error_code& ec, std::size_t bytes_transferred)

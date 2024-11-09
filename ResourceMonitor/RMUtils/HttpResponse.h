@@ -24,9 +24,12 @@ public:
     void setStatusCode(unsigned int status_code);
     void setStatusMessage(const std::string& status_message);
     void setHeader(const std::string& name, const std::string& value);
+    void setBody(std::string&& body);
+    const std::string& getBody() const;
 private:
     HttpCode mStatusCode;
     std::string mStatusMessage;
+    std::string mBody;
     HttpHeaders mHeaders;
     ResponseBuf mResponseBuf;
     ResponseStream mResponseStream;

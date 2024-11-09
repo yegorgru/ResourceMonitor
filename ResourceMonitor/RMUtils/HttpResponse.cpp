@@ -41,4 +41,12 @@ void Response::setHeader(const std::string& name, const std::string& value) {
     mHeaders[name] = value;
 }
 
+void Response::setBody(std::string&& body) {
+    mBody = std::move(body);
+}
+
+const std::string& Response::getBody() const {
+    return mBody;
+}
+
 } // namespace ResourceMonitorClient::Http

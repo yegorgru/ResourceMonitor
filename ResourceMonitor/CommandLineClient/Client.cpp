@@ -21,10 +21,7 @@ Client::~Client()
 void Client::makeRequest() {
     LOG::Debug("Making request");
     static auto clientCallback = [](Http::Response& response) {
-        std::ostringstream oss;
-        oss << response.getResponse().rdbuf();
-        std::string responseStr = oss.str();
-        auto machineState = JsonAdapter::jsonToMachineState(responseStr);
+        auto machineState = JsonAdapter::jsonToMachineState(response.getBody());
 
         if (machineState) {
             LOG::Info(LOG::makeLogMessage("Name:", machineState->mName));
@@ -37,7 +34,7 @@ void Client::makeRequest() {
             LOG::Info(LOG::makeLogMessage("DiskUsed:", machineState->mDiskUsed));
         }
         else {
-            LOG::Info("machine not found");
+            LOG::Error("machine not found");
         }
 
         auto message = LOG::makeLogMessage("Request processed successfully");

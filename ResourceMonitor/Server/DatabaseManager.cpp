@@ -7,9 +7,7 @@ namespace ResourceMonitorServer {
 
 void DatabaseManager::getMachineState(const std::string& machineName, ServicePtr service) const {
     auto callback = [service](Http::Response& response) {
-        std::ostringstream oss;
-        oss << response.getResponse().rdbuf();
-        std::string responseStr = oss.str();
+        std::string responseStr = response.getBody();
         LOG::Debug(LOG::makeLogMessage("get response from db:", responseStr));
         service->sendResponse(std::move(responseStr));
     };
