@@ -20,7 +20,7 @@ Client::~Client()
 
 void Client::makeRequest() {
     LOG::Debug("Making request");
-    static auto clientCallback = [](Http::Response& response) {
+    static auto clientCallback = [](Http::Message& response) {
         auto machineState = JsonAdapter::jsonToMachineState(response.getBody());
 
         if (machineState) {
@@ -41,11 +41,8 @@ void Client::makeRequest() {
         LOG::Info(message);
         std::cout << message << std::endl;
     };
-    auto request = std::make_shared<Http::Request>(mIoService, clientCallback);
-    request->setHost("localhost");
-    request->setUri("/index.html");
-    request->setPort(8080);
-    request->execute();
+    auto request = std::make_shared<Http::Request>(mIoService, "localhost", 8080, clientCallback);
+    request->get("machine");
 }
 
 void Client::cancelRequest() {

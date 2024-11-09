@@ -6,9 +6,9 @@
 
 namespace Http {
 
-Request::Request(IoService& ios, Callback callback)
-    : mMethod(Method::GET)
-    , mPort(DEFAULT_PORT)
+Request::Request(IoService& ios, const std::string& host, unsigned int port, Callback callback)
+    : mHost(host)
+    , mPort(port)
     , mCallback(callback)
     , mSock(ios)
     , mResolver(ios)
@@ -17,39 +17,25 @@ Request::Request(IoService& ios, Callback callback)
 {
 }
 
-void Request::setMethod(Method method) {
-    mMethod = method;
+void Request::get(const std::string& resource) {
+    mRequestMessage.setMethod("GET");
+    mRequestMessage.setResource(resource);
+    execute();
 }
 
-void Request::setHost(const std::string& host) {
-    mHost = host;
-}
-
-std::string Request::getHost() const {
-    return mHost;
-}
-
-void Request::setPort(Port port) {
-    mPort = port;
-}
-
-Request::Port Request::getPort() const {
-    return mPort;
-}
-
-void Request::setUri(const std::string& uri) {
-    mUri = uri;
-}
-
-const std::string& Request::getUri() const {
-    return mUri;
+void Request::put(const std::string& resource, std::string&& body) {
+    mRequestMessage.setMethod("PUT");
+    mRequestMessage.setResource(resource);
+    mRequestMessage.setBody(std::move(body));
+    execute();
 }
 
 void Request::execute() {
-    if (mPort == 0 || mHost == "" || mUri == "") {
-        LOG::Throw(LOG::makeLogMessage("Incorrect request parameters. Port:", mPort, "host:", mHost, "uri:", mUri));
+    const auto& res = mRequestMessage.getResource();
+    if (mPort == 0 || mHost == "" || res == "") {
+        LOG::Throw(LOG::makeLogMessage("Incorrect request parameters. Port:", mPort, "host:", mHost, "resource:", res));
     }
-    LOG::Debug(LOG::makeLogMessage("Start request executing. Port:", mPort, "host:", mHost, "uri:", mUri));
+    LOG::Debug(LOG::makeLogMessage("Start request executing. Port:", mPort, "host:", mHost, "resource:", res));
 
     mSelfPtr = shared_from_this();
 
@@ -103,16 +89,14 @@ void Request::connect(boost::asio::ip::tcp::resolver::iterator iterator) {
 void Request::sendRequest() {
     LOG::Debug("Start request creation");
 
-    mRequestBuf += methodToStr(mMethod) + " " + mUri + " HTTP/1.1\r\n";
-    mRequestBuf += "Host: " + mHost + "\r\n";
-    mRequestBuf += "\r\n";
+    mRequestMessage.addHeader("Host", mHost);
 
     if (mWasCanceled) {
         finish(boost::system::error_code(boost::asio::error::operation_aborted));
         return;
     }
 
-    boost::asio::async_write(mSock, boost::asio::buffer(mRequestBuf),
+    boost::asio::async_write(mSock, boost::asio::buffer(mRequestMessage.createStringRepresentation()),
         [this](const boost::system::error_code& ec, std::size_t bytes_transferred)
         {
             if (ec.value() != 0) {
@@ -136,7 +120,7 @@ void Request::readResponse()
 
     LOG::Debug("Start response reading");
 
-    boost::asio::async_read_until(mSock, mResponse.getResponseBuf(), "\r\n",
+    boost::asio::async_read_until(mSock, mResponseBuf, "\r\n",
         [this](const boost::system::error_code& ec, std::size_t bytes_transferred)
         {
             if (ec.value() != 0) {
@@ -156,7 +140,7 @@ void Request::readStatusLine()
     std::string strStatusCode;
     std::string statusMessage;
 
-    std::istream responseStream(&mResponse.getResponseBuf());
+    std::istream responseStream(&mResponseBuf);
     responseStream >> httpVersion;
 
     LOG::Debug(LOG::makeLogMessage("Http version:", httpVersion));
@@ -186,15 +170,15 @@ void Request::readStatusLine()
 
     LOG::Debug(LOG::makeLogMessage("Status message:", statusMessage));
 
-    mResponse.setStatusCode(statusCode);
-    mResponse.setStatusMessage(statusMessage);
+    mResponseMessage.setStatusCode(statusCode);
+    mResponseMessage.setStatusMessage(statusMessage);
 
     if (mWasCanceled) {
         finish(boost::system::error_code(boost::asio::error::operation_aborted));
         return;
     }
 
-    boost::asio::async_read_until(mSock, mResponse.getResponseBuf(),
+    boost::asio::async_read_until(mSock, mResponseBuf,
         "\r\n\r\n",
         [this](const boost::system::error_code& ec, size_t bytesTransferred)
         {
@@ -211,7 +195,7 @@ void Request::readHeaders()
 {
     LOG::Debug("Start response headers reading");
 
-    std::istream requestStream(&mResponse.getResponseBuf());
+    std::istream requestStream(&mResponseBuf);
     std::string line;
 
     while (std::getline(requestStream, line, '\n')) {
@@ -226,14 +210,14 @@ void Request::readHeaders()
             std::string headerName = line.substr(0, colonPos);
             std::string headerValue = line.substr(colonPos + 1);
             headerValue.erase(0, headerValue.find_first_not_of(" \t"));
-            mResponse.setHeader(headerName, headerValue);
+            mResponseMessage.addHeader(headerName, headerValue);
             LOG::Debug(LOG::makeLogMessage("Add header:", headerName, ":", headerValue));
         }
     }
 
-    mResponse.setBody(std::string((std::istreambuf_iterator<char>(requestStream)), std::istreambuf_iterator<char>()));
+    mResponseMessage.setBody(std::string((std::istreambuf_iterator<char>(requestStream)), std::istreambuf_iterator<char>()));
 
-    boost::asio::async_read(mSock, mResponse.getResponseBuf(),
+    boost::asio::async_read(mSock, mResponseBuf,
         [this](const boost::system::error_code& ec, std::size_t bytes_transferred)
         {
             if (ec == boost::asio::error::eof) {
@@ -254,7 +238,7 @@ void Request::finish(const boost::system::error_code& ec) {
         std::cout << message << std::endl;
     }
     else {
-        mCallback(mResponse);
+        mCallback(mResponseMessage);
     }
     mSelfPtr.reset();
 }

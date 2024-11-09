@@ -1,5 +1,7 @@
 #pragma once
 
+#include "HttpMessage.h"
+
 #include <memory>
 #include <string>
 #include <map>
@@ -24,23 +26,15 @@ public:
 private:
     void processRequestLine();
     void processHeadersAndContent();
-    void processRequest();
-    const std::string& getStatusLine(HttpCode code);
     void finish();
 private:
     using RequestBuf = boost::asio::streambuf;
-    using ErrorCode = boost::system::error_code;
-    using HttpHeaders = std::map<std::string, std::string>;
 private:
     ServicePtr mSelfPtr;
     TcpSocketPtr mSocket;
-    std::string mResponse;
     RequestBuf mRequestBuf;
-    HttpHeaders mRequestHeaders;
-    std::string mMachineName;
-    HttpCode mResponseStatusCode;
-    HttpHeaders mResponseHeaders;
-    std::string mRequestMethod;
+    Http::MessageRequest mRequest;
+    Http::MessageResponse mResponse;
 };
 
 } // namespace ResourceMonitorServer

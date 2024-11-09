@@ -10,7 +10,6 @@ namespace ResourceMonitorServer {
 Service::Service(TcpSocketPtr socket)
     : mSocket(socket)
     , mRequestBuf(4096)
-    , mResponseStatusCode(200)
 {
 }
 
@@ -24,7 +23,7 @@ void Service::startHandling() {
             if (ec.value() != 0) {
                 if (ec == boost::asio::error::not_found) {
                     LOG::Warning("Content Too Large");
-                    mResponseStatusCode = 413;
+                    mResponse.setStatusCode(413);
                     sendResponse("");
                     return;
                 }
@@ -45,35 +44,46 @@ void Service::processRequestLine()
 
     std::string requestLine;
     std::istream requestStream(&mRequestBuf);
-    std::getline(requestStream, requestLine, '\r');
-    requestStream.get(); // Remove symbol '\n' from the buffer.
-
+    std::getline(requestStream, requestLine, '\n');
+    if (requestLine.back() != '\r') {
+        LOG::Error("Expected \\r\\n in request line");
+        finish();
+    }
+    requestLine.pop_back();
     LOG::Debug(LOG::makeLogMessage("Request line: ", requestLine));
 
     std::istringstream requestLineStream(requestLine);
-    requestLineStream >> mRequestMethod;
+    std::string requestMethod;
+    requestLineStream >> requestMethod;
 
-    LOG::Debug(LOG::makeLogMessage("Request method: ", mRequestMethod));
+    LOG::Debug(LOG::makeLogMessage("Request method: ", requestMethod));
 
-    if (mRequestMethod != "GET" && mRequestMethod != "PUT") {
-        mResponseStatusCode = 501;
+    try
+    {
+        mRequest.setMethod(requestMethod);
+    }
+    catch (const std::runtime_error& ex)
+    {
+        LOG::Error(LOG::makeLogMessage("Method is not implemented:", requestMethod));
+        mResponse.setStatusCode(501);
         sendResponse("");
         return;
     }
 
-    requestLineStream >> mMachineName;
-
-    LOG::Debug(LOG::makeLogMessage("Requested resource: ", mMachineName));
+    std::string machineName;
+    requestLineStream >> machineName;
+    LOG::Debug(LOG::makeLogMessage("Requested resource: ", machineName));
+    mRequest.setResource(machineName);
 
     std::string requestHttpVersion;
     requestLineStream >> requestHttpVersion;
 
     LOG::Debug(LOG::makeLogMessage("Request http version: ", requestHttpVersion));
 
-    if (requestHttpVersion.compare("HTTP/1.1") != 0) {
-        mResponseStatusCode = 505;
+    if (requestHttpVersion != Http::Message::STANDARD) {
+        LOG::Error(LOG::makeLogMessage("Incorrect standard:", requestHttpVersion));
+        mResponse.setStatusCode(505);
         sendResponse("");
-
         return;
     }
 
@@ -85,7 +95,7 @@ void Service::processRequestLine()
                 LOG::Error(LOG::makeLogMessage("Error occured! Error code = ", ec.value(), ". Message: ", ec.message()));
 
                 if (ec == boost::asio::error::not_found) {
-                    mResponseStatusCode = 413;
+                    mResponse.setStatusCode(413);
                     sendResponse("");
                     return;
                 }
@@ -117,66 +127,36 @@ void Service::processHeadersAndContent() {
             std::string headerName = line.substr(0, colonPos);
             std::string headerValue = line.substr(colonPos + 1);
             headerValue.erase(0, headerValue.find_first_not_of(" \t"));
-            mRequestHeaders[headerName] = headerValue;
+            mRequest.addHeader(headerName, headerValue);
             LOG::Debug(LOG::makeLogMessage("Add header:", headerName, ":", headerValue));
         }
     }
 
-    std::string content((std::istreambuf_iterator<char>(requestStream)), std::istreambuf_iterator<char>());
-    LOG::Debug(LOG::makeLogMessage("Content:", content));
+    mRequest.setBody(std::string(std::istreambuf_iterator<char>(requestStream), std::istreambuf_iterator<char>()));
+    LOG::Debug(LOG::makeLogMessage("Content:", mRequest.getBody()));
 
-    if (mRequestMethod == "PUT") {
-        auto machineState = JsonAdapter::jsonToMachineState(content);
+    auto method = mRequest.getMethod();
+    if (method == Http::MessageRequest::Method::PUT) {
+        auto machineState = JsonAdapter::jsonToMachineState(mRequest.getBody());
         DatabaseManager::Get().setMachineState(*machineState);
         LOG::Debug("Set new machine state");
         sendResponse("");
     }
-
-    processRequest();
-    //sendResponse();
-
-    return;
-}
-
-void Service::processRequest() {
-    if (mRequestMethod == "GET") {
+    else if (method == Http::MessageRequest::Method::GET) {
         LOG::Debug("Request processing");
-
-        DatabaseManager::Get().getMachineState(mMachineName, mSelfPtr);
-    }
-    else if (mRequestMethod == "PUT") {
-
+        DatabaseManager::Get().getMachineState(mRequest.getResource(), mSelfPtr);
     }
 }
 
 void Service::sendResponse(std::string&& response) {
     LOG::Debug("Start sending response");
 
-    mResponse = std::move(response);
-
     mSocket->shutdown(boost::asio::ip::tcp::socket::shutdown_receive);
 
-    std::string responseStatusLine = std::string("HTTP/1.1 ") + getStatusLine(mResponseStatusCode) + "\r\n";
+    mResponse.addHeader("Content-Length", std::to_string(response.length()));
+    mResponse.setBody(std::move(response));
 
-    mResponseHeaders["Content-Length"] = std::to_string(mResponse.length());
-    std::string responseHeadersString;
-    for (const auto& [key, value] : mResponseHeaders) {
-        responseHeadersString += key + ": " + value + "\r\n";
-    }
-    responseHeadersString += "\r\n";
-
-    std::vector<boost::asio::const_buffer> responseBuffers;
-    responseBuffers.reserve(3);
-    responseBuffers.push_back(boost::asio::buffer(responseStatusLine));
-    responseBuffers.push_back(boost::asio::buffer(responseHeadersString));
-
-    if (mResponse.length() > 0) {
-        responseBuffers.push_back(boost::asio::buffer(mResponse));
-    }
-
-    mResponse = responseStatusLine + responseHeadersString + mResponse;
-
-    boost::asio::async_write(*mSocket.get(), boost::asio::buffer(mResponse),
+    boost::asio::async_write(*mSocket.get(), boost::asio::buffer(mResponse.createStringRepresentation()),
         [this](const boost::system::error_code& ec, std::size_t bytes_transferred) {
             if (ec.value() != 0) {
                 LOG::Error(LOG::makeLogMessage("Error occured! Error code = ", ec.value(), ". Message: ", ec.message()));
@@ -186,19 +166,6 @@ void Service::sendResponse(std::string&& response) {
             finish();
         }
     );
-}
-
-const std::string& Service::getStatusLine(HttpCode code) {
-    static const std::map<HttpCode, std::string> httpStatusTable =
-    {
-        { 200, "200 OK" },
-        { 404, "404 Not Found" },
-        { 413, "413 Request Entity Too Large" },
-        { 500, "500 Server Error" },
-        { 501, "501 Not Implemented" },
-        { 505, "505 HTTP Version Not Supported" }
-    };
-    return httpStatusTable.at(code);
 }
 
 void Service::finish() {
