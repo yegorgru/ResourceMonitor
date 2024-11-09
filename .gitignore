@@ -1,3 +1,5 @@
+*.vcxproj*
+
 Database/
 
 ## Ignore Visual Studio temporary files, build results, and
