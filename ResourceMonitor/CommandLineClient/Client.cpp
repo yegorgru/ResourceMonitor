@@ -20,7 +20,7 @@ Client::~Client()
 
 void Client::makeRequest() {
     LOG::Debug("Making request");
-    static auto clientCallback = [](Http::Message& response) {
+    static auto clientCallback = [](Http::MessageResponse& response) {
         auto machineState = JsonAdapter::jsonToMachineState(response.getBody());
 
         if (machineState) {

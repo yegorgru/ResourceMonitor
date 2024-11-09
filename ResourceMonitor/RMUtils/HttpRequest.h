@@ -16,11 +16,11 @@ class Request : public std::enable_shared_from_this<Request> {
 public:
     using IoService = boost::asio::io_service;
     using Port = unsigned int;
-    using Callback = std::function<void(Message&)>;
+    using Callback = std::function<void(MessageResponse&)>;
 public:
     static const Port DEFAULT_PORT = 80;
 public:
-    Request(IoService& ios, const std::string& host, unsigned int port, Callback callback = [](Message&) {});
+    Request(IoService& ios, const std::string& host, unsigned int port, Callback callback = [](MessageResponse&) {});
 public:
     void get(const std::string& resource);
     void put(const std::string& resource, std::string&& body);

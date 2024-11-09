@@ -73,7 +73,6 @@ def get_machine_state(conn, name):
 
 def send_http_response(client_socket, status_code, response_data):
     headers = {
-        "Content-Type": "application/json",
         "Content-Length": str(len(response_data))
     }
 
@@ -82,7 +81,7 @@ def send_http_response(client_socket, status_code, response_data):
     for header, value in headers.items():
         response += f"{header}: {value}\r\n"
     response += "\r\n"  # End of headers
-    response += response_data.decode('utf-8')  # Add the response body (data)
+    response += response_data  # Add the response body (data)
 
     print(response)
 
@@ -122,7 +121,7 @@ def run_server(host='localhost', port=10000):
 
                         # Convert the response to JSON format
                         response_data = json.dumps(machine_state).encode('utf-8')
-                        send_http_response(client_socket, "200 OK", response_data)
+                        send_http_response(client_socket, "200 OK", response_data.decode('utf-8'))
 
                     elif method == "PUT":
                         # Extract JSON data from the request body (after headers)
@@ -134,7 +133,7 @@ def run_server(host='localhost', port=10000):
 
                             # Save machine state to the database
                             save_machine_state(conn, machine_data)
-                            client_socket.sendall(b"Machine state saved successfully.")
+                            send_http_response(client_socket, "200 OK", "Machine state saved successfully")
                         except (json.JSONDecodeError, ValueError) as e:
                             print("Failed to parse JSON data:", e)
                             client_socket.sendall(b"Invalid JSON data.")

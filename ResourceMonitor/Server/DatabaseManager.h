@@ -16,8 +16,6 @@ public:
     void setMachineState(const MachineState& machine);
 private:
     DatabaseManager() = default;
-private:
-    MachineState mMachineState;
 };
 
 } // namespace ResourceMonitorServer

@@ -24,7 +24,7 @@ json machineStateToJson(MachineState machineState) {
 
 std::optional<MachineState> jsonToMachineState(const std::string& jsonStr) {
     auto js = json::parse(jsonStr);
-    if (!js.empty() && js["error"] == "") {
+    if (!js.empty() && !js.contains("error")) {
         return MachineState{
             .mName = js["name"],
             .mCpuUsage = js["cpu"]["usage %"],

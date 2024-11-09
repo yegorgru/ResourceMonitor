@@ -23,10 +23,10 @@ public:
 public:
     void startHandling();
     void sendResponse(std::string&& response);
+    void finish();
 private:
     void processRequestLine();
     void processHeadersAndContent();
-    void finish();
 private:
     using RequestBuf = boost::asio::streambuf;
 private:
