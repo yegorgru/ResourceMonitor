@@ -29,7 +29,7 @@ void Controller::run() {
 
     std::string command;
     while (true) {
-        std::cout << "> ";
+        //std::cout << "> ";
         std::cin >> command;
         if (command == "exit") {
             std::cout << "Stopping client..." << std::endl;

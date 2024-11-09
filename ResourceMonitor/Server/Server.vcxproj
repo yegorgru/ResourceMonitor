@@ -88,14 +88,14 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Program Files\OpenSSL-Win64\include\;D:\GitHub\ResourceMonitor\ResourceMonitor\RMUtils</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\GitHub\ResourceMonitor\ResourceMonitor\RMUtils</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>libssl.lib;libcrypto.lib;RMUtils.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>C:\Program Files\OpenSSL-Win64\lib\VC\x64\MDd;D:\GitHub\ResourceMonitor\ResourceMonitor\x64\Debug;C:\local\boost_1_86_0\lib64-msvc-14.3</AdditionalLibraryDirectories>
+      <AdditionalDependencies>RMUtils.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>D:\GitHub\ResourceMonitor\ResourceMonitor\x64\Debug;C:\local\boost_1_86_0\lib64-msvc-14.3</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -106,7 +106,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Program Files\OpenSSL-Win64\include\;D:\GitHub\ResourceMonitor\ResourceMonitor\RMUtils</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\GitHub\ResourceMonitor\ResourceMonitor\RMUtils</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
@@ -114,8 +114,8 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>libssl.lib;libcrypto.lib;RMUtils.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>C:\Program Files\OpenSSL-Win64\lib\VC\x64\MD;D:\GitHub\ResourceMonitor\ResourceMonitor\x64\Release;C:\local\boost_1_86_0\lib64-msvc-14.3</AdditionalLibraryDirectories>
+      <AdditionalDependencies>RMUtils.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>D:\GitHub\ResourceMonitor\ResourceMonitor\x64\Release;C:\local\boost_1_86_0\lib64-msvc-14.3</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -124,14 +124,14 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Program Files\OpenSSL-Win64\include\;D:\GitHub\ResourceMonitor\ResourceMonitor\RMUtils</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\GitHub\ResourceMonitor\ResourceMonitor\RMUtils</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>libssl.lib;libcrypto.lib;RMUtils.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>C:\Program Files\OpenSSL-Win64\lib\VC\x64\MDd;D:\GitHub\ResourceMonitor\ResourceMonitor\x64\Debug;C:\local\boost_1_86_0\lib64-msvc-14.3</AdditionalLibraryDirectories>
+      <AdditionalDependencies>RMUtils.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>D:\GitHub\ResourceMonitor\ResourceMonitor\x64\Debug;C:\local\boost_1_86_0\lib64-msvc-14.3</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -142,7 +142,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Program Files\OpenSSL-Win64\include\;D:\GitHub\ResourceMonitor\ResourceMonitor\RMUtils</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\GitHub\ResourceMonitor\ResourceMonitor\RMUtils</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
@@ -150,8 +150,8 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>libssl.lib;libcrypto.lib;RMUtils.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>C:\Program Files\OpenSSL-Win64\lib\VC\x64\MD;D:\GitHub\ResourceMonitor\ResourceMonitor\x64\Release;C:\local\boost_1_86_0\lib64-msvc-14.3</AdditionalLibraryDirectories>
+      <AdditionalDependencies>RMUtils.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>D:\GitHub\ResourceMonitor\ResourceMonitor\x64\Release;C:\local\boost_1_86_0\lib64-msvc-14.3</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -159,6 +159,7 @@
     <ClCompile Include="ArgumentParser.cpp" />
     <ClCompile Include="Controller.cpp" />
     <ClCompile Include="DatabaseManager.cpp" />
+    <ClCompile Include="IoService.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Server.cpp" />
     <ClCompile Include="Service.cpp" />
@@ -168,6 +169,7 @@
     <ClInclude Include="ArgumentParser.h" />
     <ClInclude Include="Controller.h" />
     <ClInclude Include="DatabaseManager.h" />
+    <ClInclude Include="IoService.h" />
     <ClInclude Include="Server.h" />
     <ClInclude Include="Service.h" />
   </ItemGroup>

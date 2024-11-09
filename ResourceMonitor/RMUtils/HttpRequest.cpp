@@ -1,18 +1,24 @@
+#include "pch.h"
 #include "HttpRequest.h"
 
 #include "Log.h"
 #include "JsonAdapter.h"
 
-namespace ResourceMonitorClient::Http {
+namespace Http {
 
-Request::Request(IoService& ios) 
-    : mIsCompleted(false)
+Request::Request(IoService& ios, Callback callback)
+    : mMethod(Method::GET)
     , mPort(DEFAULT_PORT)
+    , mCallback(callback)
     , mSock(ios)
     , mResolver(ios)
     , mWasCanceled(false)
     , mIoService(ios)
 {
+}
+
+void Request::setMethod(Method method) {
+    mMethod = method;
 }
 
 void Request::setHost(const std::string& host) {
@@ -39,15 +45,13 @@ const std::string& Request::getUri() const {
     return mUri;
 }
 
-bool Request::isCompleted() const {
-    return mIsCompleted;
-}
-
 void Request::execute() {
     if (mPort == 0 || mHost == "" || mUri == "") {
         LOG::Throw(LOG::makeLogMessage("Incorrect request parameters. Port:", mPort, "host:", mHost, "uri:", mUri));
     }
     LOG::Debug(LOG::makeLogMessage("Start request executing. Port:", mPort, "host:", mHost, "uri:", mUri));
+
+    mSelfPtr = shared_from_this();
 
     boost::asio::ip::tcp::resolver::query resolverQuery(
         mHost, std::to_string(mPort), boost::asio::ip::tcp::resolver::query::numeric_service
@@ -75,7 +79,7 @@ void Request::cancel() {
     if (mSock.is_open()) {
         mSock.cancel();
     }
-    mIsCompleted = true;
+    mSelfPtr.reset();
 }
 
 void Request::connect(boost::asio::ip::tcp::resolver::iterator iterator) {
@@ -99,7 +103,7 @@ void Request::connect(boost::asio::ip::tcp::resolver::iterator iterator) {
 void Request::sendRequest() {
     LOG::Debug("Start request creation");
 
-    mRequestBuf += "GET " + mUri + " HTTP/1.1\r\n";
+    mRequestBuf += methodToStr(mMethod) + " " + mUri + " HTTP/1.1\r\n";
     mRequestBuf += "Host: " + mHost + "\r\n";
     mRequestBuf += "\r\n";
 
@@ -255,25 +259,9 @@ void Request::finish(const boost::system::error_code& ec) {
         std::cout << message << std::endl;
     }
     else {
-        std::ostringstream oss;
-        oss << mResponse.getResponse().rdbuf();
-        std::string responseStr = oss.str();
-        auto machineState = JsonAdapter::jsonToMachineState(responseStr);
-
-        LOG::Info(LOG::makeLogMessage("Name:", machineState.mName));
-        LOG::Info(LOG::makeLogMessage("CpuUsage:", machineState.mCpuUsage));
-        LOG::Info(LOG::makeLogMessage("MemoryUsage:", machineState.mMemoryUsage));
-        LOG::Info(LOG::makeLogMessage("TotalMemory:", machineState.mTotalMemory));
-        LOG::Info(LOG::makeLogMessage("MemoryUsed:", machineState.mMemoryUsed));
-        LOG::Info(LOG::makeLogMessage("DiskUsage:", machineState.mDiskUsage));
-        LOG::Info(LOG::makeLogMessage("TotalDisk:", machineState.mTotalDisk));
-        LOG::Info(LOG::makeLogMessage("DiskUsed:", machineState.mDiskUsed));
-
-        auto message = LOG::makeLogMessage("Request processed successfully");
-        LOG::Info(message);
-        std::cout << message << std::endl;
+        mCallback(mResponse);
     }
-    mIsCompleted = true;
+    mSelfPtr.reset();
 }
 
 } // namespace ResourceMonitorClient::Http

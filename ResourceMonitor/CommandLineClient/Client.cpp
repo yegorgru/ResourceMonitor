@@ -1,5 +1,6 @@
 #include "Client.h"
 #include "Log.h"
+#include "JsonAdapter.h"
 
 namespace ResourceMonitorClient {
 
@@ -19,25 +20,39 @@ Client::~Client()
 
 void Client::makeRequest() {
     LOG::Debug("Making request");
-    if (mCurrentRequest && !mCurrentRequest->isCompleted()) {
-        LOG::Warning("Client has active request");
-        return;
-    }
-    mCurrentRequest = std::make_shared<Http::Request>(mIoService);
-    mCurrentRequest->setHost("localhost");
-    mCurrentRequest->setUri("/index.html");
-    mCurrentRequest->setPort(8080);
-    mCurrentRequest->execute();
+    static auto clientCallback = [](Http::Response& response) {
+        std::ostringstream oss;
+        oss << response.getResponse().rdbuf();
+        std::string responseStr = oss.str();
+        auto machineState = JsonAdapter::jsonToMachineState(responseStr);
+
+        if (machineState) {
+            LOG::Info(LOG::makeLogMessage("Name:", machineState->mName));
+            LOG::Info(LOG::makeLogMessage("CpuUsage:", machineState->mCpuUsage));
+            LOG::Info(LOG::makeLogMessage("MemoryUsage:", machineState->mMemoryUsage));
+            LOG::Info(LOG::makeLogMessage("TotalMemory:", machineState->mTotalMemory));
+            LOG::Info(LOG::makeLogMessage("MemoryUsed:", machineState->mMemoryUsed));
+            LOG::Info(LOG::makeLogMessage("DiskUsage:", machineState->mDiskUsage));
+            LOG::Info(LOG::makeLogMessage("TotalDisk:", machineState->mTotalDisk));
+            LOG::Info(LOG::makeLogMessage("DiskUsed:", machineState->mDiskUsed));
+        }
+        else {
+            LOG::Info("machine not found");
+        }
+
+        auto message = LOG::makeLogMessage("Request processed successfully");
+        LOG::Info(message);
+        std::cout << message << std::endl;
+    };
+    auto request = std::make_shared<Http::Request>(mIoService, clientCallback);
+    request->setHost("localhost");
+    request->setUri("/index.html");
+    request->setPort(8080);
+    request->execute();
 }
 
 void Client::cancelRequest() {
     LOG::Debug("Canceling request");
-    if (!mCurrentRequest || mCurrentRequest->isCompleted()) {
-        LOG::Warning("Client has no active request");
-        return;
-    }
-    mCurrentRequest->cancel();
-    mCurrentRequest.reset();
 }
 
 void Client::close() {

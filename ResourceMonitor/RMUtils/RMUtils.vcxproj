@@ -71,16 +71,16 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <ExternalIncludePath>D:\GitHub\ResourceMonitor\SingleInclude;$(ExternalIncludePath)</ExternalIncludePath>
+    <ExternalIncludePath>D:\GitHub\ResourceMonitor\SingleInclude;C:\local\boost_1_86_0;$(ExternalIncludePath)</ExternalIncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <ExternalIncludePath>D:\GitHub\ResourceMonitor\SingleInclude;$(ExternalIncludePath)</ExternalIncludePath>
+    <ExternalIncludePath>D:\GitHub\ResourceMonitor\SingleInclude;C:\local\boost_1_86_0;$(ExternalIncludePath)</ExternalIncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <ExternalIncludePath>D:\GitHub\ResourceMonitor\SingleInclude;$(ExternalIncludePath)</ExternalIncludePath>
+    <ExternalIncludePath>D:\GitHub\ResourceMonitor\SingleInclude;C:\local\boost_1_86_0;$(ExternalIncludePath)</ExternalIncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <ExternalIncludePath>D:\GitHub\ResourceMonitor\SingleInclude;$(ExternalIncludePath)</ExternalIncludePath>
+    <ExternalIncludePath>D:\GitHub\ResourceMonitor\SingleInclude;C:\local\boost_1_86_0;$(ExternalIncludePath)</ExternalIncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -97,6 +97,9 @@
       </SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <Lib>
+      <AdditionalLibraryDirectories>C:\local\boost_1_86_0\lib64-msvc-14.3</AdditionalLibraryDirectories>
+    </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -117,6 +120,9 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <Lib>
+      <AdditionalLibraryDirectories>C:\local\boost_1_86_0\lib64-msvc-14.3</AdditionalLibraryDirectories>
+    </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -133,6 +139,9 @@
       </SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <Lib>
+      <AdditionalLibraryDirectories>C:\local\boost_1_86_0\lib64-msvc-14.3</AdditionalLibraryDirectories>
+    </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -153,8 +162,14 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <Lib>
+      <AdditionalLibraryDirectories>C:\local\boost_1_86_0\lib64-msvc-14.3</AdditionalLibraryDirectories>
+    </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="HttpMethod.h" />
+    <ClInclude Include="HttpRequest.h" />
+    <ClInclude Include="HttpResponse.h" />
     <ClInclude Include="JsonAdapter.h" />
     <ClInclude Include="Log.h" />
     <ClInclude Include="MachineState.h" />
@@ -162,6 +177,9 @@
     <ClInclude Include="Singleton.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="HttpMethod.cpp" />
+    <ClCompile Include="HttpRequest.cpp" />
+    <ClCompile Include="HttpResponse.cpp" />
     <ClCompile Include="JsonAdapter.cpp" />
     <ClCompile Include="Log.cpp" />
     <ClCompile Include="pch.cpp">

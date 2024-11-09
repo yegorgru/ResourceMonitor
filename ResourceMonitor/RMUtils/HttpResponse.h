@@ -5,7 +5,7 @@
 
 #include <boost/asio.hpp>
 
-namespace ResourceMonitorClient::Http {
+namespace Http {
 
 class Response {
 public:
@@ -32,4 +32,4 @@ private:
     ResponseStream mResponseStream;
 };
 
-} // namespace ResourceMonitorClient::Http
+} // namespace Http

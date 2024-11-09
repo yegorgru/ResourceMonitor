@@ -2,6 +2,7 @@
 
 #include "MachineState.h"
 #include "Singleton.h"
+#include "Service.h"
 
 #include <string>
 
@@ -11,7 +12,7 @@ class DatabaseManager : public Singleton<DatabaseManager>
 {
     friend class Singleton<DatabaseManager>;
 public:
-    MachineState getMachineState() const;
+    void getMachineState(const std::string& machineName, ServicePtr service) const;
     void setMachineState(const MachineState& machine);
 private:
     DatabaseManager() = default;

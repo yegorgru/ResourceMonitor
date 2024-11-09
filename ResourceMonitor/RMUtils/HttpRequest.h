@@ -1,29 +1,35 @@
 #pragma once
 
+#include "HttpResponse.h"
+#include "HttpMethod.h"
+
 #include <iostream>
+#include <functional>
 
 #include <boost/asio.hpp>
 
-#include "HttpResponse.h"
+namespace Http {
 
-namespace ResourceMonitorClient::Http {
+class Request;
+using RequestPtr = std::shared_ptr<Request>;
 
-class Request {
+class Request : public std::enable_shared_from_this<Request> {
 public:
     using IoService = boost::asio::io_service;
     using Port = unsigned int;
+    using Callback = std::function<void(Response&)>;
 public:
     static const Port DEFAULT_PORT = 80;
 public:
-    Request(IoService& ios);
+    Request(IoService& ios, Callback callback = [](Response&) {});
 public:
+    void setMethod(Method method);
     void setHost(const std::string& host);
     std::string getHost() const;
     void setPort(Port port);
     Port getPort() const;
     void setUri(const std::string& uri);
     const std::string& getUri() const;
-    bool isCompleted() const;
 public:
     void execute();
     void cancel();
@@ -39,11 +45,14 @@ private:
     using TcpResolver = boost::asio::ip::tcp::resolver;
     using AtomicFlag = std::atomic<bool>;
 private:
-    bool mIsCompleted;
+    RequestPtr mSelfPtr;
 
+    Method mMethod;
     std::string mHost;
     unsigned int mPort;
     std::string mUri;
+
+    Callback mCallback;
 
     std::string mRequestBuf;
 
@@ -57,4 +66,4 @@ private:
     IoService& mIoService;
 };
 
-} // namespace ResourceMonitorClient::Http
+} // namespace Http

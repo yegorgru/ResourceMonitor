@@ -3,6 +3,7 @@
 
 #include "Server.h"
 #include "Controller.h"
+#include "IoService.h"
 
 #include "Log.h"
 
@@ -11,7 +12,8 @@ int main(int argc, char* argv[])
     using namespace ResourceMonitorServer;
 
     try {
-        Server server;
+        IoService::Init();
+        Server server(IoService::Get().getIoService());
         Controller controller(server);
         controller.init(argc, argv);
         controller.run();

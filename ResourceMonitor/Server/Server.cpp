@@ -8,8 +8,9 @@
 
 namespace ResourceMonitorServer {
 
-Server::Server()
-    : mWork(boost::asio::make_work_guard(mIoService))
+Server::Server(IoService& ioService)
+    : mIoService(ioService)
+    , mWork(boost::asio::make_work_guard(mIoService))
     , mAcceptor(mIoService)
 {
 }
@@ -32,7 +33,7 @@ void Server::start(Port portNum, unsigned int threadPoolSize) {
     for (unsigned int i = 0; i < threadPoolSize; i++) {
         mThreadPool.emplace_back(
             [this]() {
-                mIoService.run();
+               mIoService.run();
             }
         );
     }

@@ -1,6 +1,7 @@
+#include "pch.h"
 #include "HttpResponse.h"
 
-namespace ResourceMonitorClient::Http {
+namespace Http {
 
 Response::Response()
     : mStatusCode(200)

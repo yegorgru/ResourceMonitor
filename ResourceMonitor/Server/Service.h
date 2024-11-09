@@ -8,6 +8,9 @@
 
 namespace ResourceMonitorServer {
 
+class Service;
+using ServicePtr = std::shared_ptr<Service>;
+
 class Service : public std::enable_shared_from_this<Service> {
 public:
     using TcpSocket = boost::asio::ip::tcp::socket;
@@ -17,17 +20,16 @@ public:
     Service(TcpSocketPtr socket);
 public:
     void startHandling();
+    void sendResponse(std::string&& response);
 private:
     void processRequestLine();
     void processHeadersAndContent();
     void processRequest();
-    void sendResponse();
     const std::string& getStatusLine(HttpCode code);
     void finish();
 private:
     using RequestBuf = boost::asio::streambuf;
     using ErrorCode = boost::system::error_code;
-    using ServicePtr = std::shared_ptr<Service>;
     using HttpHeaders = std::map<std::string, std::string>;
 private:
     ServicePtr mSelfPtr;

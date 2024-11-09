@@ -25,7 +25,7 @@ void Service::startHandling() {
                 if (ec == boost::asio::error::not_found) {
                     LOG::Warning("Content Too Large");
                     mResponseStatusCode = 413;
-                    sendResponse();
+                    sendResponse("");
                     return;
                 }
                 else {
@@ -57,7 +57,7 @@ void Service::processRequestLine()
 
     if (mRequestMethod != "GET" && mRequestMethod != "PUT") {
         mResponseStatusCode = 501;
-        sendResponse();
+        sendResponse("");
         return;
     }
 
@@ -72,7 +72,7 @@ void Service::processRequestLine()
 
     if (requestHttpVersion.compare("HTTP/1.1") != 0) {
         mResponseStatusCode = 505;
-        sendResponse();
+        sendResponse("");
 
         return;
     }
@@ -86,7 +86,7 @@ void Service::processRequestLine()
 
                 if (ec == boost::asio::error::not_found) {
                     mResponseStatusCode = 413;
-                    sendResponse();
+                    sendResponse("");
                     return;
                 }
                 else {
@@ -127,12 +127,13 @@ void Service::processHeadersAndContent() {
 
     if (mRequestMethod == "PUT") {
         auto machineState = JsonAdapter::jsonToMachineState(content);
-        DatabaseManager::Get().setMachineState(machineState);
+        DatabaseManager::Get().setMachineState(*machineState);
         LOG::Debug("Set new machine state");
+        sendResponse("");
     }
 
     processRequest();
-    sendResponse();
+    //sendResponse();
 
     return;
 }
@@ -141,21 +142,17 @@ void Service::processRequest() {
     if (mRequestMethod == "GET") {
         LOG::Debug("Request processing");
 
-        const auto& machineState = DatabaseManager::Get().getMachineState();
-        const auto& jsonObject = JsonAdapter::machineStateToJson(machineState);
-        mResponse = jsonObject.dump();
-
-        LOG::Debug(LOG::makeLogMessage("Set response:", mResponse));
-
-        mResponseHeaders["content-length"] = std::to_string(mResponse.length());
+        DatabaseManager::Get().getMachineState(mMachineName, mSelfPtr);
     }
     else if (mRequestMethod == "PUT") {
 
     }
 }
 
-void Service::sendResponse() {
+void Service::sendResponse(std::string&& response) {
     LOG::Debug("Start sending response");
+
+    mResponse = std::move(response);
 
     mSocket->shutdown(boost::asio::ip::tcp::socket::shutdown_receive);
 

@@ -29,7 +29,6 @@ private:
     IoService mIoService;
     Work mWork;
     std::thread mThread;
-    HttpRequestPtr mCurrentRequest;
 };
 
 } // namespace ResourceMonitorClient
