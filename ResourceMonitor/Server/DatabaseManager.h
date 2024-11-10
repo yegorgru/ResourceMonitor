@@ -15,7 +15,10 @@ public:
     void getMachineState(const std::string& machineName, ServicePtr service) const;
     void setMachineState(const MachineState& machine);
 private:
-    DatabaseManager() = default;
+    DatabaseManager(const std::string& name, int port);
+private:
+    std::string mName;
+    int mPort;
 };
 
 } // namespace ResourceMonitorServer

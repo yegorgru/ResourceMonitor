@@ -17,6 +17,8 @@ public:
 	LogLevel getLogLevel() const;
 	int getPort() const;
 	int getThreadCount() const;
+	int getDbPort() const;
+	const std::string& getDbName() const;
 private:
 	static void validateLogLevel(const std::string& input);
 private:

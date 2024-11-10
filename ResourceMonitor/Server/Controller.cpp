@@ -31,8 +31,14 @@ void Controller::run() {
 
     const auto port = mArgumentParser.getPort();
     const auto threadCount = mArgumentParser.getThreadCount();
+    const auto& dbName = mArgumentParser.getDbName();
+    auto dbPort = mArgumentParser.getDbPort();
     
     LOG::Debug(LOG::composeMessage("Got command-line arguments:", "Port:", port, "Threads count:", threadCount));
+    LOG::Debug(LOG::composeMessage("Got command-line db arguments:", "Port:", dbPort, "Db name:", dbName));
+
+    DatabaseManager::Init(dbName, dbPort);
+    LOG::Debug("Database is initialized");
 
     mServer.start(port, threadCount);
 

@@ -10,6 +10,8 @@ ArgumentParser::ArgumentParser()
     namespace po = boost::program_options;
     mDescription.add_options()
         ("help,h", "produce help message")
+        ("db-port,p", po::value<int>()->default_value(10000), "db's port")
+        ("db-name,n", po::value<std::string>()->default_value("localhost"), "db's name")
         ("port,p", po::value<int>()->default_value(3333), "server's port")
         ("log-level,l", po::value<std::string>()->default_value("info")->notifier(ArgumentParser::validateLogLevel), "logging level: throw/error/warning/info/debug")
         ("log-file,L", po::value<std::string>()->default_value(""), "logging file")
@@ -57,6 +59,14 @@ int ArgumentParser::getPort() const {
 
 int ArgumentParser::getThreadCount() const {
     return mVariablesMap["threads-count"].as<int>();
+}
+
+int ArgumentParser::getDbPort() const {
+    return mVariablesMap["db-port"].as<int>();
+}
+
+const std::string& ArgumentParser::getDbName() const {
+    return mVariablesMap["db-name"].as<std::string>();
 }
 
 void ArgumentParser::validateLogLevel(const std::string& input) {

@@ -35,10 +35,16 @@ void DatabaseManager::setMachineState(const MachineState& machine) {
             LOG::Error("Error while setting machine state to Python Db Agent");
         }
     };
-    auto request = std::make_shared<Http::Request>(IoService::Get().getIoService(), "localhost", 10000, callback);
+    auto request = std::make_shared<Http::Request>(IoService::Get().getIoService(), mName, mPort, callback);
     auto machineStr = JsonAdapter::machineStateToJson(machine).dump();
     LOG::Debug(LOG::composeMessage("Sending machine str to db:", machineStr));
     request->put(machine.mName, std::move(machineStr));
+}
+
+DatabaseManager::DatabaseManager(const std::string& name, int port)
+    : mName(name)
+    , mPort(port)
+{
 }
 
 } // namespace ResourceMonitorServer

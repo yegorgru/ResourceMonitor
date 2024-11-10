@@ -27,6 +27,10 @@ void Controller::run() {
     }
     LOG::Debug("Logger is initialized");
 
+    auto port = mArgumentParser.getServerPort();
+    auto serverName = mArgumentParser.getServerName();
+    LOG::Debug(LOG::composeMessage("Get command line arguments. Port:", port, "Server name:", serverName));
+
     std::string command;
     while (true) {
         LOG::SyncPrintLine("Enter command:", std::cout);
@@ -38,7 +42,7 @@ void Controller::run() {
             return;
         }
         else if (command == "request") {
-            mClient.makeRequest(mArgumentParser.getServerPort(), mArgumentParser.getServerName());
+            mClient.makeRequest(port, serverName);
         }
         else if (command == "cancel") {
             mClient.cancelRequest();
