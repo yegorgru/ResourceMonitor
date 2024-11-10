@@ -10,7 +10,7 @@ ArgumentParser::ArgumentParser()
     namespace po = boost::program_options;
     mDescription.add_options()
         ("help,h", "produce help message")
-        ("db-port,p", po::value<int>()->default_value(10000), "db's port")
+        ("db-port,d", po::value<int>()->default_value(10000), "db's port")
         ("db-name,n", po::value<std::string>()->default_value("localhost"), "db's name")
         ("port,p", po::value<int>()->default_value(3333), "server's port")
         ("log-level,l", po::value<std::string>()->default_value("info")->notifier(ArgumentParser::validateLogLevel), "logging level: throw/error/warning/info/debug")
