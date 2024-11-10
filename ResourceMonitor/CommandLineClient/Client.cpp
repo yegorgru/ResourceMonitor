@@ -24,22 +24,22 @@ void Client::makeRequest() {
         auto machineState = JsonAdapter::jsonToMachineState(response.getBody());
 
         if (machineState) {
-            LOG::Info(LOG::makeLogMessage("Name:", machineState->mName));
-            LOG::Info(LOG::makeLogMessage("CpuUsage:", machineState->mCpuUsage));
-            LOG::Info(LOG::makeLogMessage("MemoryUsage:", machineState->mMemoryUsage));
-            LOG::Info(LOG::makeLogMessage("TotalMemory:", machineState->mTotalMemory));
-            LOG::Info(LOG::makeLogMessage("MemoryUsed:", machineState->mMemoryUsed));
-            LOG::Info(LOG::makeLogMessage("DiskUsage:", machineState->mDiskUsage));
-            LOG::Info(LOG::makeLogMessage("TotalDisk:", machineState->mTotalDisk));
-            LOG::Info(LOG::makeLogMessage("DiskUsed:", machineState->mDiskUsed));
+            LOG::Info(LOG::composeMessage("Name:", machineState->mName));
+            LOG::Info(LOG::composeMessage("CpuUsage:", machineState->mCpuUsage));
+            LOG::Info(LOG::composeMessage("MemoryUsage:", machineState->mMemoryUsage));
+            LOG::Info(LOG::composeMessage("TotalMemory:", machineState->mTotalMemory));
+            LOG::Info(LOG::composeMessage("MemoryUsed:", machineState->mMemoryUsed));
+            LOG::Info(LOG::composeMessage("DiskUsage:", machineState->mDiskUsage));
+            LOG::Info(LOG::composeMessage("TotalDisk:", machineState->mTotalDisk));
+            LOG::Info(LOG::composeMessage("DiskUsed:", machineState->mDiskUsed));
         }
         else {
             LOG::Error("machine not found");
         }
 
-        auto message = LOG::makeLogMessage("Request processed successfully");
+        auto message = LOG::composeMessage("Request processed successfully");
         LOG::Info(message);
-        std::cout << message << std::endl;
+        LOG::SyncPrintLine(message, std::cout);
     };
     auto request = std::make_shared<Http::Request>(mIoService, "localhost", 8080, clientCallback);
     request->get("machine");

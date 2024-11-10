@@ -12,7 +12,7 @@ void DatabaseManager::getMachineState(const std::string& machineName, ServicePtr
         if (response.getStatusCode() == 200) {
             LOG::Info("Successfuly get machine state from Python Db Agent");
             std::string responseStr = response.getBody();
-            LOG::Debug(LOG::makeLogMessage("get response from db:", responseStr));
+            LOG::Debug(LOG::composeMessage("get response from db:", responseStr));
             service->sendResponse(std::move(responseStr));
         }
         else {
@@ -35,7 +35,7 @@ void DatabaseManager::setMachineState(const MachineState& machine) {
     };
     auto request = std::make_shared<Http::Request>(IoService::Get().getIoService(), "localhost", 10000, callback);
     auto machineStr = JsonAdapter::machineStateToJson(machine).dump();
-    LOG::Debug(LOG::makeLogMessage("Sending machine str to db:", machineStr));
+    LOG::Debug(LOG::composeMessage("Sending machine str to db:", machineStr));
     request->put(machine.mName, std::move(machineStr));
 }
 

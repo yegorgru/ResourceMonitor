@@ -9,6 +9,7 @@
 #include <stdexcept>
 #include <chrono>
 #include <source_location>
+#include <fstream>
 
 enum class LogLevel {
 	Debug = 0,
@@ -25,9 +26,10 @@ public:
 	static void Warning(const std::string& message, std::source_location location = std::source_location::current());
 	static void Error(const std::string& message, std::source_location location = std::source_location::current());
 	static void Throw(const std::string& message, std::source_location location = std::source_location::current());
+	static void SyncPrintLine(const std::string& message, std::ostream& os);
 public:
 	template <typename... Args>
-	static std::string makeLogMessage(Args&&... args);
+	static std::string composeMessage(Args&&... args);
 public:
 	static void initConsoleLogger(LogLevel logLevel);
 	static void initFileLogger(LogLevel logLevel, const std::string fileName);
@@ -48,7 +50,7 @@ private:
 	private:
 		void printMessage(LogLevel logLevel, const std::string& message) override;
 	private:
-		std::string mFileName;
+		std::ofstream mFile;
 	};
 
 	class LoggerConsole : public Logger
@@ -66,7 +68,7 @@ private:
 };
 
 template <typename... Args>
-std::string LOG::makeLogMessage(Args&&... args) {
+std::string LOG::composeMessage(Args&&... args) {
 	std::ostringstream oss;
 	((oss << args << " "), ...);
 	std::string message = oss.str();

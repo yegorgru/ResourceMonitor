@@ -28,7 +28,7 @@ void Service::startHandling() {
                     return;
                 }
                 else {
-                    LOG::Error(LOG::makeLogMessage("Error occured! Error code = ", ec.value(), ". Message: ", ec.message()));
+                    LOG::Error(LOG::composeMessage("Error occured! Error code = ", ec.value(), ". Message: ", ec.message()));
                     finish();
                     return;
                 }
@@ -50,13 +50,13 @@ void Service::processRequestLine()
         finish();
     }
     requestLine.pop_back();
-    LOG::Debug(LOG::makeLogMessage("Request line: ", requestLine));
+    LOG::Debug(LOG::composeMessage("Request line: ", requestLine));
 
     std::istringstream requestLineStream(requestLine);
     std::string requestMethod;
     requestLineStream >> requestMethod;
 
-    LOG::Debug(LOG::makeLogMessage("Request method: ", requestMethod));
+    LOG::Debug(LOG::composeMessage("Request method: ", requestMethod));
 
     try
     {
@@ -64,7 +64,7 @@ void Service::processRequestLine()
     }
     catch (const std::runtime_error& ex)
     {
-        LOG::Error(LOG::makeLogMessage("Method is not implemented:", requestMethod));
+        LOG::Error(LOG::composeMessage("Method is not implemented:", requestMethod));
         mResponse.setStatusCode(501);
         sendResponse("");
         return;
@@ -72,16 +72,16 @@ void Service::processRequestLine()
 
     std::string machineName;
     requestLineStream >> machineName;
-    LOG::Debug(LOG::makeLogMessage("Requested resource: ", machineName));
+    LOG::Debug(LOG::composeMessage("Requested resource: ", machineName));
     mRequest.setResource(machineName);
 
     std::string requestHttpVersion;
     requestLineStream >> requestHttpVersion;
 
-    LOG::Debug(LOG::makeLogMessage("Request http version: ", requestHttpVersion));
+    LOG::Debug(LOG::composeMessage("Request http version: ", requestHttpVersion));
 
     if (requestHttpVersion != Http::Message::STANDARD) {
-        LOG::Error(LOG::makeLogMessage("Incorrect standard:", requestHttpVersion));
+        LOG::Error(LOG::composeMessage("Incorrect standard:", requestHttpVersion));
         mResponse.setStatusCode(505);
         sendResponse("");
         return;
@@ -92,7 +92,7 @@ void Service::processRequestLine()
         "\r\n\r\n",
         [this] (const boost::system::error_code& ec, std::size_t bytes_transferred) {
             if (ec.value() != 0) {
-                LOG::Error(LOG::makeLogMessage("Error occured! Error code = ", ec.value(), ". Message: ", ec.message()));
+                LOG::Error(LOG::composeMessage("Error occured! Error code = ", ec.value(), ". Message: ", ec.message()));
 
                 if (ec == boost::asio::error::not_found) {
                     mResponse.setStatusCode(413);
@@ -128,12 +128,12 @@ void Service::processHeadersAndContent() {
             std::string headerValue = line.substr(colonPos + 1);
             headerValue.erase(0, headerValue.find_first_not_of(" \t"));
             mRequest.addHeader(headerName, headerValue);
-            LOG::Debug(LOG::makeLogMessage("Add header:", headerName, ":", headerValue));
+            LOG::Debug(LOG::composeMessage("Add header:", headerName, ":", headerValue));
         }
     }
 
     mRequest.setBody(std::string(std::istreambuf_iterator<char>(requestStream), std::istreambuf_iterator<char>()));
-    LOG::Debug(LOG::makeLogMessage("Content:", mRequest.getBody()));
+    LOG::Debug(LOG::composeMessage("Content:", mRequest.getBody()));
 
     auto method = mRequest.getMethod();
     if (method == Http::MessageRequest::Method::PUT) {
@@ -159,7 +159,7 @@ void Service::sendResponse(std::string&& response) {
     boost::asio::async_write(*mSocket.get(), boost::asio::buffer(mResponse.createStringRepresentation()),
         [this](const boost::system::error_code& ec, std::size_t bytes_transferred) {
             if (ec.value() != 0) {
-                LOG::Error(LOG::makeLogMessage("Error occured! Error code = ", ec.value(), ". Message: ", ec.message()));
+                LOG::Error(LOG::composeMessage("Error occured! Error code = ", ec.value(), ". Message: ", ec.message()));
             }
 
             mSocket->shutdown(boost::asio::ip::tcp::socket::shutdown_both);

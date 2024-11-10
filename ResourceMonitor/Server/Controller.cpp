@@ -32,23 +32,23 @@ void Controller::run() {
     const auto port = mArgumentParser.getPort();
     const auto threadCount = mArgumentParser.getThreadCount();
     
-    LOG::Debug(LOG::makeLogMessage("Got command-line arguments:", "Port:", port, "Threads count:", threadCount));
+    LOG::Debug(LOG::composeMessage("Got command-line arguments:", "Port:", port, "Threads count:", threadCount));
 
     mServer.start(port, threadCount);
 
     std::string command;
     while (true) {
-        //std::cout << "> ";
+        LOG::SyncPrintLine("Enter command:", std::cout);
         std::cin >> command;
         if (command == "exit") {
-            std::cout << "Stopping server..." << std::endl;
+            LOG::SyncPrintLine("Stopping server...", std::cout);
             mServer.stop();
             LOG::Info("Exiting application");
             return;
         }
         else {
-            std::cout << "Unknown command" << std::endl;
-            LOG::Debug(LOG::makeLogMessage("Unknown command entered:", command));
+            LOG::SyncPrintLine("Unknown command", std::cout);
+            LOG::Debug(LOG::composeMessage("Unknown command entered:", command));
         }
     }
 }

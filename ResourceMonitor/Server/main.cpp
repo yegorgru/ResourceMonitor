@@ -19,19 +19,13 @@ int main(int argc, char* argv[])
         controller.run();
     }
     catch (boost::system::system_error& e) {
-        auto message = LOG::makeLogMessage("Boost error occured! Error code =", e.code(), ". Message:", e.what());
-        std::cout << message << std::endl;
-        LOG::Error(message);
+        LOG::SyncPrintLine(LOG::composeMessage("Boost error occured! Error code =", e.code(), ". Message:", e.what()), std::cout);
     }
     catch (std::exception& e) {
-        auto message = LOG::makeLogMessage("Std error occured! Message:", e.what());
-        std::cout << message << std::endl;
-        LOG::Error(message);
+        LOG::SyncPrintLine(LOG::composeMessage("Std error occured! Message:", e.what()), std::cout);
     }
     catch (...) {
-        std::string message = "Unknown error occured!";
-        std::cout << message << std::endl;
-        LOG::Error(message);
+        LOG::SyncPrintLine("Unknown error occured!", std::cout);
     }
 
     return 0;

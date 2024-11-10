@@ -24,12 +24,12 @@ bool ArgumentParser::parseCommandLine(int argc, char* argv[]) {
         po::notify(mVariablesMap);
     }
     catch (const po::error& e) {
-        std::cout << "Failed to parse command line arguments: " << e.what() << std::endl;
-        std::cout << mDescription << std::endl;
+        LOG::SyncPrintLine(LOG::composeMessage("Failed to parse command line arguments: ", e.what()), std::cout);
+        LOG::SyncPrintLine(LOG::composeMessage(mDescription), std::cout);
         return false;
     }
     if (mVariablesMap.count("help")) {
-        std::cout << mDescription << std::endl;
+        LOG::SyncPrintLine(LOG::composeMessage(mDescription), std::cout);
         return false;
     }
     return true;

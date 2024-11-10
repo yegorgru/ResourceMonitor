@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <filesystem>
+#include <syncstream>
 
 void LOG::initConsoleLogger(LogLevel logLevel) {
 	if (mLogger) {
@@ -38,6 +39,11 @@ void LOG::Error(const std::string& message, std::source_location location) {
 
 void LOG::Throw(const std::string& message, std::source_location location) {
 	log(LogLevel::Throw, message, location);
+}
+
+void LOG::SyncPrintLine(const std::string& message, std::ostream& os) {
+	std::osyncstream out{ os };
+	out << message << std::endl;
 }
 
 void LOG::log(LogLevel messageLogLevel, const std::string& message, std::source_location location) {
@@ -76,19 +82,22 @@ void LOG::log(LogLevel messageLogLevel, const std::string& message, std::source_
 }
 
 LOG::LoggerFile::LoggerFile(const std::string& fileName) 
-	: mFileName(fileName)
+	: mFile(fileName, std::ios::out | std::ios::trunc)
 {
+	if (!mFile.is_open()) {
+		throw std::runtime_error("Failed to open file for logging");
+	}
 }
 
 void LOG::LoggerFile::printMessage(LogLevel logLevel, const std::string& message) {
-
+	SyncPrintLine(message, mFile);
 }
 
 void LOG::LoggerConsole::printMessage(LogLevel logLevel, const std::string& message) {
 	if (logLevel <= LogLevel::Warning) {
-		std::cout << message << std::endl;
+		SyncPrintLine(message, std::cout);
 	}
 	else {
-		std::cerr << message << std::endl;
+		SyncPrintLine(message, std::cerr);
 	}
 }

@@ -29,10 +29,10 @@ void Controller::run() {
 
     std::string command;
     while (true) {
-        //std::cout << "> ";
+        LOG::SyncPrintLine("Enter command:", std::cout);
         std::cin >> command;
         if (command == "exit") {
-            std::cout << "Stopping client..." << std::endl;
+            LOG::SyncPrintLine("Stopping client...", std::cout);
             mClient.close();
             LOG::Info("Exiting application");
             return;
@@ -44,8 +44,8 @@ void Controller::run() {
             mClient.cancelRequest();
         }
         else {
-            std::cout << "Unknown command" << std::endl;
-            LOG::Debug(LOG::makeLogMessage("Unknown command entered:", command));
+            LOG::SyncPrintLine("Unknown command", std::cout);
+            LOG::Debug(LOG::composeMessage("Unknown command entered:", command));
         }
     }
 }

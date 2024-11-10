@@ -33,9 +33,9 @@ void Request::put(const std::string& resource, std::string&& body) {
 void Request::execute() {
     const auto& res = mRequestMessage.getResource();
     if (mPort == 0 || mHost == "" || res == "") {
-        LOG::Throw(LOG::makeLogMessage("Incorrect request parameters. Port:", mPort, "host:", mHost, "resource:", res));
+        LOG::Throw(LOG::composeMessage("Incorrect request parameters. Port:", mPort, "host:", mHost, "resource:", res));
     }
-    LOG::Debug(LOG::makeLogMessage("Start request executing. Port:", mPort, "host:", mHost, "resource:", res));
+    LOG::Debug(LOG::composeMessage("Start request executing. Port:", mPort, "host:", mHost, "resource:", res));
 
     mSelfPtr = shared_from_this();
 
@@ -143,7 +143,7 @@ void Request::readStatusLine()
     std::istream responseStream(&mResponseBuf);
     responseStream >> httpVersion;
 
-    LOG::Debug(LOG::makeLogMessage("Http version:", httpVersion));
+    LOG::Debug(LOG::composeMessage("Http version:", httpVersion));
 
     if (httpVersion != "HTTP/1.1") {
         finish(boost::system::error_code());
@@ -152,7 +152,7 @@ void Request::readStatusLine()
 
     responseStream >> strStatusCode;
 
-    LOG::Debug(LOG::makeLogMessage("Status code:", strStatusCode));
+    LOG::Debug(LOG::composeMessage("Status code:", strStatusCode));
 
     unsigned int statusCode = 200;
 
@@ -168,7 +168,7 @@ void Request::readStatusLine()
     // Remove symbol '\n' from the buffer.
     responseStream.get();
 
-    LOG::Debug(LOG::makeLogMessage("Status message:", statusMessage));
+    LOG::Debug(LOG::composeMessage("Status message:", statusMessage));
 
     mResponseMessage.setStatusCode(statusCode);
     mResponseMessage.setStatusMessage(statusMessage);
@@ -211,7 +211,7 @@ void Request::readHeaders()
             std::string headerValue = line.substr(colonPos + 1);
             headerValue.erase(0, headerValue.find_first_not_of(" \t"));
             mResponseMessage.addHeader(headerName, headerValue);
-            LOG::Debug(LOG::makeLogMessage("Add header:", headerName, ":", headerValue));
+            LOG::Debug(LOG::composeMessage("Add header:", headerName, ":", headerValue));
         }
     }
 
@@ -233,9 +233,9 @@ void Request::readHeaders()
 void Request::finish(const boost::system::error_code& ec) {
     LOG::Debug("Finish request");
     if (ec.value() != 0) {
-        auto message = LOG::makeLogMessage("Error occured! Error code =", ec.value(), ". Message:", ec.message());
+        auto message = LOG::composeMessage("Error occured! Error code =", ec.value(), ". Message:", ec.message());
         LOG::Error(message);
-        std::cout << message << std::endl;
+        LOG::SyncPrintLine(message, std::cout);
     }
     else {
         mCallback(mResponseMessage);
