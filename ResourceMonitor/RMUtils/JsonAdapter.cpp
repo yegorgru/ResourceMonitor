@@ -15,7 +15,7 @@ json machineStateToJson(MachineState machineState) {
             {"used GB", machineState.mMemoryUsed}
         }},
         {"disk", {
-            {"usage %", machineState.mDiskUsed},
+            {"usage %", machineState.mDiskUsage},
             {"total GB", machineState.mTotalDisk},
             {"used GB", machineState.mDiskUsed}
         }}
