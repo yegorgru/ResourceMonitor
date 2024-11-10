@@ -19,7 +19,7 @@ public:
     Client();
     ~Client();
 public:
-    void makeRequest();
+    void makeRequest(int serverPort, const std::string& serverName);
     void cancelRequest();
     void close();
 private:

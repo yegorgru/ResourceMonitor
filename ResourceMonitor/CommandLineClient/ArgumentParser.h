@@ -13,6 +13,8 @@ public:
 public:
 	bool parseCommandLine(int argc, char* argv[]);
 public:
+	int getServerPort() const;
+	const std::string& getServerName() const;
 	const std::string& getLogFilename() const;
 	LogLevel getLogLevel() const;
 private:

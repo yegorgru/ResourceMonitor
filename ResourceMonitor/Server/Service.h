@@ -22,11 +22,11 @@ public:
     Service(TcpSocketPtr socket);
 public:
     void startHandling();
-    void sendResponse(std::string&& response);
-    void finish();
+    void sendResponse(int statusCode, std::string&& response);
 private:
     void processRequestLine();
     void processHeadersAndContent();
+    void finish();
 private:
     using RequestBuf = boost::asio::streambuf;
 private:

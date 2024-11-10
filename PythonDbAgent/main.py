@@ -65,10 +65,10 @@ def get_machine_state(conn, name):
                 "total GB": row[6],
                 "used GB": row[7]
             }
-        }
+        }, True
     else:
         print("Return empty")
-        return {"error": "not found"}
+        return {"error": "not found"}, False
 
 
 def send_http_response(client_socket, status_code, response_data):
@@ -117,12 +117,14 @@ def run_server(host='localhost', port=10000):
                     if method == "GET":
                         # Extract the machine name from the path, if included in URL
                         machine_name = path.strip("/")
-                        machine_state = get_machine_state(conn, machine_name)
+                        machine_state, success = get_machine_state(conn, machine_name)
 
-                        # Convert the response to JSON format
-                        response_data = json.dumps(machine_state).encode('utf-8')
-                        send_http_response(client_socket, "200 OK", response_data.decode('utf-8'))
-
+                        if success:
+                            response_data = json.dumps(machine_state)
+                            send_http_response(client_socket, "200 OK", response_data)
+                        else:
+                            response_data = "Error - machine not found"
+                            send_http_response(client_socket, "500 Server Error", response_data)
                     elif method == "PUT":
                         # Extract JSON data from the request body (after headers)
                         try:
@@ -136,13 +138,11 @@ def run_server(host='localhost', port=10000):
                             send_http_response(client_socket, "200 OK", "Machine state saved successfully")
                         except (json.JSONDecodeError, ValueError) as e:
                             print("Failed to parse JSON data:", e)
-                            client_socket.sendall(b"Invalid JSON data.")
-
+                            send_http_response(client_socket, "500 Server Error", "Failed to parse JSON data")
                     else:
-                        # Send a response for unsupported methods
-                        client_socket.sendall(b"HTTP/1.1 405 Method Not Allowed\r\n\r\n")
+                        send_http_response(client_socket, "501 Not Implemented", "")
                 else:
-                    client_socket.sendall(b"Invalid request format.")
+                    send_http_response(client_socket, "500 Server Error", "Invalid request format")
 
         print("Server stopped.")
 

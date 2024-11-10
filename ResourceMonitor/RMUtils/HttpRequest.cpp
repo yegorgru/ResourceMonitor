@@ -236,6 +236,9 @@ void Request::finish(const boost::system::error_code& ec) {
         auto message = LOG::composeMessage("Error occured! Error code =", ec.value(), ". Message:", ec.message());
         LOG::Error(message);
         LOG::SyncPrintLine(message, std::cout);
+        mResponseMessage.addHeader("Content-Length", "0");
+        mResponseMessage.setStatusCode(500);
+        mCallback(mResponseMessage);
     }
     else {
         mCallback(mResponseMessage);

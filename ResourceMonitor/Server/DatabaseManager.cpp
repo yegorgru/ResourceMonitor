@@ -9,15 +9,17 @@ namespace ResourceMonitorServer {
 void DatabaseManager::getMachineState(const std::string& machineName, ServicePtr service) const {
     auto callback = [service](Http::MessageResponse& response) {
         //TODO: review if && or const& should be used
-        if (response.getStatusCode() == 200) {
+        auto statusCode = response.getStatusCode();
+        if (statusCode == 200) {
             LOG::Info("Successfuly get machine state from Python Db Agent");
             std::string responseStr = response.getBody();
             LOG::Debug(LOG::composeMessage("get response from db:", responseStr));
-            service->sendResponse(std::move(responseStr));
+            service->sendResponse(200, std::move(responseStr));
         }
         else {
-            LOG::Error("Error while getting machine state from Python Db Agent");
-            service->finish();
+            auto responseStr = response.getBody();
+            LOG::Error(LOG::composeMessage("Error while getting machine state from Python Db Agent", statusCode, responseStr));
+            service->sendResponse(statusCode, std::move(responseStr));
         }
     };
     auto request = std::make_shared<Http::Request>(IoService::Get().getIoService(), "localhost", 10000, callback);

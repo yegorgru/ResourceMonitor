@@ -23,8 +23,7 @@ void Service::startHandling() {
             if (ec.value() != 0) {
                 if (ec == boost::asio::error::not_found) {
                     LOG::Warning("Content Too Large");
-                    mResponse.setStatusCode(413);
-                    sendResponse("");
+                    sendResponse(413, "");
                     return;
                 }
                 else {
@@ -65,8 +64,7 @@ void Service::processRequestLine()
     catch (const std::runtime_error& ex)
     {
         LOG::Error(LOG::composeMessage("Method is not implemented:", requestMethod));
-        mResponse.setStatusCode(501);
-        sendResponse("");
+        sendResponse(501, "");
         return;
     }
 
@@ -82,8 +80,7 @@ void Service::processRequestLine()
 
     if (requestHttpVersion != Http::Message::STANDARD) {
         LOG::Error(LOG::composeMessage("Incorrect standard:", requestHttpVersion));
-        mResponse.setStatusCode(505);
-        sendResponse("");
+        sendResponse(505, "");
         return;
     }
 
@@ -95,8 +92,7 @@ void Service::processRequestLine()
                 LOG::Error(LOG::composeMessage("Error occured! Error code = ", ec.value(), ". Message: ", ec.message()));
 
                 if (ec == boost::asio::error::not_found) {
-                    mResponse.setStatusCode(413);
-                    sendResponse("");
+                    sendResponse(413, "");
                     return;
                 }
                 else {
@@ -140,7 +136,7 @@ void Service::processHeadersAndContent() {
         auto machineState = JsonAdapter::jsonToMachineState(mRequest.getBody());
         DatabaseManager::Get().setMachineState(*machineState);
         LOG::Debug("Set new machine state");
-        sendResponse("");
+        sendResponse(200, "");
     }
     else if (method == Http::MessageRequest::Method::GET) {
         LOG::Debug("Request processing");
@@ -148,11 +144,12 @@ void Service::processHeadersAndContent() {
     }
 }
 
-void Service::sendResponse(std::string&& response) {
+void Service::sendResponse(int statusCode, std::string&& response) {
     LOG::Debug("Start sending response");
 
     mSocket->shutdown(boost::asio::ip::tcp::socket::shutdown_receive);
 
+    mResponse.setStatusCode(statusCode);
     mResponse.addHeader("Content-Length", std::to_string(response.length()));
     mResponse.setBody(std::move(response));
 

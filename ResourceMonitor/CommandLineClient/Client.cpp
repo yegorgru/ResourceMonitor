@@ -18,30 +18,38 @@ Client::~Client()
     }
 }
 
-void Client::makeRequest() {
+void Client::makeRequest(int serverPort, const std::string& serverName) {
     LOG::Debug("Making request");
     static auto clientCallback = [](Http::MessageResponse& response) {
-        auto machineState = JsonAdapter::jsonToMachineState(response.getBody());
+        auto statusCode = response.getStatusCode();
+        std::string message;
+        if (statusCode == 200) {
+            auto machineState = JsonAdapter::jsonToMachineState(response.getBody());
+            if (machineState) {
+                LOG::Info(LOG::composeMessage("Name:", machineState->mName));
+                LOG::Info(LOG::composeMessage("CpuUsage:", machineState->mCpuUsage));
+                LOG::Info(LOG::composeMessage("MemoryUsage:", machineState->mMemoryUsage));
+                LOG::Info(LOG::composeMessage("TotalMemory:", machineState->mTotalMemory));
+                LOG::Info(LOG::composeMessage("MemoryUsed:", machineState->mMemoryUsed));
+                LOG::Info(LOG::composeMessage("DiskUsage:", machineState->mDiskUsage));
+                LOG::Info(LOG::composeMessage("TotalDisk:", machineState->mTotalDisk));
+                LOG::Info(LOG::composeMessage("DiskUsed:", machineState->mDiskUsed));
 
-        if (machineState) {
-            LOG::Info(LOG::composeMessage("Name:", machineState->mName));
-            LOG::Info(LOG::composeMessage("CpuUsage:", machineState->mCpuUsage));
-            LOG::Info(LOG::composeMessage("MemoryUsage:", machineState->mMemoryUsage));
-            LOG::Info(LOG::composeMessage("TotalMemory:", machineState->mTotalMemory));
-            LOG::Info(LOG::composeMessage("MemoryUsed:", machineState->mMemoryUsed));
-            LOG::Info(LOG::composeMessage("DiskUsage:", machineState->mDiskUsage));
-            LOG::Info(LOG::composeMessage("TotalDisk:", machineState->mTotalDisk));
-            LOG::Info(LOG::composeMessage("DiskUsed:", machineState->mDiskUsed));
+                message = "Request processed successfully";
+                LOG::Info(message);
+            }
+            else {
+                message = LOG::composeMessage("Failed to parse machineState", response.getBody());
+                LOG::Error(message);
+            }
         }
         else {
-            LOG::Error("machine not found");
+            message = LOG::composeMessage("Failed to get machine state from server", statusCode, response.getBody());
+            LOG::Error(message);
         }
-
-        auto message = LOG::composeMessage("Request processed successfully");
-        LOG::Info(message);
         LOG::SyncPrintLine(message, std::cout);
     };
-    auto request = std::make_shared<Http::Request>(mIoService, "localhost", 8080, clientCallback);
+    auto request = std::make_shared<Http::Request>(mIoService, serverName, serverPort, clientCallback);
     request->get("machine");
 }
 

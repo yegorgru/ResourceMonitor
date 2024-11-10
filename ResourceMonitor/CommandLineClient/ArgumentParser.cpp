@@ -11,6 +11,8 @@ ArgumentParser::ArgumentParser()
     namespace po = boost::program_options;
     mDescription.add_options()
         ("help,h", "produce help message")
+        ("server-port,p", po::value<int>()->default_value(3333), "server's port")
+        ("server-name,n", po::value<std::string>()->default_value("localhost"), "server's name")
         ("log-level,l", po::value<std::string>()->default_value("info")->notifier(ArgumentParser::validateLogLevel), "logging level: throw/error/warning/info/debug")
         ("log-file,L", po::value<std::string>()->default_value(""), "logging file");
 }
@@ -32,6 +34,14 @@ bool ArgumentParser::parseCommandLine(int argc, char* argv[]) {
         return false;
     }
     return true;
+}
+
+int ArgumentParser::getServerPort() const {
+    return mVariablesMap["server-port"].as<int>();
+}
+
+const std::string& ArgumentParser::getServerName() const {
+    return mVariablesMap["server-name"].as<std::string>();
 }
 
 const std::string& ArgumentParser::getLogFilename() const {

@@ -38,7 +38,7 @@ void Controller::run() {
             return;
         }
         else if (command == "request") {
-            mClient.makeRequest();
+            mClient.makeRequest(mArgumentParser.getServerPort(), mArgumentParser.getServerName());
         }
         else if (command == "cancel") {
             mClient.cancelRequest();
