@@ -1,0 +1,18 @@
+@import './base.css';
+
+
+#app {
+  font-family: Arial, sans-serif;
+  height: 100vh;
+}
+
+
+nav.navbar {
+  width: 100%; /* Almost full width */
+  background-color: #333;
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-radius: 5px;
+}
