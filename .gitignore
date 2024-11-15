@@ -1,3 +1,5 @@
+config.cmake
+
 *.vcxproj
 *.vcxproj.filters
 *.vcxproj.user

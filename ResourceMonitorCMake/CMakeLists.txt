@@ -7,8 +7,11 @@ endif()
 
 project ("ResourceMonitorCMake")
 
-set(BOOST_ROOT "C:/local/boost_1_86_0" CACHE INTERNAL "Path to the Boost installation directory")
-set(BOOST_LIB_DIR "C:/local/boost_1_86_0/lib64-msvc-14.3" CACHE INTERNAL "Path to the Boost library directory")
+if(EXISTS "${CMAKE_SOURCE_DIR}/config.cmake")
+    include("${CMAKE_SOURCE_DIR}/config.cmake")
+else()
+    message(WARNING "Config file not found. Please create config.cmake for custom settings.")
+endif()
 
 add_subdirectory ("Server")
 add_subdirectory ("CommandLineClient")
