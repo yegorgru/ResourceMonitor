@@ -151,6 +151,7 @@ void Service::sendResponse(int statusCode, std::string&& response) {
 
     mResponse.setStatusCode(statusCode);
     mResponse.addHeader("Content-Length", std::to_string(response.length()));
+    mResponse.addHeader("Access-Control-Allow-Origin", "*");
     mResponse.setBody(std::move(response));
 
     boost::asio::async_write(*mSocket.get(), boost::asio::buffer(mResponse.createStringRepresentation()),
