@@ -7,8 +7,8 @@ target_include_directories(Server PUBLIC
     "${CMAKE_CURRENT_SOURCE_DIR}" 
     "${CMAKE_CURRENT_SOURCE_DIR}/../../SingleInclude"
     "${CMAKE_CURRENT_SOURCE_DIR}/../RMUtils"
-    "C:/local/boost_1_86_0"
+    "${BOOST_ROOT}"
 )
 
-target_link_directories(Server PUBLIC "C:/local/boost_1_86_0/lib64-msvc-14.3")
+target_link_directories(Server PUBLIC "${BOOST_LIB_DIR}")
 target_link_libraries(Server PUBLIC RMUtils)

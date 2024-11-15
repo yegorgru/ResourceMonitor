@@ -6,7 +6,7 @@ set_property(TARGET RMUtils PROPERTY CXX_STANDARD 20)
 target_include_directories(RMUtils PUBLIC 
     "${CMAKE_CURRENT_SOURCE_DIR}" 
     "${CMAKE_CURRENT_SOURCE_DIR}/../../SingleInclude"
-    "C:/local/boost_1_86_0"
+    "${BOOST_ROOT}"
 )
 
-target_link_directories(RMUtils PUBLIC "C:/local/boost_1_86_0/lib64-msvc-14.3")
+target_link_directories(RMUtils PUBLIC "${BOOST_LIB_DIR}")
