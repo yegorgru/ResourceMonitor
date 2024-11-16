@@ -5,7 +5,6 @@ set_property(TARGET CommandLineClient PROPERTY CXX_STANDARD 20)
 
 target_include_directories(CommandLineClient PUBLIC 
     "${CMAKE_CURRENT_SOURCE_DIR}" 
-    "${CMAKE_CURRENT_SOURCE_DIR}/../../SingleInclude"
     "${CMAKE_CURRENT_SOURCE_DIR}/../RMUtils"
     "${BOOST_ROOT}"
 )
