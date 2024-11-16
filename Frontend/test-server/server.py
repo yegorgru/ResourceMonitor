@@ -1,6 +1,7 @@
 from flask import Flask, jsonify
 from flask_cors import CORS
 import time
+import random
 
 app = Flask(__name__)
 CORS(app)  # Дозволяє CORS для всіх роутів
@@ -15,14 +16,14 @@ def get_data(id):
         "time": current_time,
         "id": id,
         "name": f"Computer-{id}",
-        "cpu": { "usage %": 35 },
+        "cpu": { "usage %": random.randint(20, 70) },
         "memory": {
-            "usage %": 65,
+            "usage %": random.randint(20, 70) ,
             "total GB": 16,
             "used GB": 10.4,
         },
         "disk": {
-            "usage %": 55,
+            "usage %": random.randint(20, 70) ,
             "total GB": 500,
             "used GB": 275,
         },
