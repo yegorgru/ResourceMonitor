@@ -95,6 +95,9 @@ void Service::processRequestLine()
                     sendResponse(413, "");
                     return;
                 }
+                else if (ec == boost::asio::error::eof) {
+                    LOG::Debug("Eof, headers are absent");
+                }
                 else {
                     finish();
                     return;

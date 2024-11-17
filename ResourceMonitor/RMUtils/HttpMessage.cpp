@@ -1,6 +1,8 @@
 #include "HttpMessage.h"
 #include "Log.h"
 
+#include <boost/algorithm/string.hpp>
+
 #include <stdexcept>
 
 namespace Http {
@@ -46,7 +48,7 @@ namespace {
 }
 
 void Message::addHeader(const std::string& name, const std::string& value) {
-	mHeaders[name] = value;
+	mHeaders[boost::algorithm::to_lower_copy(name)] = value;
 }
 
 const std::string& Message::getHeader(const std::string& name) const {

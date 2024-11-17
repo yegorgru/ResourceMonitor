@@ -185,6 +185,9 @@ void Request::readStatusLine()
                 finish(ec);
                 return;
             }
+            else if (ec == boost::asio::error::eof) {
+                LOG::Debug("Eof, headers are absent");
+            }
             readHeaders();
         }
     );
