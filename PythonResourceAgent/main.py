@@ -131,17 +131,33 @@ def send_stats():
                     else:
                         print("Failed to send basic info:", responseBasic.status_code, responseBasic.text)
                 else:
-                    resourcesStats = get_resources_stats()
-                    responseResources = requests.put(urlResources, data=json.dumps(resourcesStats),
+                    cpuStats = get_cpu_stats()
+                    responseCPU = requests.put(urlCPU, data=json.dumps(cpuStats),
                                                     headers={'Content-Type': 'application/json'})
-                    if responseResources.status_code == 200:
-                        print("Resources info sent successfully:", resourcesStats)
+                    if responseCPU.status_code == 200:
+                        print("CPU info sent successfully:", cpuStats)
                     else:
-                        print("Failed to send resources info:", responseResources.status_code, responseResources.text)
+                        print("Failed to send CPU info:", responseCPU.status_code, responseCPU.text)
+
+                    memoryStats = get_memory_stats()
+                    responseMemory = requests.put(urlMemory, data=json.dumps(memoryStats),
+                                                   headers={'Content-Type': 'application/json'})
+                    if responseMemory.status_code == 200:
+                        print("Memory info sent successfully:", memoryStats)
+                    else:
+                        print("Failed to send memory info:", responseMemory.status_code, responseMemory.text)
+
+                    disksStats = get_disk_stats()
+                    responseDisks = requests.put(urlDisks, data=json.dumps(disksStats),
+                                                  headers={'Content-Type': 'application/json'})
+                    if responseDisks.status_code == 200:
+                        print("Disks info sent successfully:", disksStats)
+                    else:
+                        print("Failed to send disks info:", responseDisks.status_code, responseDisks.text)
 
                     networkStats = get_network_stats()
                     responseNetwork = requests.put(urlNetwork, data=json.dumps(networkStats),
-                                                   headers={'Content-Type': 'application/json'})
+                                                 headers={'Content-Type': 'application/json'})
                     if responseNetwork.status_code == 200:
                         print("Network info sent successfully:", networkStats)
                     else:
