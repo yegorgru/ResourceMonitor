@@ -1,11 +1,13 @@
 #include "HttpRequest.h"
-
 #include "Log.h"
+
+#include <boost/uuid/uuid_io.hpp>
 
 namespace Http {
 
 Request::Request(IoService& ios, const std::string& host, unsigned int port, Callback callback)
-    : mHost(host)
+    : mId(mGenerator())
+    , mHost(host)
     , mPort(port)
     , mCallback(callback)
     , mSock(ios)
@@ -66,6 +68,10 @@ void Request::cancel() {
     mSelfPtr.reset();
 }
 
+const Request::Id& Request::getId() const {
+    return mId;
+}
+
 void Request::connect(boost::asio::ip::tcp::resolver::iterator iterator) {
     LOG::Debug("Start connecting to server");
     if (mWasCanceled) {
@@ -116,7 +122,7 @@ void Request::readResponse()
         return;
     }
 
-    LOG::Debug("Start response reading");
+    LOG::Debug("Start waiting for response");
 
     boost::asio::async_read_until(mSock, mResponseBuf, "\r\n",
         [this](const boost::system::error_code& ec, std::size_t bytes_transferred)
@@ -234,16 +240,19 @@ void Request::readHeaders()
 
 void Request::finish(const boost::system::error_code& ec) {
     LOG::Debug("Finish request");
-    if (ec.value() != 0) {
-        auto message = LOG::composeMessage("Error occured! Error code =", ec.value(), ". Message:", ec.message());
+    if (ec == boost::asio::error::operation_aborted) {
+        LOG::Info(LOG::composeMessage("Request was canceled. Request id:", boost::uuids::to_string(mId)));
+    }
+    else if (ec.value() != 0) {
+        auto message = LOG::composeMessage("Error occured! Error code =", ec.value(), ". Message:", ec.message(), "Request id:", boost::uuids::to_string(mId));
         LOG::Error(message);
         LOG::SyncPrintLine(message, std::cout);
         mResponseMessage.addHeader("Content-Length", "0");
         mResponseMessage.setStatusCode(Http::StatusCode::ServerError);
-        mCallback(mResponseMessage);
+        mCallback(mResponseMessage, mId);
     }
     else {
-        mCallback(mResponseMessage);
+        mCallback(mResponseMessage, mId);
     }
     mSelfPtr.reset();
 }

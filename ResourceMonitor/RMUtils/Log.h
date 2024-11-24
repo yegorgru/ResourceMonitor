@@ -12,7 +12,8 @@
 #include <fstream>
 
 enum class LogLevel {
-	Debug = 0,
+	Trace = 0,
+	Debug,
 	Info,
 	Warning,
 	Error,
@@ -21,6 +22,7 @@ enum class LogLevel {
 
 class LOG {
 public:
+	static void Trace(const std::string& message, std::source_location location = std::source_location::current());
 	static void Debug(const std::string& message, std::source_location location = std::source_location::current());
 	static void Info(const std::string& message, std::source_location location = std::source_location::current());
 	static void Warning(const std::string& message, std::source_location location = std::source_location::current());

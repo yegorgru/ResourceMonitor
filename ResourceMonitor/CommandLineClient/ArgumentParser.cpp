@@ -5,6 +5,17 @@
 
 namespace ResourceMonitorClient {
 
+namespace {
+    const std::map<std::string, LogLevel> logLevelMap {
+        {"throw", LogLevel::Throw},
+        {"error", LogLevel::Error},
+        {"warning", LogLevel::Warning},
+        {"info", LogLevel::Info},
+        {"debug", LogLevel::Debug},
+        {"trace", LogLevel::Trace},
+    };
+}
+
 ArgumentParser::ArgumentParser()
     : mDescription("Allowed options")
 {
@@ -49,21 +60,13 @@ const std::string& ArgumentParser::getLogFilename() const {
 }
 
 LogLevel ArgumentParser::getLogLevel() const {
-    const std::map<std::string, LogLevel> logLevelMap{
-        {"throw", LogLevel::Throw},
-        {"error", LogLevel::Error},
-        {"warning", LogLevel::Warning},
-        {"info", LogLevel::Info},
-        {"debug", LogLevel::Debug},
-    };
     const std::string logLevelStr = mVariablesMap["log-level"].as<std::string>();
     return logLevelMap.at(logLevelStr);
 }
 
 void ArgumentParser::validateLogLevel(const std::string& input) {
     namespace po = boost::program_options;
-    const std::set<std::string> allowed_names = { "throw", "error", "warning", "info", "debug" };
-    if (allowed_names.find(input) == allowed_names.end()) {
+    if (logLevelMap.find(input) == logLevelMap.end()) {
         throw po::validation_error(po::validation_error::invalid_option_value, "log-level", input);
     }
 }

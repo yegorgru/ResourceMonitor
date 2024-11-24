@@ -2,6 +2,8 @@
 #include "Log.h"
 #include "DatabaseManager.h"
 
+#include <boost/uuid/uuid_io.hpp>
+
 #include <map>
 
 namespace ResourceMonitorServer {
@@ -136,13 +138,13 @@ void Service::processHeadersAndContent() {
     auto method = mRequest.getMethod();
     if (method == Http::MessageRequest::Method::PUT) {
         LOG::Debug("PUT request processing");
-        auto callback = [](Http::MessageResponse& response) {
+        auto callback = [](const Http::MessageResponse& response, const Http::Request::Id& id) {
             auto statusCode = response.getStatusCode();
             if (statusCode == Http::StatusCode::Ok) {
-                LOG::Info("Successfuly write info to database");
+                LOG::Info(LOG::composeMessage("Successfuly write info to database. Request:", boost::uuids::to_string(id)));
             }
             else {
-                LOG::Error(LOG::composeMessage("Error while writing info to database", static_cast<int>(statusCode)));
+                LOG::Error(LOG::composeMessage("Error while writing info to database", static_cast<int>(statusCode), "Request:", boost::uuids::to_string(id)));
             }
         };
         DatabaseManager::Get().put(mRequest.getResource(), mRequest.getBody(), callback);
@@ -151,7 +153,7 @@ void Service::processHeadersAndContent() {
     }
     else if (method == Http::MessageRequest::Method::GET) {
         LOG::Debug("GET request processing");
-        auto callback = [this](Http::MessageResponse& response) {
+        auto callback = [this](const Http::MessageResponse& response, const Http::Request::Id&) {
             //TODO: review if && or const& should be used
             auto statusCode = response.getStatusCode();
             if (statusCode == Http::StatusCode::Ok) {

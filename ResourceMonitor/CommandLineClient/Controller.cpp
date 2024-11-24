@@ -8,6 +8,10 @@ Controller::Controller(Client& client)
 {
 }
 
+Controller::~Controller() {
+    LOG::Debug("Destroying controller");
+}
+
 void Controller::init(int argc, char* argv[]) {
     mIsValidState = mArgumentParser.parseCommandLine(argc, argv);
 }
@@ -42,10 +46,13 @@ void Controller::run() {
             return;
         }
         else if (command == "request") {
-            mClient.makeRequest(port, serverName);
+            auto requestId = mClient.makeRequest(port, serverName);
+            LOG::SyncPrintLine(LOG::composeMessage("Created request with id", requestId), std::cout);
         }
         else if (command == "cancel") {
-            mClient.cancelRequest();
+            std::string id;
+            std::cin >> id;
+            mClient.cancelRequest(id);
         }
         else {
             LOG::SyncPrintLine("Unknown command", std::cout);

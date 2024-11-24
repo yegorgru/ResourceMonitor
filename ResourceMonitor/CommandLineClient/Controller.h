@@ -9,6 +9,7 @@ class Controller
 {
 public:
 	Controller(Client& client);
+	~Controller();
 public:
 	void init(int argc, char* argv[]);
 	void run();

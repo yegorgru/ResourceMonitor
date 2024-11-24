@@ -20,6 +20,10 @@ void LOG::initFileLogger(LogLevel logLevel, const std::string fileName) {
 	mLogLevel = logLevel;
 }
 
+void LOG::Trace(const std::string& message, std::source_location location) {
+	log(LogLevel::Trace, message, location);
+}
+
 void LOG::Debug(const std::string& message, std::source_location location) {
 	log(LogLevel::Debug, message, location);
 }
@@ -47,11 +51,14 @@ void LOG::SyncPrintLine(const std::string& message, std::ostream& os) {
 
 void LOG::log(LogLevel messageLogLevel, const std::string& message, std::source_location location) {
 	if (!mLogger) {
-		throw std::runtime_error("Logger is not initialized");
+		SyncPrintLine(composeMessage("(Logger is not initialized)", message), std::cout);
 	}
 	if (messageLogLevel >= mLogLevel) {
 		std::ostringstream oss;
 		switch (messageLogLevel) {
+		case LogLevel::Trace:
+			oss << "[TRACE]\t";
+			break;
 		case LogLevel::Debug:
 			oss << "[DEBUG]\t";
 			break;

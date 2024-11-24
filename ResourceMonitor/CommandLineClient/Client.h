@@ -4,6 +4,7 @@
 #include <map>
 #include <iostream>
 #include <memory>
+#include <mutex>
 
 #include <boost/asio.hpp>
 
@@ -19,16 +20,20 @@ public:
     Client();
     ~Client();
 public:
-    void makeRequest(int serverPort, const std::string& serverName);
-    void cancelRequest();
+    std::string makeRequest(int serverPort, const std::string& serverName);
+    void cancelRequest(const std::string strId);
     void close();
 private:
     using IoService = boost::asio::io_service;
     using Work = boost::asio::executor_work_guard<boost::asio::io_context::executor_type>;
+    using RequestStorage = std::map<Http::Request::Id, Http::RequestWeakPtr>;
 private:
     IoService mIoService;
     Work mWork;
-    std::thread mThread;
+    std::jthread mThreadIo;
+    std::jthread mThreadCleaner;
+    std::mutex mRequestsMutex;
+    RequestStorage mRequests;
 };
 
 } // namespace ResourceMonitorClient
