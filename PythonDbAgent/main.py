@@ -23,6 +23,25 @@ def init_db():
         disk_used REAL
     )
     ''')
+
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS IdIp (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            ip TEXT UNIQUE NOT NULL           
+        )
+        ''')
+
+    cursor.execute('''
+            CREATE TABLE IF NOT EXISTS MachineBasic (
+                id INTEGER PRIMARY KEY,
+                numcpus INTEGER,
+                total_virt_mem_gb REAL,
+                total_swap_mem_gb REAL,
+                numdisks INTEGER,
+                total_c_disk_gb REAL,
+                FOREIGN KEY (id) REFERENCES IdIp (id) ON DELETE CASCADE           
+            )
+            ''')
     conn.commit()
     return conn
 
