@@ -28,15 +28,15 @@ namespace {
 		throw std::runtime_error("Method is not implemented");
 	}
 
-	const std::string& getStatusLine(int code) {
-		static const std::map<int, std::string> httpStatusTable =
+	const std::string& getStatusLine(StatusCode code) {
+		static const std::map<StatusCode, std::string> httpStatusTable =
 		{
-			{ 200, "200 OK" },
-			{ 404, "404 Not Found" },
-			{ 413, "413 Request Entity Too Large" },
-			{ 500, "500 Server Error" },
-			{ 501, "501 Not Implemented" },
-			{ 505, "505 HTTP Version Not Supported" }
+			{ StatusCode::Ok, "200 OK" },
+			{ StatusCode::NotFound, "404 Not Found" },
+			{ StatusCode::RequestEntityTooLarge, "413 Request Entity Too Large" },
+			{ StatusCode::ServerError, "500 Server Error" },
+			{ StatusCode::NotImplemented, "501 Not Implemented" },
+			{ StatusCode::HttpVersionNotSupported, "505 HTTP Version Not Supported" }
 		};
 		auto found = httpStatusTable.find(code);
 		if (found != httpStatusTable.end()) {
@@ -45,6 +45,24 @@ namespace {
 		LOG::Throw("Status code not found");
 		return "";
 	}
+}
+
+StatusCode intToStatusCode(int value) {
+	switch (value) {
+	case 200:
+		return StatusCode::Ok;
+	case 404:
+		return StatusCode::NotFound;
+	case 413:
+		return StatusCode::RequestEntityTooLarge;
+	case 500:
+		return StatusCode::ServerError;
+	case 501:
+		return StatusCode::NotImplemented;
+	case 505:
+		return StatusCode::HttpVersionNotSupported;
+	}
+	throw std::logic_error("Can't convert provided value to StatusCode");
 }
 
 void Message::addHeader(const std::string& name, const std::string& value) {
@@ -103,7 +121,7 @@ const std::string& MessageRequest::getResource() const {
 }
 
 MessageResponse::MessageResponse()
-	: mStatusCode(200)
+	: mStatusCode(StatusCode::Ok)
 {
 }
 
@@ -120,11 +138,11 @@ const std::string& MessageResponse::createStringRepresentation() {
 	return mStringRepresentation;
 }
 
-void MessageResponse::setStatusCode(int statusCode) {
+void MessageResponse::setStatusCode(StatusCode statusCode) {
 	mStatusCode = statusCode;
 }
 
-int MessageResponse::getStatusCode() const {
+StatusCode MessageResponse::getStatusCode() const {
 	return mStatusCode;
 }
 

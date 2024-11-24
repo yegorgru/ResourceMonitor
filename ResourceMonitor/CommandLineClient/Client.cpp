@@ -26,7 +26,7 @@ void Client::makeRequest(int serverPort, const std::string& serverName) {
     static auto clientCallback = [](Http::MessageResponse& response) {
         auto statusCode = response.getStatusCode();
         std::string message;
-        if (statusCode == 200) {
+        if (statusCode == Http::StatusCode::Ok) {
             const auto& jsonStr = response.getBody();
             auto parsedJson = json::parse(jsonStr);
             if (!parsedJson.empty() && !parsedJson.contains("error")) {
@@ -52,7 +52,7 @@ void Client::makeRequest(int serverPort, const std::string& serverName) {
             }
         }
         else {
-            message = LOG::composeMessage("Failed to get info from server", statusCode, response.getBody());
+            message = LOG::composeMessage("Failed to get info from server", static_cast<int>(statusCode), response.getStatusMessage(), response.getBody());
             LOG::Error(message);
         }
         LOG::SyncPrintLine(message, std::cout);

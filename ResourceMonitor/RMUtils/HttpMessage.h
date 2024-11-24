@@ -5,6 +5,17 @@
 
 namespace Http {
 
+enum class StatusCode {
+    Ok = 200, 
+    NotFound = 404,
+    RequestEntityTooLarge = 413,
+    ServerError = 500,
+    NotImplemented = 501,
+    HttpVersionNotSupported = 505
+};
+
+StatusCode intToStatusCode(int value);
+
 class Message {
 public:
     inline static const std::string STANDARD = "HTTP/1.1";
@@ -49,12 +60,12 @@ public:
 public:
     const std::string& createStringRepresentation() override;
 public:
-    void setStatusCode(int statusCode);
-    int getStatusCode() const;
+    void setStatusCode(StatusCode statusCode);
+    StatusCode getStatusCode() const;
     void setStatusMessage(const std::string& statusMessage);
     const std::string& getStatusMessage() const;
 private:
-    int mStatusCode;
+    StatusCode mStatusCode;
     std::string mStatusMessage;
 };
 

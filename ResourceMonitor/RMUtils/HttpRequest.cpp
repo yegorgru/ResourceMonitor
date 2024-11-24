@@ -152,19 +152,20 @@ void Request::readStatusLine()
 
     LOG::Debug(LOG::composeMessage("Status code:", strStatusCode));
 
-    unsigned int statusCode = 200;
+    Http::StatusCode statusCode = Http::StatusCode::Ok;
 
     try {
-        statusCode = std::stoul(strStatusCode);
+        statusCode = intToStatusCode(std::stoi(strStatusCode));
     }
-    catch (std::logic_error&) {
+    catch (std::logic_error& ex) {
+        LOG::Error(ex.what());
         finish(boost::system::error_code());
         return;
     }
 
+    responseStream.get();   // Remove ' ' from buffer
     std::getline(responseStream, statusMessage, '\r');
-    // Remove symbol '\n' from the buffer.
-    responseStream.get();
+    responseStream.get();   // Remove symbol '\n' from the buffer.
 
     LOG::Debug(LOG::composeMessage("Status message:", statusMessage));
 
@@ -238,7 +239,7 @@ void Request::finish(const boost::system::error_code& ec) {
         LOG::Error(message);
         LOG::SyncPrintLine(message, std::cout);
         mResponseMessage.addHeader("Content-Length", "0");
-        mResponseMessage.setStatusCode(500);
+        mResponseMessage.setStatusCode(Http::StatusCode::ServerError);
         mCallback(mResponseMessage);
     }
     else {
