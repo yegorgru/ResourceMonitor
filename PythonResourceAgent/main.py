@@ -20,12 +20,14 @@ running = True
 def get_basic_stats():
     numcpus = psutil.cpu_count()
     virtual_memory = psutil.virtual_memory()
+    swap_memory = psutil.swap_memory()
     disk_usage = psutil.disk_usage('/')
 
     return {
         "ip": machine_ip,
         "numcpus": numcpus,
         "total virt mem": virtual_memory.total / (1024 ** 3),
+        "total swap mem": swap_memory.total / (1024 ** 3),
         "total disk": disk_usage.total / (1024 ** 3)
     }
 
@@ -52,20 +54,20 @@ def get_cpu_stats():
 
 def get_memory_stats():
     virtual_memory = psutil.virtual_memory()
+    swap_memory = psutil.swap_memory()
 
 
     return {
         "ip": machine_ip,
         "virt_memory": {
-            "usage %": virtual_memory.percent,
-            "used GB": virtual_memory.used / (1024 ** 3),
-            "available GB": virtual_memory.available / (1024 ** 3),
+            "usage virt %": virtual_memory.percent,
+            "used virt GB": virtual_memory.used / (1024 ** 3),
+            "available virt GB": virtual_memory.available / (1024 ** 3),
         },
-        "cpu_usage %": cpu_percent,
-        "cpu_freq": {
-            "freq_curr": cpu_freq.current,
-            "freq_min": cpu_freq.min,
-            "freq_max": cpu_freq.max
+        "swap_memory": {
+            "usage swap %": swap_memory.percent,
+            "used swap GB": swap_memory.used / (1024 ** 3),
+            "free swap GB": swap_memory.free / (1024 ** 3),
         }
     }
 
