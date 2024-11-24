@@ -6,9 +6,9 @@ import time
 import threading
 
 machine_ip = socket.gethostbyname(socket.gethostname())
-urlBasic = f"http://localhost:8080/basic_info/{machine_ip}"
-urlResource = f"http://localhost:8080/resource/{machine_ip}"
-urlNetwork = f"http://localhost:8080/networking/{machine_ip}"
+urlBasic = f"http://localhost:10000/basic_info/{machine_ip}"
+urlResources = f"http://localhost:10000/resources/{machine_ip}"
+urlNetwork = f"http://localhost:10000/networking/{machine_ip}"
 
 
 send_requests = False
@@ -16,23 +16,48 @@ running = True
 
 
 def get_basic_stats():
+    numcpus = psutil.cpu_count()
+    virtual_memory = psutil.virtual_memory()
+    disk_usage = psutil.disk_usage('/')
+
+    return {
+        "ip": machine_ip,
+        "numcpus": numcpus,
+        "total virt mem": virtual_memory.total / (1024 ** 3),
+        "total disk": disk_usage.total / (1024 ** 3)
+    }
+
+
+def get_resources_stats():
     cpu_percent = psutil.cpu_percent(interval=1)
     virtual_memory = psutil.virtual_memory()
     disk_usage = psutil.disk_usage('/')
 
     return {
-        "name": machine_ip,
+        "ip": machine_ip,
         "cpu": {"usage %": cpu_percent},
         "memory": {
             "usage %": virtual_memory.percent,
-            "total GB": virtual_memory.total / (1024 ** 3),
             "used GB": virtual_memory.used / (1024 ** 3)
         },
         "disk": {
             "usage %": disk_usage.percent,
-            "total GB": disk_usage.total / (1024 ** 3),
             "used GB": disk_usage.used / (1024 ** 3)
         }
+    }
+
+
+def get_network_stats():
+    network_io = psutil.net_io_counters()
+    connections = len(psutil.net_connections())
+
+    return {
+        "ip": machine_ip,
+        "i/o": {
+            "packets_sent": network_io.packets_sent,
+            "packets_recv": network_io.packets_recv
+        },
+        "connections": connections
     }
 
 
@@ -52,19 +77,19 @@ def send_stats():
                     else:
                         print("Failed to send basic info:", responseBasic.status_code, responseBasic.text)
                 else:
-                    basicStats = get_basic_stats()
-                    responseResource = requests.put(urlResource, data=json.dumps(basicStats),
+                    resourcesStats = get_resources_stats()
+                    responseResources = requests.put(urlResources, data=json.dumps(resourcesStats),
                                                     headers={'Content-Type': 'application/json'})
-                    if responseResource.status_code == 200:
-                        print("Resource info sent successfully:", basicStats)
+                    if responseResources.status_code == 200:
+                        print("Resources info sent successfully:", resourcesStats)
                     else:
-                        print("Failed to send resource info:", responseResource.status_code, responseResource.text)
+                        print("Failed to send resources info:", responseResources.status_code, responseResources.text)
 
-                    basicStats = get_basic_stats()
-                    responseNetwork = requests.put(urlNetwork, data=json.dumps(basicStats),
+                    networkStats = get_network_stats()
+                    responseNetwork = requests.put(urlNetwork, data=json.dumps(networkStats),
                                                    headers={'Content-Type': 'application/json'})
                     if responseNetwork.status_code == 200:
-                        print("Network info sent successfully:", basicStats)
+                        print("Network info sent successfully:", networkStats)
                     else:
                         print("Failed to send network info:", responseNetwork.status_code, responseNetwork.text)
             except Exception as e:
