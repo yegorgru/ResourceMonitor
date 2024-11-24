@@ -6,6 +6,7 @@ import time
 import threading
 
 machine_ip = socket.gethostbyname(socket.gethostname())
+print(psutil.disk_partitions())
 urlBasic = f"http://localhost:10000/basic_info/{machine_ip}"
 urlCPU = f"http://localhost:10000/cpu/{machine_ip}"
 urlMemory = f"http://localhost:10000/memory/{machine_ip}"
@@ -21,14 +22,16 @@ def get_basic_stats():
     numcpus = psutil.cpu_count()
     virtual_memory = psutil.virtual_memory()
     swap_memory = psutil.swap_memory()
-    disk_usage = psutil.disk_usage('/')
+    num_disks = len(psutil.disk_partitions())
+    disk_C_usage = psutil.disk_usage('/')
 
     return {
         "ip": machine_ip,
         "numcpus": numcpus,
-        "total virt mem": virtual_memory.total / (1024 ** 3),
-        "total swap mem": swap_memory.total / (1024 ** 3),
-        "total disk": disk_usage.total / (1024 ** 3)
+        "total virt mem GB": virtual_memory.total / (1024 ** 3),
+        "total swap mem GB": swap_memory.total / (1024 ** 3),
+        "numdisks": num_disks,
+        "total_C_disk GB": disk_C_usage.total / (1024 ** 3)
     }
 
 def get_cpu_stats():
@@ -46,9 +49,9 @@ def get_cpu_stats():
         },
         "cpu_usage %": cpu_percent,
         "cpu_freq": {
-            "freq_curr": cpu_freq.current,
-            "freq_min": cpu_freq.min,
-            "freq_max": cpu_freq.max
+            "freq_curr Mhz": cpu_freq.current,
+            "freq_min Mhz": cpu_freq.min,
+            "freq_max Mhz": cpu_freq.max
         }
     }
 
@@ -72,21 +75,22 @@ def get_memory_stats():
     }
 
 
-def get_resources_stats():
-    cpu_percent = psutil.cpu_percent(interval=1)
-    virtual_memory = psutil.virtual_memory()
-    disk_usage = psutil.disk_usage('/')
+def get_disk_stats():
+    disk_C_usage = psutil.disk_usage('/')
+    disk_io = psutil.disk_io_counters()
 
     return {
         "ip": machine_ip,
-        "cpu": {"usage %": cpu_percent},
-        "memory": {
-            "usage %": virtual_memory.percent,
-            "used GB": virtual_memory.used / (1024 ** 3)
+        "disk usage": {
+            "usage %": disk_C_usage.percent,
+            "used GB": disk_C_usage.used / (1024 ** 3),
+            "free GB": disk_C_usage.free / (1024 ** 3)
         },
-        "disk": {
-            "usage %": disk_usage.percent,
-            "used GB": disk_usage.used / (1024 ** 3)
+        "disk i/o": {
+            "read_count": disk_io.read_count,
+            "write_count": disk_io.write_count,
+            "read_bytes": disk_io.read_bytes,
+            "write_bytes": disk_io.write_bytes
         }
     }
 
