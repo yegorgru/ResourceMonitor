@@ -6,7 +6,7 @@ import time
 import threading
 
 machine_ip = socket.gethostbyname(socket.gethostname())
-urlInit = f"http://localhost:8080/init/{machine_ip}"
+urlBasic = f"http://localhost:8080/basic_info/{machine_ip}"
 urlResource = f"http://localhost:8080/resource/{machine_ip}"
 urlNetwork = f"http://localhost:8080/networking/{machine_ip}"
 
@@ -15,7 +15,7 @@ send_requests = False
 running = True
 
 
-def get_system_stats():
+def get_basic_stats():
     cpu_percent = psutil.cpu_percent(interval=1)
     virtual_memory = psutil.virtual_memory()
     disk_usage = psutil.disk_usage('/')
@@ -38,15 +38,35 @@ def get_system_stats():
 
 def send_stats():
     global send_requests, running
+    firstReq = True
     while running:
         if send_requests:
             try:
-                stats = get_system_stats()
-                response = requests.put(urlInit, data=json.dumps(stats), headers={'Content-Type': 'application/json'})
-                if response.status_code == 200:
-                    print("Stats sent successfully:", stats)
+                if firstReq:
+                    basicStats = get_basic_stats()
+                    responseBasic = requests.put(urlBasic, data=json.dumps(basicStats),
+                                                 headers={'Content-Type': 'application/json'})
+                    if responseBasic.status_code == 200:
+                        print("Basic info sent successfully:", basicStats)
+                        firstReq = False
+                    else:
+                        print("Failed to send basic info:", responseBasic.status_code, responseBasic.text)
                 else:
-                    print("Failed to send stats:", response.status_code, response.text)
+                    basicStats = get_basic_stats()
+                    responseResource = requests.put(urlResource, data=json.dumps(basicStats),
+                                                    headers={'Content-Type': 'application/json'})
+                    if responseResource.status_code == 200:
+                        print("Resource info sent successfully:", basicStats)
+                    else:
+                        print("Failed to send resource info:", responseResource.status_code, responseResource.text)
+
+                    basicStats = get_basic_stats()
+                    responseNetwork = requests.put(urlNetwork, data=json.dumps(basicStats),
+                                                   headers={'Content-Type': 'application/json'})
+                    if responseNetwork.status_code == 200:
+                        print("Network info sent successfully:", basicStats)
+                    else:
+                        print("Failed to send network info:", responseNetwork.status_code, responseNetwork.text)
             except Exception as e:
                 print("Error:", e)
             time.sleep(30)
