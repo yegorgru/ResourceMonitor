@@ -7,8 +7,10 @@ import threading
 
 machine_ip = socket.gethostbyname(socket.gethostname())
 urlBasic = f"http://localhost:10000/basic_info/{machine_ip}"
-urlResources = f"http://localhost:10000/resources/{machine_ip}"
-urlNetwork = f"http://localhost:10000/networking/{machine_ip}"
+urlCPU = f"http://localhost:10000/cpu/{machine_ip}"
+urlMemory = f"http://localhost:10000/memory/{machine_ip}"
+urlDisks = f"http://localhost:10000/disks/{machine_ip}"
+urlNetwork = f"http://localhost:10000/network/{machine_ip}"
 
 
 send_requests = False
@@ -25,6 +27,46 @@ def get_basic_stats():
         "numcpus": numcpus,
         "total virt mem": virtual_memory.total / (1024 ** 3),
         "total disk": disk_usage.total / (1024 ** 3)
+    }
+
+def get_cpu_stats():
+    cpu_times = psutil.cpu_times()
+    cpu_percent = psutil.cpu_percent(interval=1)
+    cpu_freq = psutil.cpu_freq()
+
+
+    return {
+        "ip": machine_ip,
+        "cpu_times": {
+            "cpu_user": cpu_times.user,
+            "cpu_system": cpu_times.system,
+            "cpu_idle": cpu_times.idle
+        },
+        "cpu_usage %": cpu_percent,
+        "cpu_freq": {
+            "freq_curr": cpu_freq.current,
+            "freq_min": cpu_freq.min,
+            "freq_max": cpu_freq.max
+        }
+    }
+
+def get_memory_stats():
+    virtual_memory = psutil.virtual_memory()
+
+
+    return {
+        "ip": machine_ip,
+        "virt_memory": {
+            "usage %": virtual_memory.percent,
+            "used GB": virtual_memory.used / (1024 ** 3),
+            "available GB": virtual_memory.available / (1024 ** 3),
+        },
+        "cpu_usage %": cpu_percent,
+        "cpu_freq": {
+            "freq_curr": cpu_freq.current,
+            "freq_min": cpu_freq.min,
+            "freq_max": cpu_freq.max
+        }
     }
 
 
