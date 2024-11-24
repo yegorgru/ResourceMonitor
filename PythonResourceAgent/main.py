@@ -1,11 +1,15 @@
 import psutil
 import requests
+import socket
 import json
 import time
 import threading
 
-machine_name = "machine"
-url = f"http://localhost:8080/{machine_name}"
+machine_ip = socket.gethostbyname(socket.gethostname())
+urlInit = f"http://localhost:8080/init/{machine_ip}"
+urlResource = f"http://localhost:8080/resource/{machine_ip}"
+urlNetwork = f"http://localhost:8080/networking/{machine_ip}"
+
 
 send_requests = False
 running = True
@@ -17,7 +21,7 @@ def get_system_stats():
     disk_usage = psutil.disk_usage('/')
 
     return {
-        "name": machine_name,
+        "name": machine_ip,
         "cpu": {"usage %": cpu_percent},
         "memory": {
             "usage %": virtual_memory.percent,
@@ -38,7 +42,7 @@ def send_stats():
         if send_requests:
             try:
                 stats = get_system_stats()
-                response = requests.put(url, data=json.dumps(stats), headers={'Content-Type': 'application/json'})
+                response = requests.put(urlInit, data=json.dumps(stats), headers={'Content-Type': 'application/json'})
                 if response.status_code == 200:
                     print("Stats sent successfully:", stats)
                 else:
