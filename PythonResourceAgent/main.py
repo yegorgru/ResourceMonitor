@@ -6,7 +6,6 @@ import time
 import threading
 
 machine_ip = socket.gethostbyname(socket.gethostname())
-print(psutil.disk_partitions())
 urlBasic = f"http://localhost:10000/basic_info/{machine_ip}"
 urlCPU = f"http://localhost:10000/cpu/{machine_ip}"
 urlMemory = f"http://localhost:10000/memory/{machine_ip}"
