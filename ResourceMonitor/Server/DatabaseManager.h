@@ -1,8 +1,7 @@
 #pragma once
 
-#include "MachineState.h"
 #include "Singleton.h"
-#include "Service.h"
+#include "HttpRequest.h"
 
 #include <string>
 
@@ -12,8 +11,8 @@ class DatabaseManager : public Singleton<DatabaseManager>
 {
     friend class Singleton<DatabaseManager>;
 public:
-    void getMachineState(const std::string& machineName, ServicePtr service) const;
-    void setMachineState(const MachineState& machine);
+    void get(const std::string& endpoint, Http::Request::Callback callback) const;
+    void put(const std::string& endpoint, const std::string& info, Http::Request::Callback callback);
 private:
     DatabaseManager(const std::string& name, int port);
 private:

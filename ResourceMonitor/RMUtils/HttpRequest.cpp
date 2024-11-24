@@ -1,7 +1,6 @@
 #include "HttpRequest.h"
 
 #include "Log.h"
-#include "JsonAdapter.h"
 
 namespace Http {
 
@@ -22,10 +21,10 @@ void Request::get(const std::string& resource) {
     execute();
 }
 
-void Request::put(const std::string& resource, std::string&& body) {
+void Request::put(const std::string& resource, const std::string& body) {
     mRequestMessage.setMethod("PUT");
     mRequestMessage.setResource(resource);
-    mRequestMessage.setBody(std::move(body));
+    mRequestMessage.setBody(body);
     execute();
 }
 

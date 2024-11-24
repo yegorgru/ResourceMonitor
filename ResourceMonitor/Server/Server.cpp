@@ -1,8 +1,6 @@
 #include "Server.h"
 
 #include "Log.h"
-#include "JsonAdapter.h"
-#include "MachineState.h"
 
 #include <iostream>
 

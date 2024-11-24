@@ -23,7 +23,7 @@ public:
     Request(IoService& ios, const std::string& host, unsigned int port, Callback callback = [](MessageResponse&) {});
 public:
     void get(const std::string& resource);
-    void put(const std::string& resource, std::string&& body);
+    void put(const std::string& resource, const std::string& body);
 public:
     void cancel();
 private:

@@ -1,7 +1,6 @@
 #include "Service.h"
 #include "Log.h"
 #include "DatabaseManager.h"
-#include "JsonAdapter.h"
 
 #include <map>
 
@@ -136,18 +135,41 @@ void Service::processHeadersAndContent() {
 
     auto method = mRequest.getMethod();
     if (method == Http::MessageRequest::Method::PUT) {
-        auto machineState = JsonAdapter::jsonToMachineState(mRequest.getBody());
-        DatabaseManager::Get().setMachineState(*machineState);
-        LOG::Debug("Set new machine state");
+        LOG::Debug("PUT request processing");
+        auto callback = [](Http::MessageResponse& response) {
+            if (response.getStatusCode() == 200) {
+                LOG::Info("Successfuly write info to database");
+            }
+            else {
+                LOG::Error("Error while writing info to database");
+            }
+        };
+        DatabaseManager::Get().put(mRequest.getResource(), mRequest.getBody(), callback);
+        LOG::Debug(LOG::composeMessage("Put info to database", mRequest.getResource(), mRequest.getBody()));
         sendResponse(200, "");
     }
     else if (method == Http::MessageRequest::Method::GET) {
-        LOG::Debug("Request processing");
-        DatabaseManager::Get().getMachineState(mRequest.getResource(), mSelfPtr);
+        LOG::Debug("GET request processing");
+        auto callback = [this](Http::MessageResponse& response) {
+            //TODO: review if && or const& should be used
+            auto statusCode = response.getStatusCode();
+            if (statusCode == 200) {
+                LOG::Info("Successfuly get info from database");
+                std::string responseStr = response.getBody();
+                LOG::Debug(LOG::composeMessage("get response from db:", responseStr));
+                sendResponse(200, std::move(responseStr));
+            }
+            else {
+                auto responseStr = response.getBody();
+                LOG::Error(LOG::composeMessage("Error while getting info from database", statusCode, responseStr));
+                sendResponse(statusCode, std::move(responseStr));
+            }
+        };
+        DatabaseManager::Get().get(mRequest.getResource(), callback);
     }
 }
 
-void Service::sendResponse(int statusCode, std::string&& response) {
+void Service::sendResponse(int statusCode, const std::string& response) {
     LOG::Debug("Start sending response");
 
     mSocket->shutdown(boost::asio::ip::tcp::socket::shutdown_receive);
@@ -155,7 +177,7 @@ void Service::sendResponse(int statusCode, std::string&& response) {
     mResponse.setStatusCode(statusCode);
     mResponse.addHeader("Content-Length", std::to_string(response.length()));
     mResponse.addHeader("Access-Control-Allow-Origin", "*");
-    mResponse.setBody(std::move(response));
+    mResponse.setBody(response);
 
     boost::asio::async_write(*mSocket.get(), boost::asio::buffer(mResponse.createStringRepresentation()),
         [this](const boost::system::error_code& ec, std::size_t bytes_transferred) {

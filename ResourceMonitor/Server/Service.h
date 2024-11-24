@@ -22,7 +22,7 @@ public:
     Service(TcpSocketPtr socket);
 public:
     void startHandling();
-    void sendResponse(int statusCode, std::string&& response);
+    void sendResponse(int statusCode, const std::string& response);
 private:
     void processRequestLine();
     void processHeadersAndContent();

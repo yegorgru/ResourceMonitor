@@ -1,6 +1,7 @@
 #include "Client.h"
 #include "Log.h"
-#include "JsonAdapter.h"
+
+#include <nlohmann/json.hpp>
 
 namespace ResourceMonitorClient {
 
@@ -19,32 +20,39 @@ Client::~Client()
 }
 
 void Client::makeRequest(int serverPort, const std::string& serverName) {
+    using json = nlohmann::json;
+
     LOG::Debug("Making request");
     static auto clientCallback = [](Http::MessageResponse& response) {
         auto statusCode = response.getStatusCode();
         std::string message;
         if (statusCode == 200) {
-            auto machineState = JsonAdapter::jsonToMachineState(response.getBody());
-            if (machineState) {
-                LOG::Info(LOG::composeMessage("Name:", machineState->mName));
-                LOG::Info(LOG::composeMessage("CpuUsage:", machineState->mCpuUsage));
-                LOG::Info(LOG::composeMessage("MemoryUsage:", machineState->mMemoryUsage));
-                LOG::Info(LOG::composeMessage("TotalMemory:", machineState->mTotalMemory));
-                LOG::Info(LOG::composeMessage("MemoryUsed:", machineState->mMemoryUsed));
-                LOG::Info(LOG::composeMessage("DiskUsage:", machineState->mDiskUsage));
-                LOG::Info(LOG::composeMessage("TotalDisk:", machineState->mTotalDisk));
-                LOG::Info(LOG::composeMessage("DiskUsed:", machineState->mDiskUsed));
+            const auto& jsonStr = response.getBody();
+            auto parsedJson = json::parse(jsonStr);
+            if (!parsedJson.empty() && !parsedJson.contains("error")) {
+                //LOG::Info(LOG::composeMessage("Name:", machineState->mName));
+                LOG::Info(LOG::composeMessage("CpuUsage:", parsedJson["cpu"]["usage %"]));
+                LOG::Info(LOG::composeMessage("MemoryUsage:", parsedJson["memory"]["usage %"]));
+                LOG::Info(LOG::composeMessage("TotalMemory:", parsedJson["memory"]["total GB"]));
+                LOG::Info(LOG::composeMessage("MemoryUsed:", parsedJson["memory"]["used GB"]));
+                LOG::Info(LOG::composeMessage("DiskUsage:", parsedJson["disk"]["usage %"]));
+                LOG::Info(LOG::composeMessage("TotalDisk:", parsedJson["disk"]["total GB"]));
+                LOG::Info(LOG::composeMessage("DiskUsed:", parsedJson["disk"]["used GB"]));
 
                 message = "Request processed successfully";
                 LOG::Info(message);
             }
+            else if (parsedJson.empty()) {
+                message = LOG::composeMessage("Failed to parse json response", jsonStr);
+                LOG::Error(message);
+            }
             else {
-                message = LOG::composeMessage("Failed to parse machineState", response.getBody());
+                message = LOG::composeMessage("Error message from server", parsedJson["error"]);
                 LOG::Error(message);
             }
         }
         else {
-            message = LOG::composeMessage("Failed to get machine state from server", statusCode, response.getBody());
+            message = LOG::composeMessage("Failed to get info from server", statusCode, response.getBody());
             LOG::Error(message);
         }
         LOG::SyncPrintLine(message, std::cout);

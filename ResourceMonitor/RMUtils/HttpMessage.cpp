@@ -60,8 +60,8 @@ const std::string& Message::getHeader(const std::string& name) const {
 	return "";
 }
 
-void Message::setBody(std::string&& body) {
-	mBody = std::move(body);
+void Message::setBody(const std::string& body) {
+	mBody = body;
 }
 
 const std::string& Message::getBody() const {
