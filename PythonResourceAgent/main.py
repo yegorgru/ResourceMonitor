@@ -103,7 +103,13 @@ def get_network_stats():
         "ip": machine_ip,
         "i/o": {
             "packets_sent": network_io.packets_sent,
-            "packets_recv": network_io.packets_recv
+            "packets_recv": network_io.packets_recv,
+            "bytes_sent": network_io.bytes_sent,
+            "bytes_recv": network_io.packets_recv,
+            "errors in": network_io.errin,
+            "errors out": network_io.errout,
+            "pack drop in": network_io.dropin,
+            "pack drop out": network_io.dropout
         },
         "connections": connections
     }
