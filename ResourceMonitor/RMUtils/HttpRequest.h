@@ -13,7 +13,6 @@ namespace Http {
 
 class Request;
 using RequestPtr = std::shared_ptr<Request>;
-using RequestWeakPtr = std::weak_ptr<Request>;
 
 class Request : public std::enable_shared_from_this<Request> {
 public:
@@ -25,6 +24,7 @@ public:
     static const Port DEFAULT_PORT = 80;
 public:
     Request(IoService& ios, const std::string& host, unsigned int port, Callback callback = [](const MessageResponse&, const Id&) {});
+    ~Request();
 public:
     void get(const std::string& resource);
     void put(const std::string& resource, const std::string& body);
@@ -32,6 +32,7 @@ public:
     void cancel();
 public:
     const Id& getId() const;
+    bool isCompleted();
 private:
     void execute();
     void connect(boost::asio::ip::tcp::resolver::iterator iterator);
@@ -67,7 +68,7 @@ private:
 
     ResponseBuf mResponseBuf;
 
-    AtomicFlag mWasCanceled;
+    AtomicFlag mIsCanceled;
 
     IoService& mIoService;
 };

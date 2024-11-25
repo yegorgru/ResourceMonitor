@@ -9,6 +9,7 @@ enum class StatusCode {
     Ok = 200, 
     NotFound = 404,
     RequestEntityTooLarge = 413,
+    ClientClosedRequest = 499,
     ServerError = 500,
     NotImplemented = 501,
     HttpVersionNotSupported = 505

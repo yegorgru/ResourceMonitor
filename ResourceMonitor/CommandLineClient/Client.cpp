@@ -19,7 +19,7 @@ Client::Client()
             LOG::Trace("Start requests cleaning");
             std::lock_guard<std::mutex> lg(mRequestsMutex);
             for (auto it = mRequests.begin(); it != mRequests.end();) {
-                if (!it->second.lock()) {
+                if (it->second->isCompleted()) {
                     LOG::Debug(LOG::composeMessage("Erasing request entry from storage as it's completed or canceled. Id:", boost::uuids::to_string(it->first)));
                     it = mRequests.erase(it);
                 }
@@ -46,6 +46,10 @@ std::string Client::makeRequest(int serverPort, const std::string& serverName) {
     LOG::Debug("Making request");
     static auto clientCallback = [](const Http::MessageResponse& response, const Http::Request::Id& id) {
         auto statusCode = response.getStatusCode();
+        if (statusCode == Http::StatusCode::ClientClosedRequest) {
+            LOG::Debug("Callback for canceled request");
+            return;
+        }
         std::string message;
         if (statusCode == Http::StatusCode::Ok) {
             const auto& jsonStr = response.getBody();
@@ -98,9 +102,8 @@ void Client::cancelRequest(const std::string strId) {
         std::lock_guard<std::mutex> lg(mRequestsMutex);
         auto found = mRequests.find(id);
         if (found != mRequests.end()) {
-            auto sharedPtr = found->second.lock();
-            if (sharedPtr) {
-                sharedPtr->cancel();
+            if (!found->second->isCompleted()) {
+                found->second->cancel();
                 message = LOG::composeMessage("Request canceled. Id:", strId);
                 LOG::Info(message);
             }

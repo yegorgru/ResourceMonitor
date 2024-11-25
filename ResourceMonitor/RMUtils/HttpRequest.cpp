@@ -12,9 +12,13 @@ Request::Request(IoService& ios, const std::string& host, unsigned int port, Cal
     , mCallback(callback)
     , mSock(ios)
     , mResolver(ios)
-    , mWasCanceled(false)
+    , mIsCanceled(false)
     , mIoService(ios)
 {
+}
+
+Request::~Request() {
+    LOG::Trace("Request destructor");
 }
 
 void Request::get(const std::string& resource) {
@@ -43,7 +47,7 @@ void Request::execute() {
         mHost, std::to_string(mPort), boost::asio::ip::tcp::resolver::query::numeric_service
     );
 
-    if (mWasCanceled) {
+    if (mIsCanceled) {
         finish(boost::system::error_code(boost::asio::error::operation_aborted));
         return;
     }
@@ -60,12 +64,22 @@ void Request::execute() {
 }
 
 void Request::cancel() {
-    mWasCanceled = true;
+    if (isCompleted()) {
+        return;
+    }
+    LOG::Debug(LOG::composeMessage("Cancelling request. Id:", boost::uuids::to_string(mId)));
+    mResponseMessage.setStatusCode(Http::StatusCode::ClientClosedRequest);
+    mCallback(mResponseMessage, mId);
+    mIsCanceled = true;
     mResolver.cancel();
     if (mSock.is_open()) {
         mSock.cancel();
     }
     mSelfPtr.reset();
+}
+
+bool Request::isCompleted() {
+    return mSelfPtr == nullptr;
 }
 
 const Request::Id& Request::getId() const {
@@ -74,7 +88,7 @@ const Request::Id& Request::getId() const {
 
 void Request::connect(boost::asio::ip::tcp::resolver::iterator iterator) {
     LOG::Debug("Start connecting to server");
-    if (mWasCanceled) {
+    if (mIsCanceled) {
         finish(boost::system::error_code(boost::asio::error::operation_aborted));
         return;
     }
@@ -95,7 +109,7 @@ void Request::sendRequest() {
 
     mRequestMessage.addHeader("Host", mHost);
 
-    if (mWasCanceled) {
+    if (mIsCanceled) {
         finish(boost::system::error_code(boost::asio::error::operation_aborted));
         return;
     }
@@ -117,7 +131,7 @@ void Request::readResponse()
 {
     mSock.shutdown(boost::asio::ip::tcp::socket::shutdown_send);
 
-    if (mWasCanceled) {
+    if (mIsCanceled) {
         finish(boost::system::error_code(boost::asio::error::operation_aborted));
         return;
     }
@@ -178,7 +192,7 @@ void Request::readStatusLine()
     mResponseMessage.setStatusCode(statusCode);
     mResponseMessage.setStatusMessage(statusMessage);
 
-    if (mWasCanceled) {
+    if (mIsCanceled) {
         finish(boost::system::error_code(boost::asio::error::operation_aborted));
         return;
     }
@@ -241,20 +255,20 @@ void Request::readHeaders()
 void Request::finish(const boost::system::error_code& ec) {
     LOG::Debug("Finish request");
     if (ec == boost::asio::error::operation_aborted) {
-        LOG::Info(LOG::composeMessage("Request was canceled. Request id:", boost::uuids::to_string(mId)));
+        LOG::Info(LOG::composeMessage("Request was canceled"));
     }
     else if (ec.value() != 0) {
         auto message = LOG::composeMessage("Error occured! Error code =", ec.value(), ". Message:", ec.message(), "Request id:", boost::uuids::to_string(mId));
         LOG::Error(message);
-        LOG::SyncPrintLine(message, std::cout);
         mResponseMessage.addHeader("Content-Length", "0");
         mResponseMessage.setStatusCode(Http::StatusCode::ServerError);
         mCallback(mResponseMessage, mId);
+        mSelfPtr.reset();
     }
     else {
         mCallback(mResponseMessage, mId);
+        mSelfPtr.reset();
     }
-    mSelfPtr.reset();
 }
 
 } // namespace ResourceMonitorClient::Http

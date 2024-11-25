@@ -138,18 +138,21 @@ void Service::processHeadersAndContent() {
     auto method = mRequest.getMethod();
     if (method == Http::MessageRequest::Method::PUT) {
         LOG::Debug("PUT request processing");
-        auto callback = [](const Http::MessageResponse& response, const Http::Request::Id& id) {
+        auto callback = [this](const Http::MessageResponse& response, const Http::Request::Id& id) {
             auto statusCode = response.getStatusCode();
             if (statusCode == Http::StatusCode::Ok) {
                 LOG::Info(LOG::composeMessage("Successfuly write info to database. Request:", boost::uuids::to_string(id)));
+                sendResponse(statusCode, "");
             }
             else {
+                if (statusCode == Http::StatusCode::ClientClosedRequest) {
+                    statusCode = Http::StatusCode::ServerError;
+                }
                 LOG::Error(LOG::composeMessage("Error while writing info to database", static_cast<int>(statusCode), "Request:", boost::uuids::to_string(id)));
+                sendResponse(statusCode, response.getBody());
             }
         };
         DatabaseManager::Get().put(mRequest.getResource(), mRequest.getBody(), callback);
-        LOG::Debug(LOG::composeMessage("Put info to database", mRequest.getResource(), mRequest.getBody()));
-        sendResponse(Http::StatusCode::Ok, "");
     }
     else if (method == Http::MessageRequest::Method::GET) {
         LOG::Debug("GET request processing");
@@ -163,6 +166,9 @@ void Service::processHeadersAndContent() {
                 sendResponse(Http::StatusCode::Ok, std::move(responseStr));
             }
             else {
+                if (statusCode == Http::StatusCode::ClientClosedRequest) {
+                    statusCode = Http::StatusCode::ServerError;
+                }
                 auto responseStr = response.getBody();
                 LOG::Error(LOG::composeMessage("Error while getting info from database", static_cast<int>(statusCode), responseStr));
                 sendResponse(statusCode, std::move(responseStr));

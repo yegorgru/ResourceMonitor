@@ -26,7 +26,7 @@ public:
 private:
     using IoService = boost::asio::io_service;
     using Work = boost::asio::executor_work_guard<boost::asio::io_context::executor_type>;
-    using RequestStorage = std::map<Http::Request::Id, Http::RequestWeakPtr>;
+    using RequestStorage = std::map<Http::Request::Id, Http::RequestPtr>;
 private:
     IoService mIoService;
     Work mWork;
