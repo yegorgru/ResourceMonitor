@@ -31,7 +31,6 @@ private:
     IoService mIoService;
     Work mWork;
     std::jthread mThreadIo;
-    std::jthread mThreadCleaner;
     std::mutex mRequestsMutex;
     RequestStorage mRequests;
 };

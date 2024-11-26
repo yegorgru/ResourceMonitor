@@ -12,24 +12,6 @@ Client::Client()
     mThreadIo = std::jthread([this]() { 
         mIoService.run();
     });
-    mThreadCleaner = std::jthread([this](std::stop_token stopToken) {
-        using namespace std::chrono_literals;
-        while (!stopToken.stop_requested()) {
-            std::this_thread::sleep_for(3s);
-            LOG::Trace("Start requests cleaning");
-            std::lock_guard<std::mutex> lg(mRequestsMutex);
-            for (auto it = mRequests.begin(); it != mRequests.end();) {
-                if (it->second->isCompleted()) {
-                    LOG::Debug(LOG::composeMessage("Erasing request entry from storage as it's completed or canceled. Id:", boost::uuids::to_string(it->first)));
-                    it = mRequests.erase(it);
-                }
-                else {
-                    ++it;
-                }
-            }
-        }
-        LOG::Debug("Exiting cleaner thread");
-    });
 }
 
 Client::~Client()
@@ -44,11 +26,16 @@ std::string Client::makeRequest(int serverPort, const std::string& serverName) {
     using json = nlohmann::json;
 
     LOG::Debug("Making request");
-    static auto clientCallback = [](const Http::MessageResponse& response, const Http::Request::Id& id) {
+    auto clientCallback = [this](const Http::MessageResponse& response, const Http::Request::Id& id) {
         auto statusCode = response.getStatusCode();
         if (statusCode == Http::StatusCode::ClientClosedRequest) {
             LOG::Debug("Callback for canceled request");
             return;
+        }
+        else {
+            std::lock_guard<std::mutex> lg(mRequestsMutex);
+            mRequests.erase(id);
+            LOG::Debug(LOG::composeMessage("Completed request removed from storage. Id:", boost::uuids::to_string(id)));
         }
         std::string message;
         if (statusCode == Http::StatusCode::Ok) {
@@ -106,15 +93,17 @@ void Client::cancelRequest(const std::string strId) {
                 found->second->cancel();
                 message = LOG::composeMessage("Request canceled. Id:", strId);
                 LOG::Info(message);
+                mRequests.erase(found);
+                LOG::Debug(LOG::composeMessage("Canceled request removed from storage. Id:", boost::uuids::to_string(id)));
             }
             else {
-                message = LOG::composeMessage("Request already completed. Id:", strId);
-                LOG::Info(LOG::composeMessage(message));
+                message = LOG::composeMessage("Error: completed request still in storage. Id:", strId);
+                LOG::Error(message);
             }
         }
         else {
             message = LOG::composeMessage("No requests with such id in storage. Id:", strId);
-            LOG::Info(LOG::composeMessage(message));
+            LOG::Info(message);
         }
     }
     catch (const std::runtime_error&)
@@ -127,10 +116,8 @@ void Client::cancelRequest(const std::string strId) {
 
 void Client::close() {
     LOG::Debug("Client close");
-    mThreadCleaner.request_stop();
     mWork.reset();
     mThreadIo.join();
-    mThreadCleaner.join();
 }
 
 } // namespace ResourceMonitorClient
