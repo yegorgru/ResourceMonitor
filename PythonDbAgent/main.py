@@ -25,28 +25,85 @@ def init_db():
     ''')
 
     cursor.execute('''
-        CREATE TABLE IF NOT EXISTS IdIp (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            ip TEXT UNIQUE NOT NULL           
-        )
-        ''')
+    CREATE TABLE IF NOT EXISTS IdIp (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        ip TEXT UNIQUE NOT NULL           
+    )
+    ''')
 
     cursor.execute('''
-            CREATE TABLE IF NOT EXISTS MachineBasic (
-                id INTEGER PRIMARY KEY,
-                numcpus INTEGER,
-                total_virt_mem_gb REAL,
-                total_swap_mem_gb REAL,
-                numdisks INTEGER,
-                total_c_disk_gb REAL,
-                FOREIGN KEY (id) REFERENCES IdIp (id) ON DELETE CASCADE           
-            )
-            ''')
+    CREATE TABLE IF NOT EXISTS MachineBasic (
+        id INTEGER PRIMARY KEY,
+        numcpus INTEGER,
+        total_virt_mem_gb REAL,
+        total_swap_mem_gb REAL,
+        numdisks INTEGER,
+        total_c_disk_gb REAL,
+        FOREIGN KEY (id) REFERENCES IdIp (id) ON DELETE CASCADE           
+    )
+    ''')
+
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS MachineCPU (
+        id INTEGER PRIMARY KEY,
+        cpu_user_time REAL,
+        cpu_system_time REAL,
+        cpu_idle_time REAL,
+        cpu_usage REAL,
+        freq_curr REAL,
+        freq_min REAL,
+        freq_max REAL,
+        FOREIGN KEY (id) REFERENCES IdIp (id) ON DELETE CASCADE           
+    )
+    ''')
+
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS MachineMemory (
+        id INTEGER PRIMARY KEY,
+        virt_usage REAL,
+        virt_used REAL,
+        virt_free REAL,
+        swap_usage REAL,
+        swap_used REAL,
+        swap_free REAL,
+        FOREIGN KEY (id) REFERENCES IdIp (id) ON DELETE CASCADE           
+    )
+    ''')
+
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS MachineDisk (
+        id INTEGER PRIMARY KEY,
+        C_usage REAL,
+        C_used REAL,
+        C_free REAL,
+        read_count INTEGER,
+        write_count INTEGER,
+        read_bytes REAL,
+        write_bytes REAL,
+        FOREIGN KEY (id) REFERENCES IdIp (id) ON DELETE CASCADE           
+    )
+    ''')
+
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS MachineNetwork (
+        id INTEGER PRIMARY KEY,
+        pack_sent INTEGER,
+        pack_rcv INTEGER,
+        bytes_sent REAL,
+        bytes_rcv REAL,
+        err_in INTEGER,
+        err_out INTEGER,
+        drop_in INTEGER,
+        drop_out INTEGER,
+        connections INTEGER,
+        FOREIGN KEY (id) REFERENCES IdIp (id) ON DELETE CASCADE           
+    )
+    ''')
     conn.commit()
     return conn
 
 
-def save_machine_state(conn, machine_data):
+def save_machine_state(conn, machine_data, path):
     cursor = conn.cursor()
     cursor.execute('''
     INSERT OR REPLACE INTO machine_states (name, cpu_usage, memory_usage, memory_total, memory_used, disk_usage, disk_total, disk_used)
@@ -153,7 +210,7 @@ def run_server(host='localhost', port=10000):
                             machine_data = json.loads(json_data)
 
                             # Save machine state to the database
-                            save_machine_state(conn, machine_data)
+                            save_machine_state(conn, machine_data, path)
                             send_http_response(client_socket, "200 OK", "Machine state saved successfully")
                         except (json.JSONDecodeError, ValueError) as e:
                             print("Failed to parse JSON data:", e)
