@@ -39,7 +39,8 @@ def init_db():
         total_swap_mem_gb REAL,
         numdisks INTEGER,
         total_c_disk_gb REAL,
-        FOREIGN KEY (id) REFERENCES IdIp (id) ON DELETE CASCADE           
+        Timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (id) REFERENCES IdIp (id) ON DELETE CASCADE         
     )
     ''')
 
@@ -53,6 +54,7 @@ def init_db():
         freq_curr REAL,
         freq_min REAL,
         freq_max REAL,
+        Timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (id) REFERENCES IdIp (id) ON DELETE CASCADE           
     )
     ''')
@@ -66,6 +68,7 @@ def init_db():
         swap_usage REAL,
         swap_used REAL,
         swap_free REAL,
+        Timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (id) REFERENCES IdIp (id) ON DELETE CASCADE           
     )
     ''')
@@ -80,6 +83,7 @@ def init_db():
         write_count INTEGER,
         read_bytes REAL,
         write_bytes REAL,
+        Timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (id) REFERENCES IdIp (id) ON DELETE CASCADE           
     )
     ''')
@@ -96,6 +100,7 @@ def init_db():
         drop_in INTEGER,
         drop_out INTEGER,
         connections INTEGER,
+        Timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (id) REFERENCES IdIp (id) ON DELETE CASCADE           
     )
     ''')
@@ -105,6 +110,7 @@ def init_db():
 
 def save_machine_state(conn, machine_data, path):
     cursor = conn.cursor()
+    _, table, ip = path.split('/')
     cursor.execute('''
     INSERT OR REPLACE INTO machine_states (name, cpu_usage, memory_usage, memory_total, memory_used, disk_usage, disk_total, disk_used)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?)
