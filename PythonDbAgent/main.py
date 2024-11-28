@@ -33,13 +33,14 @@ def init_db():
 
     cursor.execute('''
     CREATE TABLE IF NOT EXISTS MachineBasic (
-        id INTEGER PRIMARY KEY,
+        id INTEGER NOT NULL,
         numcpus INTEGER,
         total_virt_mem_gb REAL,
         total_swap_mem_gb REAL,
         numdisks INTEGER,
         total_c_disk_gb REAL,
-        Timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+        Timestamp DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL,
+        PRIMARY KEY (id, Timestamp),
         FOREIGN KEY (id) REFERENCES IdIp (id) ON DELETE CASCADE         
     )
     ''')
@@ -111,6 +112,27 @@ def init_db():
 def save_machine_state(conn, machine_data, path):
     cursor = conn.cursor()
     _, table, ip = path.split('/')
+    cursor.execute('SELECT * FROM IdIp WHERE ip = ?', (ip,))
+    results = cursor.fetchone()
+    if not(results):
+        cursor.execute('INSERT INTO IdIp (ip) VALUES (?)', (ip,))
+        conn.commit()
+        cursor.execute('SELECT * FROM IdIp WHERE ip = ?', (ip,))
+        results = cursor.fetchone()
+    machine_id = results[0]
+    if table == 'basic_info':
+        cursor.execute('''
+            INSERT INTO MachineBasic (id, numcpus, total_virt_mem_gb, total_swap_mem_gb, numdisks, total_c_disk_gb)
+            VALUES (?, ?, ?, ?, ?, ?)
+            ''', (
+            machine_id,
+            machine_data["numcpus"],
+            machine_data["total virt mem GB"],
+            machine_data["total swap mem GB"],
+            machine_data["numdisks"],
+            machine_data["total_C_disk GB"],
+        ))
+    conn.commit()
     cursor.execute('''
     INSERT OR REPLACE INTO machine_states (name, cpu_usage, memory_usage, memory_total, memory_used, disk_usage, disk_total, disk_used)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?)
