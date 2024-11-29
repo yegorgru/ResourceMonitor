@@ -6,7 +6,7 @@ import threading
 
 server_running = False
 server_thread = None
-
+server_socket = None
 
 def init_db():
     conn = sqlite3.connect("../Database/machine_states.db")
@@ -232,65 +232,75 @@ def send_http_response(client_socket, status_code, response_data):
 
 
 def run_server(host='localhost', port=10000):
-    global server_running
+    global server_running, server_socket
     conn = init_db()
 
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server_socket:
-        server_socket.bind((host, port))
-        server_socket.listen()
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+        server_socket = sock
+        sock.bind((host, port))
+        sock.listen()
         print(f"Server running on {host}:{port}")
         server_running = True
 
         while server_running:
-            client_socket, addr = server_socket.accept()
-            with client_socket:
-                print(f"Connected by {addr}")
-                data = client_socket.recv(4096).decode('utf-8')
-                print(data)
+            try:
+                sock.settimeout(1)
+                client_socket, addr = sock.accept()
+                with client_socket:
+                    print(f"Connected by {addr}")
+                    data = client_socket.recv(4096).decode('utf-8')
+                    print(data)
 
-                lines = data.splitlines()
+                    lines = data.splitlines()
 
-                if lines:
-                    # The first line of the request contains the HTTP method and path
-                    request_line = lines[0]
-                    method, path, _ = request_line.split(" ")
+                    if lines:
+                        # The first line of the request contains the HTTP method and path
+                        request_line = lines[0]
+                        method, path, _ = request_line.split(" ")
 
-                    # Check if the request is a GET or PUT
-                    if method == "GET":
-                        # Extract the machine name from the path, if included in URL
-                        machine_name = path.strip("/")
-                        machine_state, success = get_machine_state(conn, machine_name)
+                        # Check if the request is a GET or PUT
+                        if method == "GET":
+                            # Extract the machine name from the path, if included in URL
+                            machine_name = path.strip("/")
+                            machine_state, success = get_machine_state(conn, machine_name)
 
-                        if success:
-                            response_data = json.dumps(machine_state)
-                            send_http_response(client_socket, "200 OK", response_data)
+                            if success:
+                                response_data = json.dumps(machine_state)
+                                send_http_response(client_socket, "200 OK", response_data)
+                            else:
+                                response_data = "Error - machine not found"
+                                send_http_response(client_socket, "500 Server Error", response_data)
+                        elif method == "PUT":
+                            # Extract JSON data from the request body (after headers)
+                            try:
+                                # Find the blank line separating headers and body
+                                blank_line_index = lines.index('')
+                                json_data = "\n".join(lines[blank_line_index + 1:])
+                                machine_data = json.loads(json_data)
+
+                                # Save machine state to the database
+                                save_machine_state(conn, machine_data, path)
+                                send_http_response(client_socket, "200 OK", "Machine state saved successfully")
+                            except (json.JSONDecodeError, ValueError) as e:
+                                print("Failed to parse JSON data:", e)
+                                send_http_response(client_socket, "500 Server Error", "Failed to parse JSON data")
                         else:
-                            response_data = "Error - machine not found"
-                            send_http_response(client_socket, "500 Server Error", response_data)
-                    elif method == "PUT":
-                        # Extract JSON data from the request body (after headers)
-                        try:
-                            # Find the blank line separating headers and body
-                            blank_line_index = lines.index('')
-                            json_data = "\n".join(lines[blank_line_index + 1:])
-                            machine_data = json.loads(json_data)
-
-                            # Save machine state to the database
-                            save_machine_state(conn, machine_data, path)
-                            send_http_response(client_socket, "200 OK", "Machine state saved successfully")
-                        except (json.JSONDecodeError, ValueError) as e:
-                            print("Failed to parse JSON data:", e)
-                            send_http_response(client_socket, "500 Server Error", "Failed to parse JSON data")
+                            send_http_response(client_socket, "501 Not Implemented", "")
                     else:
-                        send_http_response(client_socket, "501 Not Implemented", "")
+                        send_http_response(client_socket, "500 Server Error", "Invalid request format")
+            except socket.timeout:
+                continue
+            except OSError as e:
+                if not server_running:
+                    print("Server stopped listening.")
                 else:
-                    send_http_response(client_socket, "500 Server Error", "Invalid request format")
-
-        print("Server stopped.")
+                    print(f"Socket error: {e}")
+            except Exception as e:
+                print(f"Error: {e}")
 
 
 def user_input_handler():
-    global server_running, server_thread
+    global server_running, server_thread, server_socket
 
     while True:
         user_input = input("Enter command (start, stop, exit): ").strip().lower()
@@ -304,6 +314,12 @@ def user_input_handler():
         elif user_input == "stop":
             if server_running:
                 server_running = False
+                if server_socket:
+                    try:
+                        server_socket.close()
+                        server_socket = None
+                    except OSError as e:
+                        print(f"Error closing socket: {e}")
                 if server_thread:
                     server_thread.join()
                 print("Server stopped.")
@@ -312,6 +328,12 @@ def user_input_handler():
         elif user_input == "exit":
             if server_running:
                 server_running = False
+                if server_socket:
+                    try:
+                        server_socket.close()  # Закриваємо серверний сокет
+                        server_socket = None
+                    except OSError as e:
+                        print(f"Error closing socket: {e}")
                 if server_thread:
                     server_thread.join()
             print("Exiting application.")
