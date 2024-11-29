@@ -2,7 +2,6 @@ import psutil
 import requests
 import socket
 import json
-import time
 import threading
 
 machine_ip = socket.gethostbyname(socket.gethostname())
@@ -165,8 +164,8 @@ def send_stats():
                         print("Failed to send network info:", responseNetwork.status_code, responseNetwork.text)
             except Exception as e:
                 print("Error:", e)
-        if stop_event.wait(30):  # Очікуємо 30 секунд або сигнал зупинки
-            break
+            if stop_event.wait(30):
+                break
 
 
 def user_input_handler():

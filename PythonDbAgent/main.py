@@ -330,7 +330,7 @@ def user_input_handler():
                 server_running = False
                 if server_socket:
                     try:
-                        server_socket.close()  # Закриваємо серверний сокет
+                        server_socket.close()
                         server_socket = None
                     except OSError as e:
                         print(f"Error closing socket: {e}")
