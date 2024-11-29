@@ -11,18 +11,6 @@ server_thread = None
 def init_db():
     conn = sqlite3.connect("../Database/machine_states.db")
     cursor = conn.cursor()
-    cursor.execute('''
-    CREATE TABLE IF NOT EXISTS machine_states (
-        name TEXT PRIMARY KEY,
-        cpu_usage REAL,
-        memory_usage REAL,
-        memory_total REAL,
-        memory_used REAL,
-        disk_usage REAL,
-        disk_total REAL,
-        disk_used REAL
-    )
-    ''')
 
     cursor.execute('''
     CREATE TABLE IF NOT EXISTS IdIp (
@@ -47,7 +35,7 @@ def init_db():
 
     cursor.execute('''
     CREATE TABLE IF NOT EXISTS MachineCPU (
-        id INTEGER PRIMARY KEY,
+        id INTEGER NOT NULL,
         cpu_user_time REAL,
         cpu_system_time REAL,
         cpu_idle_time REAL,
@@ -55,28 +43,30 @@ def init_db():
         freq_curr REAL,
         freq_min REAL,
         freq_max REAL,
-        Timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+        Timestamp DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL,
+        PRIMARY KEY (id, Timestamp),
         FOREIGN KEY (id) REFERENCES IdIp (id) ON DELETE CASCADE           
     )
     ''')
 
     cursor.execute('''
     CREATE TABLE IF NOT EXISTS MachineMemory (
-        id INTEGER PRIMARY KEY,
+        id INTEGER NOT NULL,
         virt_usage REAL,
         virt_used REAL,
         virt_free REAL,
         swap_usage REAL,
         swap_used REAL,
         swap_free REAL,
-        Timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+        Timestamp DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL,
+        PRIMARY KEY (id, Timestamp),
         FOREIGN KEY (id) REFERENCES IdIp (id) ON DELETE CASCADE           
     )
     ''')
 
     cursor.execute('''
     CREATE TABLE IF NOT EXISTS MachineDisk (
-        id INTEGER PRIMARY KEY,
+        id INTEGER NOT NULL,
         C_usage REAL,
         C_used REAL,
         C_free REAL,
@@ -84,14 +74,15 @@ def init_db():
         write_count INTEGER,
         read_bytes REAL,
         write_bytes REAL,
-        Timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+        Timestamp DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL,
+        PRIMARY KEY (id, Timestamp),
         FOREIGN KEY (id) REFERENCES IdIp (id) ON DELETE CASCADE           
     )
     ''')
 
     cursor.execute('''
     CREATE TABLE IF NOT EXISTS MachineNetwork (
-        id INTEGER PRIMARY KEY,
+        id INTEGER NOT NULL,
         pack_sent INTEGER,
         pack_rcv INTEGER,
         bytes_sent REAL,
@@ -101,7 +92,8 @@ def init_db():
         drop_in INTEGER,
         drop_out INTEGER,
         connections INTEGER,
-        Timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+        Timestamp DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL,
+        PRIMARY KEY (id, Timestamp),
         FOREIGN KEY (id) REFERENCES IdIp (id) ON DELETE CASCADE           
     )
     ''')
@@ -130,22 +122,68 @@ def save_machine_state(conn, machine_data, path):
             machine_data["total virt mem GB"],
             machine_data["total swap mem GB"],
             machine_data["numdisks"],
-            machine_data["total_C_disk GB"],
+            machine_data["total_C_disk GB"]
         ))
-    conn.commit()
-    cursor.execute('''
-    INSERT OR REPLACE INTO machine_states (name, cpu_usage, memory_usage, memory_total, memory_used, disk_usage, disk_total, disk_used)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    ''', (
-        machine_data["name"],
-        machine_data["cpu"]["usage %"],
-        machine_data["memory"]["usage %"],
-        machine_data["memory"]["total GB"],
-        machine_data["memory"]["used GB"],
-        machine_data["disk"]["usage %"],
-        machine_data["disk"]["total GB"],
-        machine_data["disk"]["used GB"]
-    ))
+    elif table == 'cpu':
+        cursor.execute('''
+            INSERT INTO MachineCPU (id, cpu_user_time, cpu_system_time, cpu_idle_time, cpu_usage, freq_curr, freq_min, freq_max)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (
+            machine_id,
+            machine_data["cpu_times"]["cpu_user"],
+            machine_data["cpu_times"]["cpu_system"],
+            machine_data["cpu_times"]["cpu_idle"],
+            machine_data["cpu_usage %"],
+            machine_data["cpu_freq"]["freq_curr Mhz"],
+            machine_data["cpu_freq"]["freq_min Mhz"],
+            machine_data["cpu_freq"]["freq_max Mhz"]
+        ))
+    elif table == 'memory':
+        cursor.execute('''
+            INSERT INTO MachineMemory (id, virt_usage, virt_used, virt_free, swap_usage, swap_used, swap_free)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+            ''', (
+            machine_id,
+            machine_data["virt_memory"]["usage virt %"],
+            machine_data["virt_memory"]["used virt GB"],
+            machine_data["virt_memory"]["available virt GB"],
+            machine_data["swap_memory"]["usage swap %"],
+            machine_data["swap_memory"]["used swap GB"],
+            machine_data["swap_memory"]["free swap GB"]
+        ))
+    elif table == 'disks':
+        cursor.execute('''
+            INSERT INTO MachineDisk (id, C_usage, C_used, C_free, read_count, write_count, read_bytes, write_bytes)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (
+            machine_id,
+            machine_data["disk usage"]["usage %"],
+            machine_data["disk usage"]["used GB"],
+            machine_data["disk usage"]["free GB"],
+            machine_data["disk i/o"]["read_count"],
+            machine_data["disk i/o"]["write_count"],
+            machine_data["disk i/o"]["read_bytes GB"],
+            machine_data["disk i/o"]["write_bytes GB"]
+        ))
+    elif table == 'network':
+        cursor.execute('''
+            INSERT INTO MachineNetwork (id, pack_sent, pack_rcv, bytes_sent, bytes_rcv, err_in, err_out, drop_in, drop_out, connections)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (
+            machine_id,
+            machine_data["i/o"]["packets_sent"],
+            machine_data["i/o"]["packets_recv"],
+            machine_data["i/o"]["bytes_sent"],
+            machine_data["i/o"]["bytes_recv"],
+            machine_data["i/o"]["errors in"],
+            machine_data["i/o"]["errors out"],
+            machine_data["i/o"]["pack drop in"],
+            machine_data["i/o"]["pack drop out"],
+            machine_data["connections"]
+        ))
+    else:
+        raise Exception("Invalid request path!")
+        return -1
     conn.commit()
 
 

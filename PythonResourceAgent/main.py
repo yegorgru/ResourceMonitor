@@ -88,8 +88,8 @@ def get_disk_stats():
         "disk i/o": {
             "read_count": disk_io.read_count,
             "write_count": disk_io.write_count,
-            "read_bytes": disk_io.read_bytes,
-            "write_bytes": disk_io.write_bytes
+            "read_bytes GB": disk_io.read_bytes / (1024 ** 3),
+            "write_bytes GB": disk_io.write_bytes / (1024 ** 3)
         }
     }
 
