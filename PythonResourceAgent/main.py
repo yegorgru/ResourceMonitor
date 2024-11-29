@@ -16,6 +16,8 @@ urlNetwork = f"http://localhost:10000/network/{machine_ip}"
 send_requests = False
 running = True
 
+stop_event = threading.Event()
+
 
 def get_basic_stats():
     numcpus = psutil.cpu_count()
@@ -163,7 +165,8 @@ def send_stats():
                         print("Failed to send network info:", responseNetwork.status_code, responseNetwork.text)
             except Exception as e:
                 print("Error:", e)
-            time.sleep(30)
+        if stop_event.wait(30):  # Очікуємо 30 секунд або сигнал зупинки
+            break
 
 
 def user_input_handler():
@@ -179,6 +182,7 @@ def user_input_handler():
         elif user_input == "exit":
             send_requests = False
             running = False
+            stop_event.set()
             print("Exiting application.")
             break
         else:
