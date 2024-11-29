@@ -1,139 +1,163 @@
 <template>
-  <div class="machine-info">
-    <h2>{{ data.name }}</h2>
-    <h1>Time: {{ data.time }}</h1>
-    
+   <div class="chart-container">
     <div>
-      <h3>CPU</h3>
-      <canvas ref="cpuChart"></canvas>
-      <p>Usage: {{ data.cpu["usage %"] }}%</p>
+        <h3>CPU Usage</h3>
+        <canvas height="300vh" id="cpuChart"></canvas>
+        <p>Usage: {{ this.data.cpu["usage %"] }}%</p>
+      </div>
+      <div>
+        <h3>Memory Usage</h3>
+        <canvas id="memoryChart"></canvas>
+        <p>Usage: {{ this.data.memory["usage %"] }}%</p>
+      </div>
+      <div>
+        <h3>Disk Usage</h3>
+        <canvas id="diskChart"></canvas>
+        <p>Usage: {{ this.data.disk["usage %"] }}%</p>
+      </div>
     </div>
-    
-    <div>
-      <h3>Memory</h3>
-      <canvas ref="memoryChart"></canvas>
-      <p>Usage: {{ data.memory["usage %"] }}%</p>
-      <p>Total: {{ data.memory["total GB"] }} GB</p>
-      <p>Used: {{ data.memory["used GB"] }} GB</p>
-    </div>
-    
-    <div>
-      <h3>Disk</h3>
-      <canvas ref="diskChart"></canvas>
-      <p>Usage: {{ data.disk["usage %"] }}%</p>
-      <p>Total: {{ data.disk["total GB"] }} GB</p>
-      <p>Used: {{ data.disk["used GB"] }} GB</p>
-    </div>
-  </div>
 </template>
 
 <script>
-import Chart from 'chart.js/auto';
-
+import Chart from 'chart.js/auto'
+import { markRaw } from 'vue'
 export default {
   props: ["data"],
   data() {
-    return {
+    return{
       cpuChart: null,
-      memoryChart: null,
       diskChart: null,
-    };
+      memoryChart: null,
+    }
   },
-  mounted() {
-    this.createChart('cpuChart', this.data.cpu["usage %"]);
-    this.createChart('memoryChart', this.data.memory["usage %"]);
-    this.createChart('diskChart', this.data.disk["usage %"]);
-  },
-  watch: {
-    data(newData)  {
-        this.updateChart(this['cpuChart'] , newData.cpu["usage %"]);
-        // this.updateChart(this.memoryChart, newData.memory["usage %"]);
-        // this.updateChart(this.diskChart, newData.disk["usage %"]);
-      }
-  },
-  methods: {
-    createChart(ref, initialUsage) {
-      if (!this.$refs[ref]) return;
-      console.log(initialUsage)
-      this[ref] = new Chart(this.$refs[ref].getContext("2d"), {
+  mounted(){
+    const cpu  = new Chart(document.getElementById('cpuChart'), {
         type: 'line',
-        data: {
+        data:{
           labels: Array(60).fill(''),
-          datasets: [{
-            label: 'Usage %',
-            backgroundColor: 'rgba(0, 123, 255, 0.2)',
-            borderColor: 'rgba(0, 123, 255, 1)',
-            borderWidth: 2,
-            pointRadius: 0,  // Прибираємо точки даних
-            data: Array(5).fill(initialUsage),
-            fill: true,
-          }],
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          scales: {
-            x: {
-              display: false,  // Прибираємо ось `x`
+          datasets: [
+            {
+              label: 'CPU Usage (%)',
+              data: Array(2).fill(this.data.cpu["usage %"]),
+              backgroundColor: 'rgba(0, 123, 255, 0.2)',
+              borderColor: '#00f',
+              borderWidth: 2,
+              pointRadius: 0,  // Прибираємо точки даних
+              fill: true,
+            }
+          ],
+          options:{
+            legend: {display: false},
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                display: true,
+              },
+              tooltip: {
+                enabled: true,
+              },
             },
-            y: {
-              beginAtZero: true,
-              max: 100,
+            scales: {
+              y: {
+                  display: true,
+                  min: 0,
+                  max: 100,
+              }
+            }
+          }
+      },
+    })
+    const memory = new Chart(document.getElementById('memoryChart'), {
+        type: 'pie',
+        data:{
+          labels: ['Used', 'Free'],
+          datasets: [
+            {
+              label: 'Memory Usage',
+              data: [this.data.memory["used GB"], this.data.memory["total GB"]], // Спочатку значення на 100% вільно
+              backgroundColor: ['#0000ff', '#0099ff'],
+              hoverOffset: 4,
+            }
+          ],
+          options:{
+            responsive: true,
+            plugins: {
+              legend: {
+                position: 'top',
+              },
             },
-          },
-          plugins: {
-            legend: {
-              display: false,  // Прибираємо легенду
+          }
+      },
+    })
+    const disk = new Chart(document.getElementById('diskChart'), {
+        type: 'pie',
+        data:{
+          labels: ['Used', 'Free'],
+          datasets: [
+            {
+              label: 'Disk Usage',
+              data: [this.data.disk["used GB"], this.data.disk["total GB"]], // Спочатку значення на 100% вільно
+              backgroundColor: ['#0000ff', '#0099ff'],
+              hoverOffset: 4,
+            }
+          ],
+          options:{
+            responsive: true,
+            plugins: {
+              legend: {
+                position: 'top',
+              },
+              render: 'value',
             },
-          },
-          animation: false, // Вимикаємо анімацію для плавного оновлення
-        },
-      });
-    },
-    updateChart(chart, newUsage) {
-      console.log(chart)
-      console.log(newUsage)
-      if(chart){
-        chart.data.datasets[0].data = Array(5).fill(newUsage);
-        chart.update('none');
-      }
-    },
-  },
+          }
+      },
+    })
+    this.cpuChart = markRaw(cpu)
+    this.memoryChart = markRaw(memory)
+    this.diskChart = markRaw(disk)
+    setInterval(() => {
+        if (this.data == null){
+          return
+        }
+        const newCpuValue = this.data.cpu["usage %"]
+       
+        if (this.cpuChart.data.datasets[0].data.length === 60) {
+          for (let i = 0; i < 2; i++) {
+            this.cpuChart.data.datasets[0].data.shift()
+          }
+        }
+        for (let i = 0; i < 2; i++) {
+          this.cpuChart.data.datasets[0].data.push(newCpuValue)
+        }
+
+        // Оновлення даних для Memory
+        this.memoryChart.data.datasets[0].data = [this.data.memory["usage %"], 100 - this.data.memory["usage %"]];
+
+        // Оновлення даних для Disk
+        this.diskChart.data.datasets[0].data = [this.data.disk["usage %"], 100 - this.data.disk["usage %"]];
+
+        // Оновлення графіків
+        this.cpuChart.update();
+        this.memoryChart.update();
+        this.diskChart.update();
+      }, 5000);
+  },  
 };
 </script>
 
 <style scoped>
-.machine-info {
+.monitoring-dashboard {
   display: flex;
   flex-direction: row;
-  height: 200px;
-  border: 1px solid #000000;
+  justify-content: space-between;
+}
+
+.chart-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  margin: 20px 0;
   padding: 20px;
-  color: #000;
-  margin-top: 20px;
-  margin-left: auto;
-  margin-right: auto;
-  text-align: left;
-  gap: 20px;
-}
-.machine-info p {
-  margin-left: 15px;
-}
-canvas {
-  width: 100%;
-  height: 100px;
 }
 </style>
-<!-- .machine-info {
-  display: flex;
-  flex-direction: row;
-  height: 200px;
-  border: 1px solid #000000;
-  padding: 20px;
-  color: #000;
-  margin-top: 20px;
-  margin-left: auto;
-  margin-right: auto;
-  text-align: left;
-  gap: 20px;
-} -->
