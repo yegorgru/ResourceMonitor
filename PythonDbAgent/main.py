@@ -190,7 +190,61 @@ def save_machine_state(conn, machine_data, path):
 def get_machine_state(conn, path):
     cursor = conn.cursor()
     table, numrecs, ip = path.split('/')
-    print("name: ", name)
+    cursor.execute('SELECT * FROM IdIp WHERE ip = ?', (ip,))
+    results = cursor.fetchone()
+    if not(results):
+        print("Machine not found")
+        return {"error": "not found"}, False
+    machine_id = results[0]
+    print("Return value")
+    result = {
+        "machineIp": ip,
+        "rows": []
+    }
+    if table == 'basic_info':
+        cursor.execute('SELECT * FROM MachineBasiс WHERE id = ? ORDER BY Timestamp DESC LIMIT ?', (machine_id, numrecs))
+        rows = cursor.fetchall()
+        if rows:
+            rowNum = 0
+            for row in rows:
+                rowNum += 1
+                result["rows"].append({
+                    "row": rowNum,
+                    "numcpus": row[1],
+                    "total virt mem GB": row[2],
+                    "total swap mem GB": row[3],
+                    "numdisks": row[4],
+                    "total_C_disk GB": row[5],
+                    "timestamp": row[6]
+                })
+            return result, True
+        print('Machine found with no data!')
+        return result, True
+    elif table == 'cpu':
+        cursor.execute('SELECT * FROM MachineCPU WHERE id = ? ORDER BY Timestamp DESC LIMIT ?', (machine_id, numrecs))
+        rows = cursor.fetchall()
+        if rows:
+            rowNum = 0
+            for row in rows:
+                rowNum += 1
+                result["rows"].append({
+                    "row": rowNum,
+                    "cpu_times": {
+                        "cpu_user": row[1],
+                        "cpu_system": row[2],
+                        "cpu_idle": row[3]
+                    },
+                    "cpu_usage %": row[4],
+                    "cpu_freq": {
+                        "freq_curr Mhz": row[5],
+                        "freq_min Mhz": row[6],
+                        "freq_max Mhz": row[7]
+                    },
+                    "timestamp": row[8]
+                })
+            return result, True
+        print('Machine found with no data!')
+        return result, True
     cursor.execute('SELECT * FROM machine_states WHERE name = ?', (name,))
     row = cursor.fetchone()
     if row:
