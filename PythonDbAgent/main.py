@@ -192,7 +192,7 @@ def get_machine_state(conn, path):
     table, numrecs, ip = path.split('/')
     cursor.execute('SELECT * FROM IdIp WHERE ip = ?', (ip,))
     results = cursor.fetchone()
-    if not(results):
+    if not results:
         print("Machine not found")
         return {"error": "not found"}, False
     machine_id = results[0]
@@ -245,27 +245,83 @@ def get_machine_state(conn, path):
             return result, True
         print('Machine found with no data!')
         return result, True
-    cursor.execute('SELECT * FROM machine_states WHERE name = ?', (name,))
-    row = cursor.fetchone()
-    if row:
-        print("Return value")
-        return {
-            "name": row[0],
-            "cpu": {"usage %": row[1]},
-            "memory": {
-                "usage %": row[2],
-                "total GB": row[3],
-                "used GB": row[4]
-            },
-            "disk": {
-                "usage %": row[5],
-                "total GB": row[6],
-                "used GB": row[7]
-            }
-        }, True
+    elif table == 'memory':
+        cursor.execute('SELECT * FROM MachineMemory WHERE id = ? ORDER BY Timestamp DESC LIMIT ?', (machine_id, numrecs))
+        rows = cursor.fetchall()
+        if rows:
+            rowNum = 0
+            for row in rows:
+                rowNum += 1
+                result["rows"].append({
+                    "row": rowNum,
+                    "virt_memory": {
+                        "usage virt %": row[1],
+                        "used virt GB": row[2],
+                        "available virt GB": row[3]
+                    },
+                    "swap_memory": {
+                        "usage swap %": row[4],
+                        "used swap GB": row[5],
+                        "free swap GB": row[6]
+                    },
+                    "timestamp": row[7]
+                })
+            return result, True
+        print('Machine found with no data!')
+        return result, True
+    elif table == 'disks':
+        cursor.execute('SELECT * FROM MachineDisk WHERE id = ? ORDER BY Timestamp DESC LIMIT ?', (machine_id, numrecs))
+        rows = cursor.fetchall()
+        if rows:
+            rowNum = 0
+            for row in rows:
+                rowNum += 1
+                result["rows"].append({
+                    "row": rowNum,
+                    "disk usage": {
+                        "usage %": row[1],
+                        "used GB": row[2],
+                        "free GB": row[3]
+                    },
+                    "disk i/o": {
+                        "read_count": row[4],
+                        "write_count": row[5],
+                        "read_bytes GB": row[6],
+                        "write_bytes GB": row[7]
+                    },
+                    "timestamp": row[8]
+                })
+            return result, True
+        print('Machine found with no data!')
+        return result, True
+    elif table == 'network':
+        cursor.execute('SELECT * FROM MachineNetwork WHERE id = ? ORDER BY Timestamp DESC LIMIT ?', (machine_id, numrecs))
+        rows = cursor.fetchall()
+        if rows:
+            rowNum = 0
+            for row in rows:
+                rowNum += 1
+                result["rows"].append({
+                    "row": rowNum,
+                    "i/o": {
+                        "packets_sent": row[1],
+                        "packets_recv": row[2],
+                        "bytes_sent": row[3],
+                        "bytes_recv": row[4],
+                        "errors in": row[5],
+                        "errors out": row[6],
+                        "pack drop in": row[7],
+                        "pack drop out": row[8]
+                    },
+                    "connections": row[9],
+                    "timestamp": row[10]
+                })
+            return result, True
+        print('Machine found with no data!')
+        return result, True
     else:
-        print("Return empty")
-        return {"error": "not found"}, False
+        raise Exception("Invalid request path!")
+        return {"error": "Invalid request"}, False
 
 
 def send_http_response(client_socket, status_code, response_data):

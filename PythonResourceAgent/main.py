@@ -65,12 +65,12 @@ def get_memory_stats():
         "virt_memory": {
             "usage virt %": virtual_memory.percent,
             "used virt GB": virtual_memory.used / (1024 ** 3),
-            "available virt GB": virtual_memory.available / (1024 ** 3),
+            "available virt GB": virtual_memory.available / (1024 ** 3)
         },
         "swap_memory": {
             "usage swap %": swap_memory.percent,
             "used swap GB": swap_memory.used / (1024 ** 3),
-            "free swap GB": swap_memory.free / (1024 ** 3),
+            "free swap GB": swap_memory.free / (1024 ** 3)
         }
     }
 
