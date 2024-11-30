@@ -103,7 +103,7 @@ def init_db():
 
 def save_machine_state(conn, machine_data, path):
     cursor = conn.cursor()
-    _, table, ip = path.split('/')
+    table, ip = path.split('/')
     cursor.execute('SELECT * FROM IdIp WHERE ip = ?', (ip,))
     results = cursor.fetchone()
     if not(results):
@@ -187,8 +187,9 @@ def save_machine_state(conn, machine_data, path):
     conn.commit()
 
 
-def get_machine_state(conn, name):
+def get_machine_state(conn, path):
     cursor = conn.cursor()
+    table, numrecs, ip = path.split('/')
     print("name: ", name)
     cursor.execute('SELECT * FROM machine_states WHERE name = ?', (name,))
     row = cursor.fetchone()
@@ -257,12 +258,14 @@ def run_server(host='localhost', port=10000):
                         # The first line of the request contains the HTTP method and path
                         request_line = lines[0]
                         method, path, _ = request_line.split(" ")
+                        method = 'GET'   # JUST TESTING
 
                         # Check if the request is a GET or PUT
                         if method == "GET":
                             # Extract the machine name from the path, if included in URL
-                            machine_name = path.strip("/")
-                            machine_state, success = get_machine_state(conn, machine_name)
+                            path = '/basic_info/3/<machine ip>' # JUST TESTING
+                            path = path.strip("/")
+                            machine_state, success = get_machine_state(conn, path)
 
                             if success:
                                 response_data = json.dumps(machine_state)
@@ -277,6 +280,7 @@ def run_server(host='localhost', port=10000):
                                 blank_line_index = lines.index('')
                                 json_data = "\n".join(lines[blank_line_index + 1:])
                                 machine_data = json.loads(json_data)
+                                path = path.strip("/")
 
                                 # Save machine state to the database
                                 save_machine_state(conn, machine_data, path)
