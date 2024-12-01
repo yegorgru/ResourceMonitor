@@ -368,12 +368,10 @@ def run_server(host='localhost', port=10000):
                         # The first line of the request contains the HTTP method and path
                         request_line = lines[0]
                         method, path, _ = request_line.split(" ")
-                        method = 'GET'   # JUST TESTING
 
                         # Check if the request is a GET or PUT
                         if method == "GET":
                             # Extract the machine name from the path, if included in URL
-                            path = '/basic_info/3/<machine ip>' # JUST TESTING
                             path = path.strip("/")
                             machine_state, success = get_machine_state(conn, path)
 
