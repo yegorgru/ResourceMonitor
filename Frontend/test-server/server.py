@@ -6,7 +6,7 @@ import random
 app = Flask(__name__)
 CORS(app)  # Дозволяє CORS для всіх роутів
 
-@app.route('/api/data/<int:id>', methods=['GET'])
+@app.route('/machines/<int:id>', methods=['GET'])
 def get_data(id):
 
     t = time.localtime()
@@ -15,7 +15,7 @@ def get_data(id):
     data = {
         "time": current_time,
         "id": id,
-        "name": f"Computer-{id}",
+        "name": f"Machine-{id}",
         "cpu": { "usage %": random.randint(20, 70) },
         "memory": {
             "usage %": random.randint(20, 70) ,
@@ -31,4 +31,4 @@ def get_data(id):
     return jsonify(data)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, port=8080)

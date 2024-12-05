@@ -1,0 +1,2 @@
+set(BOOST_ROOT "C:/Tools/boost_1_86_0" CACHE INTERNAL "Path to the Boost installation directory")
+set(BOOST_LIB_DIR "C:/Tools/boost_1_86_0/lib64-msvc-14.2" CACHE INTERNAL "Path to the Boost library directory")

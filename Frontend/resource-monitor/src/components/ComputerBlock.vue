@@ -1,8 +1,8 @@
 <template>
-    <div class="computer-block" @click="handleClick(computerId)">
+    <div class="computer-block" @click="handleClick(machineId)">
       <img src="@/assets/monitor.png" alt="Computer Image" class="computer-image" />
       <div class="computer-info">
-        <h3>{{ computerId }}</h3>
+        <h3>{{ machineId }}</h3>
       </div>
     </div>
   </template>
@@ -10,14 +10,14 @@
   <script>
   export default {
     props: {
-      computerId: {
+      machineId: {
         type: String,
         required: true,
       },
     },
     methods: {
-      handleClick(computerId) {
-        this.$emit('fetchData', computerId); // Emit event to fetch data for the selected computer
+      handleClick(machineId) {
+        this.$emit('fetchData', machineId); // Emit event to fetch data for the selected computer
       },
     },
   };

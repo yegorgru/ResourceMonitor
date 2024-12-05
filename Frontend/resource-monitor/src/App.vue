@@ -10,7 +10,7 @@
               <span class="list-icon" @click="changeInfo">💻</span>
               <div class="search-container">
                 <input
-                  v-model="computerId"
+                  v-model="machinerId"
                   type="number"
                   placeholder="Enter Computer ID"
                   @keyup.enter="startFetchingComputerData"
@@ -25,10 +25,10 @@
          <div v-if="!isCmpInfo" class="blocks-container">
             <ComputerBlock 
               @fetch-data="startFetchingComputerBlockData"
-              v-for="computer in computers" 
-              :key="computer.id" 
-              :computerId="computer.id"
-              :imageUrl="computer.imageUrl"
+              v-for="machine in machines" 
+              :key="machine.id" 
+              :machineId="machine.id"
+              :imageUrl="machine.imageUrl"
             />
           </div>
           <ComputerStatus v-if="this.isCmpInfo && machineState!=null" :data="machineState" :interval="interval"/>
@@ -52,12 +52,12 @@ export default {
   components: { Navbar,   Footer, ComputerBlock, ComputerStatus },
   data() {
     return {
-      computerId: "",
+      machineId: "",
       machineState: null,
       isCmpInfo: false,
       errorMessage: "",
       interval: null,
-      computers: [
+      machines: [
         { id: '1' },
         { id: '2' },
       ],
@@ -66,7 +66,7 @@ export default {
   methods: {
     async fetchComputerData() {
       try {
-        const response = await fetch(`http://127.0.0.1:5000/api/data/${this.computerId}`);
+        const response = await fetch(`http://127.0.0.1:5000/machines/${this.machineId}`);
         
         if (!response.ok) {
           throw new Error("Failed to fetch data. Please check the computer ID and try again.");
@@ -83,7 +83,7 @@ export default {
     },
     async fetchComputerBlockData(computerId) {
       try {
-        const response = await fetch(`http://127.0.0.1:5000/api/data/${this.computerId}`);
+        const response = await fetch(`http://127.0.0.1:8080/machines/${this.machineId}`);
         
         if (!response.ok) {
           throw new Error("Failed to fetch data. Please check the computer ID and try again.");
@@ -99,8 +99,8 @@ export default {
       }
     },
     startFetchingComputerData() {
-      console.log(this.computerId)
-      if (this.computerId === "") {
+      console.log(this.machineId)
+      if (this.machineId === "") {
         this.errorMessage = "Please enter a computer ID.";
         console.log(this.errorMessage)
         return;
@@ -121,9 +121,9 @@ export default {
       this.fetchComputerData();
     },
     startFetchingComputerBlockData(computerId) {
-      this.computerId = computerId
-      console.log(this.computerId)
-      if (this.computerId === "") {
+      this.machineId = computerId
+      console.log(this.machineId)
+      if (this.machineId === "") {
         this.errorMessage = "Please enter a computer ID.";
         console.log(this.errorMessage)
         return;
