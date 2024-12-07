@@ -202,7 +202,7 @@ def get_machine_state(conn, path):
         "rows": []
     }
     if table == 'basic_info':
-        cursor.execute('SELECT * FROM MachineBasiс WHERE id = ? ORDER BY Timestamp DESC LIMIT ?', (machine_id, numrecs))
+        cursor.execute('SELECT * FROM MachineBasic WHERE id = ? ORDER BY Timestamp DESC LIMIT ?', (machine_id, numrecs))
         rows = cursor.fetchall()
         if rows:
             rowNum = 0

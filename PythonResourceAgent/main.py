@@ -5,11 +5,11 @@ import json
 import threading
 
 machine_ip = socket.gethostbyname(socket.gethostname())
-urlBasic = f"http://localhost:10000/basic_info/{machine_ip}"
-urlCPU = f"http://localhost:10000/cpu/{machine_ip}"
-urlMemory = f"http://localhost:10000/memory/{machine_ip}"
-urlDisks = f"http://localhost:10000/disks/{machine_ip}"
-urlNetwork = f"http://localhost:10000/network/{machine_ip}"
+urlBasic = f"http://localhost:8080/basic_info/{machine_ip}"
+urlCPU = f"http://localhost:8080/cpu/{machine_ip}"
+urlMemory = f"http://localhost:8080/memory/{machine_ip}"
+urlDisks = f"http://localhost:8080/disks/{machine_ip}"
+urlNetwork = f"http://localhost:8080/network/{machine_ip}"
 
 
 send_requests = False
