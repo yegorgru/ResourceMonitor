@@ -3,10 +3,25 @@
 #include "DatabaseManager.h"
 
 #include <boost/uuid/uuid_io.hpp>
+#include <boost/algorithm/string/split.hpp>       
+#include <boost/algorithm/string.hpp>
+#include <boost/lexical_cast.hpp>
 
 #include <map>
+#include <set>
+#include <deque>
 
 namespace ResourceMonitorServer {
+
+namespace {
+    const std::set<std::string> validResources = {
+        "basic_info",
+        "cpu",
+        "memory",
+        "disks",
+        "network"
+    };
+}
 
 Service::Service(TcpSocketPtr socket)
     : mSocket(socket)
@@ -69,10 +84,42 @@ void Service::processRequestLine()
         return;
     }
 
-    std::string machineName;
-    requestLineStream >> machineName;
-    LOG::Debug(LOG::composeMessage("Requested resource: ", machineName));
-    mRequest.setResource(machineName);
+    std::string endpoint;
+    requestLineStream >> endpoint;
+    LOG::Debug(LOG::composeMessage("Requested resource: ", endpoint));
+
+    std::deque<std::string> splitedEndpoint;
+    boost::algorithm::split(splitedEndpoint, endpoint, boost::is_any_of("/"), boost::token_compress_on);
+    if (splitedEndpoint.front().empty()) {
+        splitedEndpoint.pop_front();
+    }
+    if (splitedEndpoint.back().empty()) {
+        splitedEndpoint.pop_back();
+    }
+    bool isValidEndpoint = false;
+    if (mRequest.getMethod() == Http::MessageRequest::Method::GET && splitedEndpoint.size() == 3) {
+        if (validResources.find(splitedEndpoint[0]) != validResources.end()) {
+            int number;
+            if (boost::conversion::try_lexical_convert<int>(splitedEndpoint[1], number) != false) {
+                boost::system::error_code ec;
+                boost::asio::ip::address::from_string(splitedEndpoint[2], ec);
+                isValidEndpoint = ec.value() == 0;
+            }
+        }
+    }
+    else if (mRequest.getMethod() == Http::MessageRequest::Method::PUT && splitedEndpoint.size() == 2) {
+        if (validResources.find(splitedEndpoint[0]) != validResources.end()) {
+            boost::system::error_code ec;
+            boost::asio::ip::address::from_string(splitedEndpoint[1], ec);
+            isValidEndpoint = ec.value() == 0;
+        }
+    }
+    if (!isValidEndpoint) {
+        sendResponse(Http::StatusCode::NotFound, "");
+        return;
+    }
+
+    mRequest.setResource(endpoint);
 
     std::string requestHttpVersion;
     requestLineStream >> requestHttpVersion;

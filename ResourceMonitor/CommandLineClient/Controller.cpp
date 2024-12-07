@@ -46,8 +46,43 @@ void Controller::run() {
             return;
         }
         else if (command == "request") {
-            auto requestId = mClient.makeRequest(port, serverName);
-            LOG::SyncPrintLine(LOG::composeMessage("Created request with id", requestId), std::cout);
+            std::string resource;
+            std::cin >> resource;
+            std::string count;
+            std::cin >> count;
+            std::string ipAddress;
+            std::cin >> ipAddress;
+
+            static const std::set<std::string> validResources = {
+                "basic_info",
+                "cpu",
+                "memory",
+                "disks",
+                "network"
+            };
+
+            bool isValidEndpoint = false;
+            if (validResources.find(resource) != validResources.end()) {
+                int number;
+                if (boost::conversion::try_lexical_convert<int>(count, number) != false) {
+                    boost::system::error_code ec;
+                    boost::asio::ip::address::from_string(ipAddress, ec);
+                    isValidEndpoint = ec.value() == 0;
+                }
+            }
+            std::string endpoint = resource + "/" + count + "/" + ipAddress;
+            if (isValidEndpoint) {
+                auto requestId = mClient.makeRequest(port, serverName, resource, count, ipAddress);
+                if (requestId) {
+                    LOG::SyncPrintLine(LOG::composeMessage("Created request with id", *requestId, "Endpoint:", endpoint), std::cout);
+                }
+                else {
+                    LOG::SyncPrintLine(LOG::composeMessage("Failed to create request", endpoint), std::cout);
+                }
+            }
+            else {
+                LOG::SyncPrintLine(LOG::composeMessage("Incorrect endpoint provided", endpoint), std::cout);
+            }
         }
         else if (command == "cancel") {
             std::string id;
