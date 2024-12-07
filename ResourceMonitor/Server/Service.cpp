@@ -179,49 +179,66 @@ void Service::processHeadersAndContent() {
         }
     }
 
-    mRequest.setBody(std::string(std::istreambuf_iterator<char>(requestStream), std::istreambuf_iterator<char>()));
+    mRequest.appendBody(std::string(std::istreambuf_iterator<char>(requestStream), std::istreambuf_iterator<char>()));
     LOG::Debug(LOG::composeMessage("Content:", mRequest.getBody()));
 
-    auto method = mRequest.getMethod();
-    if (method == Http::MessageRequest::Method::PUT) {
-        LOG::Debug("PUT request processing");
-        auto callback = [this](const Http::MessageResponse& response, const Http::Request::Id& id) {
-            auto statusCode = response.getStatusCode();
-            if (statusCode == Http::StatusCode::Ok) {
-                LOG::Info(LOG::composeMessage("Successfuly write info to database. Request:", boost::uuids::to_string(id)));
-                sendResponse(statusCode, "");
-            }
-            else {
-                if (statusCode == Http::StatusCode::ClientClosedRequest) {
-                    statusCode = Http::StatusCode::ServerError;
+    auto sendToDbCallback = [this]() {
+        auto method = mRequest.getMethod();
+        if (method == Http::MessageRequest::Method::PUT) {
+            LOG::Debug("PUT request processing");
+            auto callback = [this](const Http::MessageResponse& response, const Http::Request::Id& id) {
+                auto statusCode = response.getStatusCode();
+                if (statusCode == Http::StatusCode::Ok) {
+                    LOG::Info(LOG::composeMessage("Successfuly write info to database. Request:", boost::uuids::to_string(id)));
+                    sendResponse(statusCode, "");
                 }
-                LOG::Error(LOG::composeMessage("Error while writing info to database", static_cast<int>(statusCode), "Request:", boost::uuids::to_string(id)));
-                sendResponse(statusCode, response.getBody());
+                else {
+                    if (statusCode == Http::StatusCode::ClientClosedRequest) {
+                        statusCode = Http::StatusCode::ServerError;
+                    }
+                    LOG::Error(LOG::composeMessage("Error while writing info to database", static_cast<int>(statusCode), "Request:", boost::uuids::to_string(id)));
+                    sendResponse(statusCode, response.getBody());
+                }
+                };
+            DatabaseManager::Get().put(mRequest.getResource(), mRequest.getBody(), callback);
+        }
+        else if (method == Http::MessageRequest::Method::GET) {
+            LOG::Debug("GET request processing");
+            auto callback = [this](const Http::MessageResponse& response, const Http::Request::Id&) {
+                //TODO: review if && or const& should be used
+                auto statusCode = response.getStatusCode();
+                if (statusCode == Http::StatusCode::Ok) {
+                    LOG::Info("Successfuly get info from database");
+                    std::string responseStr = response.getBody();
+                    LOG::Debug(LOG::composeMessage("get response from db:", responseStr));
+                    sendResponse(Http::StatusCode::Ok, std::move(responseStr));
+                }
+                else {
+                    if (statusCode == Http::StatusCode::ClientClosedRequest) {
+                        statusCode = Http::StatusCode::ServerError;
+                    }
+                    auto responseStr = response.getBody();
+                    LOG::Error(LOG::composeMessage("Error while getting info from database", static_cast<int>(statusCode), responseStr));
+                    sendResponse(statusCode, std::move(responseStr));
+                }
+                };
+            DatabaseManager::Get().get(mRequest.getResource(), callback);
+        }
+    };
+
+    std::string contentLengthHeader = "Content-Length";
+    if (mRequest.hasHeader(contentLengthHeader) && mRequest.getBody().length() < std::stoi(mRequest.getHeader(contentLengthHeader))) {
+        boost::asio::async_read(*mSocket.get(), mRequestBuf,
+            [this, sendToDbCallback](const boost::system::error_code& ec, std::size_t bytes_transferred)
+            {
+                std::istream requestStream(&mRequestBuf);
+                mRequest.appendBody(std::string((std::istreambuf_iterator<char>(requestStream)), std::istreambuf_iterator<char>()));
+                sendToDbCallback();
             }
-        };
-        DatabaseManager::Get().put(mRequest.getResource(), mRequest.getBody(), callback);
+        );
     }
-    else if (method == Http::MessageRequest::Method::GET) {
-        LOG::Debug("GET request processing");
-        auto callback = [this](const Http::MessageResponse& response, const Http::Request::Id&) {
-            //TODO: review if && or const& should be used
-            auto statusCode = response.getStatusCode();
-            if (statusCode == Http::StatusCode::Ok) {
-                LOG::Info("Successfuly get info from database");
-                std::string responseStr = response.getBody();
-                LOG::Debug(LOG::composeMessage("get response from db:", responseStr));
-                sendResponse(Http::StatusCode::Ok, std::move(responseStr));
-            }
-            else {
-                if (statusCode == Http::StatusCode::ClientClosedRequest) {
-                    statusCode = Http::StatusCode::ServerError;
-                }
-                auto responseStr = response.getBody();
-                LOG::Error(LOG::composeMessage("Error while getting info from database", static_cast<int>(statusCode), responseStr));
-                sendResponse(statusCode, std::move(responseStr));
-            }
-        };
-        DatabaseManager::Get().get(mRequest.getResource(), callback);
+    else {
+        sendToDbCallback();
     }
 }
 
@@ -233,7 +250,7 @@ void Service::sendResponse(Http::StatusCode statusCode, const std::string& respo
     mResponse.setStatusCode(statusCode);
     mResponse.addHeader("Content-Length", std::to_string(response.length()));
     mResponse.addHeader("Access-Control-Allow-Origin", "*");
-    mResponse.setBody(response);
+    mResponse.appendBody(response);
 
     boost::asio::async_write(*mSocket.get(), boost::asio::buffer(mResponse.createStringRepresentation()),
         [this](const boost::system::error_code& ec, std::size_t bytes_transferred) {

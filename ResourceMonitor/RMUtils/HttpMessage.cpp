@@ -70,7 +70,7 @@ void Message::addHeader(const std::string& name, const std::string& value) {
 }
 
 const std::string& Message::getHeader(const std::string& name) const {
-	auto found = mHeaders.find(name);
+	auto found = mHeaders.find(boost::algorithm::to_lower_copy(name));
 	if (found != mHeaders.end()) {
 		return found->second;
 	}
@@ -78,8 +78,13 @@ const std::string& Message::getHeader(const std::string& name) const {
 	return "";
 }
 
-void Message::setBody(const std::string& body) {
-	mBody = body;
+bool Message::hasHeader(const std::string& name) const {
+	auto found = mHeaders.find(boost::algorithm::to_lower_copy(name));
+	return found != mHeaders.end();
+}
+
+void Message::appendBody(const std::string& body) {
+	mBody += body;
 }
 
 const std::string& Message::getBody() const {

@@ -30,7 +30,7 @@ void Request::get(const std::string& resource) {
 void Request::put(const std::string& resource, const std::string& body) {
     mRequestMessage.setMethod("PUT");
     mRequestMessage.setResource(resource);
-    mRequestMessage.setBody(body);
+    mRequestMessage.appendBody(body);
     execute();
 }
 
@@ -237,11 +237,13 @@ void Request::readHeaders()
         }
     }
 
-    mResponseMessage.setBody(std::string((std::istreambuf_iterator<char>(requestStream)), std::istreambuf_iterator<char>()));
+    mResponseMessage.appendBody(std::string((std::istreambuf_iterator<char>(requestStream)), std::istreambuf_iterator<char>()));
 
     boost::asio::async_read(mSock, mResponseBuf,
         [this](const boost::system::error_code& ec, std::size_t bytes_transferred)
         {
+            std::istream requestStream(&mResponseBuf);
+            mResponseMessage.appendBody(std::string((std::istreambuf_iterator<char>(requestStream)), std::istreambuf_iterator<char>()));
             if (ec == boost::asio::error::eof) {
                 finish(boost::system::error_code());
             }

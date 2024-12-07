@@ -25,7 +25,8 @@ public:
 public:
     void addHeader(const std::string& name, const std::string& value);
     const std::string& getHeader(const std::string& name) const;
-    void setBody(const std::string& body);
+    bool hasHeader(const std::string& name) const;
+    void appendBody(const std::string& body);
     const std::string& getBody() const;
 protected:
     using Headers = std::map<std::string, std::string>;

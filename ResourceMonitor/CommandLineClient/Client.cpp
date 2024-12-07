@@ -85,13 +85,14 @@ Client::OptionalCallback Client::getCallback(const std::string& resource) {
             [this](const nlohmann::json& parsedJson) {
                 LOG::SyncPrintLine(LOG::composeMessage("Basic info for", parsedJson["machineIp"]), std::cout);
                 for (const auto& row : parsedJson["rows"]) {
+                    LOG::Debug(LOG::composeMessage(parsedJson.dump()));
                     LOG::SyncPrintLine("==================================", std::cout);
-                    LOG::SyncPrintLine(LOG::composeMessage("Timestamp:", parsedJson["timestamp"]), std::cout);
-                    LOG::SyncPrintLine(LOG::composeMessage("Cpu count:", parsedJson["numcpus"]), std::cout);
-                    LOG::SyncPrintLine(LOG::composeMessage("Total virtual memory (GB):", parsedJson["total virt mem GB"]), std::cout);
-                    LOG::SyncPrintLine(LOG::composeMessage("Total swap memory (GB):", parsedJson["total swap mem GB"]), std::cout);
-                    LOG::SyncPrintLine(LOG::composeMessage("Disk partitions count:", parsedJson["numdisks"]), std::cout);
-                    LOG::SyncPrintLine(LOG::composeMessage("Total disk (GB):", parsedJson["total_C_disk GB"]), std::cout);
+                    LOG::SyncPrintLine(LOG::composeMessage("Timestamp:", row["timestamp"]), std::cout);
+                    LOG::SyncPrintLine(LOG::composeMessage("Cpu count:", row["numcpus"]), std::cout);
+                    LOG::SyncPrintLine(LOG::composeMessage("Total virtual memory (GB):", row["total virt mem GB"]), std::cout);
+                    LOG::SyncPrintLine(LOG::composeMessage("Total swap memory (GB):", row["total swap mem GB"]), std::cout);
+                    LOG::SyncPrintLine(LOG::composeMessage("Disk partitions count:", row["numdisks"]), std::cout);
+                    LOG::SyncPrintLine(LOG::composeMessage("Total disk (GB):", row["total_C_disk GB"]), std::cout);
                     LOG::SyncPrintLine("==================================", std::cout);
                 }
             }
@@ -102,12 +103,12 @@ Client::OptionalCallback Client::getCallback(const std::string& resource) {
                 LOG::SyncPrintLine(LOG::composeMessage("Cpu info for", parsedJson["machineIp"]), std::cout);
                 for (const auto& row : parsedJson["rows"]) {
                     LOG::SyncPrintLine("==================================", std::cout);
-                    LOG::SyncPrintLine(LOG::composeMessage("Timestamp:", parsedJson["timestamp"]), std::cout);
-                    LOG::SyncPrintLine(LOG::composeMessage("Cpu usage (%):", parsedJson["cpu_usage %"]), std::cout);
-                    LOG::SyncPrintLine(LOG::composeMessage("Time spent by normal processes executing in user mode:", parsedJson["cpu_times"]["cpu_user"]), std::cout);
-                    LOG::SyncPrintLine(LOG::composeMessage("Time spent by processes executing in kernel mode:", parsedJson["cpu_times"]["cpu_system"]), std::cout);
-                    LOG::SyncPrintLine(LOG::composeMessage("Idle time:", parsedJson["cpu_times"]["cpu_idle"]), std::cout);
-                    LOG::SyncPrintLine(LOG::composeMessage("Current cpu frequency Mhz:", parsedJson["cpu_freq"]["freq_curr Mhz"]), std::cout);
+                    LOG::SyncPrintLine(LOG::composeMessage("Timestamp:", row["timestamp"]), std::cout);
+                    LOG::SyncPrintLine(LOG::composeMessage("Cpu usage (%):", row["cpu_usage %"]), std::cout);
+                    LOG::SyncPrintLine(LOG::composeMessage("Time spent by normal processes executing in user mode:", row["cpu_times"]["cpu_user"]), std::cout);
+                    LOG::SyncPrintLine(LOG::composeMessage("Time spent by processes executing in kernel mode:", row["cpu_times"]["cpu_system"]), std::cout);
+                    LOG::SyncPrintLine(LOG::composeMessage("Idle time:", row["cpu_times"]["cpu_idle"]), std::cout);
+                    LOG::SyncPrintLine(LOG::composeMessage("Current cpu frequency Mhz:", row["cpu_freq"]["freq_curr Mhz"]), std::cout);
                     LOG::SyncPrintLine("==================================", std::cout);
                 }
             }
@@ -115,16 +116,16 @@ Client::OptionalCallback Client::getCallback(const std::string& resource) {
         {
             "memory",
             [this](const nlohmann::json& parsedJson) {
-                LOG::SyncPrintLine(LOG::composeMessage("Basic info for", parsedJson["machineIp"]), std::cout);
+                LOG::SyncPrintLine(LOG::composeMessage("Memory info for", parsedJson["machineIp"]), std::cout);
                 for (const auto& row : parsedJson["rows"]) {
                     LOG::SyncPrintLine("==================================", std::cout);
-                    LOG::SyncPrintLine(LOG::composeMessage("Timestamp:", parsedJson["timestamp"]), std::cout);
-                    LOG::SyncPrintLine(LOG::composeMessage("Virtual memory usage (%):", parsedJson["virt_memory"]["usage virt %"]), std::cout);
-                    LOG::SyncPrintLine(LOG::composeMessage("Used virtual memory (GB):", parsedJson["virt_memory"]["used virt GB"]), std::cout);
-                    LOG::SyncPrintLine(LOG::composeMessage("Available virtual memory (GB):", parsedJson["virt_memory"]["available virt GB"]), std::cout);
-                    LOG::SyncPrintLine(LOG::composeMessage("Swap memory usage (%):", parsedJson["swap_memory"]["usage swap %"]), std::cout);
-                    LOG::SyncPrintLine(LOG::composeMessage("Used swap memory (GB):", parsedJson["swap_memory"]["used swap GB"]), std::cout);
-                    LOG::SyncPrintLine(LOG::composeMessage("Free swap memory (GB):", parsedJson["virt_memory"]["available virt GB"]), std::cout);
+                    LOG::SyncPrintLine(LOG::composeMessage("Timestamp:", row["timestamp"]), std::cout);
+                    LOG::SyncPrintLine(LOG::composeMessage("Virtual memory usage (%):", row["virt_memory"]["usage virt %"]), std::cout);
+                    LOG::SyncPrintLine(LOG::composeMessage("Used virtual memory (GB):", row["virt_memory"]["used virt GB"]), std::cout);
+                    LOG::SyncPrintLine(LOG::composeMessage("Available virtual memory (GB):", row["virt_memory"]["available virt GB"]), std::cout);
+                    LOG::SyncPrintLine(LOG::composeMessage("Swap memory usage (%):", row["swap_memory"]["usage swap %"]), std::cout);
+                    LOG::SyncPrintLine(LOG::composeMessage("Used swap memory (GB):", row["swap_memory"]["used swap GB"]), std::cout);
+                    LOG::SyncPrintLine(LOG::composeMessage("Free swap memory (GB):", row["virt_memory"]["available virt GB"]), std::cout);
                     LOG::SyncPrintLine("==================================", std::cout);
                 }
             }
@@ -132,17 +133,17 @@ Client::OptionalCallback Client::getCallback(const std::string& resource) {
         {
             "disks",
             [this](const nlohmann::json& parsedJson) {
-                LOG::SyncPrintLine(LOG::composeMessage("Basic info for", parsedJson["machineIp"]), std::cout);
+                LOG::SyncPrintLine(LOG::composeMessage("Disks info for", parsedJson["machineIp"]), std::cout);
                 for (const auto& row : parsedJson["rows"]) {
                     LOG::SyncPrintLine("==================================", std::cout);
-                    LOG::SyncPrintLine(LOG::composeMessage("Timestamp:", parsedJson["timestamp"]), std::cout);
-                    LOG::SyncPrintLine(LOG::composeMessage("Disk usage (%):", parsedJson["disk usage"]["usage %"]), std::cout);
-                    LOG::SyncPrintLine(LOG::composeMessage("Used disk (GB):", parsedJson["disk usage"]["used GB"]), std::cout);
-                    LOG::SyncPrintLine(LOG::composeMessage("Free disk (GB):", parsedJson["disk usage"]["free GB"]), std::cout);
-                    LOG::SyncPrintLine(LOG::composeMessage("Disk i/o read count:", parsedJson["disk i/o"]["read_count"]), std::cout);
-                    LOG::SyncPrintLine(LOG::composeMessage("Disk i/o write count:", parsedJson["disk i/o"]["read_count"]), std::cout);
-                    LOG::SyncPrintLine(LOG::composeMessage("Number of GB read:", parsedJson["disk i/o"]["read_bytes GB"]), std::cout);
-                    LOG::SyncPrintLine(LOG::composeMessage("Number of GB written:", parsedJson["disk i/o"]["write_bytes GB"]), std::cout);
+                    LOG::SyncPrintLine(LOG::composeMessage("Timestamp:", row["timestamp"]), std::cout);
+                    LOG::SyncPrintLine(LOG::composeMessage("Disk usage (%):", row["disk usage"]["usage %"]), std::cout);
+                    LOG::SyncPrintLine(LOG::composeMessage("Used disk (GB):", row["disk usage"]["used GB"]), std::cout);
+                    LOG::SyncPrintLine(LOG::composeMessage("Free disk (GB):", row["disk usage"]["free GB"]), std::cout);
+                    LOG::SyncPrintLine(LOG::composeMessage("Disk i/o read count:", row["disk i/o"]["read_count"]), std::cout);
+                    LOG::SyncPrintLine(LOG::composeMessage("Disk i/o write count:", row["disk i/o"]["read_count"]), std::cout);
+                    LOG::SyncPrintLine(LOG::composeMessage("Number of GB read:", row["disk i/o"]["read_bytes GB"]), std::cout);
+                    LOG::SyncPrintLine(LOG::composeMessage("Number of GB written:", row["disk i/o"]["write_bytes GB"]), std::cout);
                     LOG::SyncPrintLine("==================================", std::cout);
                 }
             }
@@ -150,19 +151,19 @@ Client::OptionalCallback Client::getCallback(const std::string& resource) {
         {
             "network",
             [this](const nlohmann::json& parsedJson) {
-                LOG::SyncPrintLine(LOG::composeMessage("Basic info for", parsedJson["machineIp"]), std::cout);
+                LOG::SyncPrintLine(LOG::composeMessage("Network info for", parsedJson["machineIp"]), std::cout);
                 for (const auto& row : parsedJson["rows"]) {
                     LOG::SyncPrintLine("==================================", std::cout);
-                    LOG::SyncPrintLine(LOG::composeMessage("Timestamp:", parsedJson["timestamp"]), std::cout);
-                    LOG::SyncPrintLine(LOG::composeMessage("Number of connections:", parsedJson["connections"]), std::cout);
-                    LOG::SyncPrintLine(LOG::composeMessage("Number of packets sent:", parsedJson["i/o"]["packets_sent"]), std::cout);
-                    LOG::SyncPrintLine(LOG::composeMessage("Number of packets received:", parsedJson["i/o"]["packets_recv"]), std::cout);
-                    LOG::SyncPrintLine(LOG::composeMessage("Number of bytes sent:", parsedJson["i/o"]["bytes_sent"]), std::cout);
-                    LOG::SyncPrintLine(LOG::composeMessage("Number of bytes received:", parsedJson["i/o"]["bytes_recv"]), std::cout);
-                    LOG::SyncPrintLine(LOG::composeMessage("Total number of errors while receiving:", parsedJson["i/o"]["errors in"]), std::cout);
-                    LOG::SyncPrintLine(LOG::composeMessage("Total number of errors while sending:", parsedJson["i/o"]["errors out"]), std::cout);
-                    LOG::SyncPrintLine(LOG::composeMessage("Total number of incoming packets which were dropped:", parsedJson["i/o"]["pack drop in"]), std::cout);
-                    LOG::SyncPrintLine(LOG::composeMessage("Total number of outgoing packets which were dropped:", parsedJson["i/o"]["pack drop out"]), std::cout);
+                    LOG::SyncPrintLine(LOG::composeMessage("Timestamp:", row["timestamp"]), std::cout);
+                    LOG::SyncPrintLine(LOG::composeMessage("Number of connections:", row["connections"]), std::cout);
+                    LOG::SyncPrintLine(LOG::composeMessage("Number of packets sent:", row["i/o"]["packets_sent"]), std::cout);
+                    LOG::SyncPrintLine(LOG::composeMessage("Number of packets received:", row["i/o"]["packets_recv"]), std::cout);
+                    LOG::SyncPrintLine(LOG::composeMessage("Number of bytes sent:", row["i/o"]["bytes_sent"]), std::cout);
+                    LOG::SyncPrintLine(LOG::composeMessage("Number of bytes received:", row["i/o"]["bytes_recv"]), std::cout);
+                    LOG::SyncPrintLine(LOG::composeMessage("Total number of errors while receiving:", row["i/o"]["errors in"]), std::cout);
+                    LOG::SyncPrintLine(LOG::composeMessage("Total number of errors while sending:", row["i/o"]["errors out"]), std::cout);
+                    LOG::SyncPrintLine(LOG::composeMessage("Total number of incoming packets which were dropped:", row["i/o"]["pack drop in"]), std::cout);
+                    LOG::SyncPrintLine(LOG::composeMessage("Total number of outgoing packets which were dropped:", row["i/o"]["pack drop out"]), std::cout);
                     LOG::SyncPrintLine("==================================", std::cout);
                 }
             }
