@@ -10,28 +10,34 @@
               <span class="list-icon" @click="changeInfo">💻</span>
               <div class="search-container">
                 <input
-                  v-model="machinerId"
+                  v-model="machineId"
                   type="number"
                   placeholder="Enter Computer ID"
-                  @keyup.enter="startFetchingComputerData"
-                  :class="{'input-error ': this.errorMessage}"
+                  @keyup.enter="startFetching"
+                  :class="{'input-error ': this.errorMessage.ref}"
                 />
-                <span class="search-icon" @click="startFetchingComputerData">🔍</span>
+                <span class="search-icon" @click="startFetching">🔍</span>
               </div>
           </div>
           <div style="display:flex; justify-content: center;">
-            <div v-if="this.errorMessage" class="error">{{ this.errorMessage }}</div>
+            <div v-if="this.errorMessage.ref" class="error">{{ this.errorMessage.ref }}</div>
           </div>
          <div v-if="!isCmpInfo" class="blocks-container">
             <ComputerBlock 
-              @fetch-data="startFetchingComputerBlockData"
+              @fetch-data="startFetching"
               v-for="machine in machines" 
               :key="machine.id" 
               :machineId="machine.id"
               :imageUrl="machine.imageUrl"
             />
           </div>
-          <ComputerStatus v-if="this.isCmpInfo && machineState!=null" :data="machineState" :interval="interval"/>
+          <ComputerStatus 
+          v-if="this.isCmpInfo && machineState!=null" 
+          :machineState="machineState" 
+          :interval="intervalRef"
+          :key="updateStatuses"  
+          :errorMessage="errorMessage"
+        />
         </div>
         <div class="right-space"></div>
       </div>
@@ -44,19 +50,22 @@
 <script>
 import Navbar from "./components/Navbar.vue";
 import Footer from './components/Footer.vue';
-
+import { ref } from 'vue';
 import ComputerBlock from './components/ComputerBlock.vue';
 import ComputerStatus from "./components/ComputerStatus.vue";
+import { fetchComputerData, startFetchingData, stopFetchingData } from "@/services/apiService";
 
 export default {
+  
   components: { Navbar,   Footer, ComputerBlock, ComputerStatus },
   data() {
     return {
       machineId: "",
       machineState: null,
       isCmpInfo: false,
-      errorMessage: "",
-      interval: null,
+      errorMessage:{ ref: "" },
+      intervalRef:{ ref: null },
+      updateStatuses:  ref(false),
       machines: [
         { id: '1' },
         { id: '2' },
@@ -64,90 +73,40 @@ export default {
     };
   },
   methods: {
-    async fetchComputerData() {
-      try {
-        const response = await fetch(`http://127.0.0.1:5000/machines/${this.machineId}`);
-        
-        if (!response.ok) {
-          throw new Error("Failed to fetch data. Please check the computer ID and try again.");
-        }
-
-        const data = await response.json();
-        this.machineState = data;
-        this.errorMessage = "";
-        this.isCmpInfo = true
-      } catch (error) {
-        this.errorMessage = error.message;
-        this.machineState = null;
-      }
-    },
-    async fetchComputerBlockData(computerId) {
-      try {
-        const response = await fetch(`http://127.0.0.1:8080/machines/${this.machineId}`);
-        
-        if (!response.ok) {
-          throw new Error("Failed to fetch data. Please check the computer ID and try again.");
-        }
-
-        const data = await response.json();
-        this.machineState = data;
-        this.errorMessage = "";
-        this.isCmpInfo = true
-      } catch (error) {
-        this.errorMessage = error.message;
-        this.machineState = null;
-      }
-    },
-    startFetchingComputerData() {
-      console.log(this.machineId)
-      if (this.machineId === "") {
-        this.errorMessage = "Please enter a computer ID.";
-        console.log(this.errorMessage)
+    startFetching(machineId) {
+      if (typeof(machineId)==="string"){
+        console.log(typeof(machineId))
+        this.machineId = machineId
+      } 
+      if (!machineId instanceof PointerEvent){
+        this.machineId = machineId
+      } 
+      if (!this.machineId) {
+        this.errorMessage.ref = "Please enter a computer ID.";
         return;
       }
-      
-
-      // Зупинити існуючий інтервал, якщо він вже працює
-      if (this.fetchInterval) {
-        clearInterval(this.fetchInterval);
-      }
-
-      // Почати новий інтервал для запиту кожні 5 секунд
-      this.fetchInterval = setInterval(() => {
-        this.fetchComputerData();
-      }, 5000);
-
-      // Одразу виконати перший запит
-      this.fetchComputerData();
+    
+      this.updateStatuses = !this.updateStatuses
+    
+      startFetchingData(
+        fetchComputerData,
+        this.intervalRef, 
+        5000,              
+        this.machineId,
+        this.updateMachineState,
+      );
+      this.isCmpInfo = true
     },
-    startFetchingComputerBlockData(computerId) {
-      this.machineId = computerId
-      console.log(this.machineId)
-      if (this.machineId === "") {
-        this.errorMessage = "Please enter a computer ID.";
-        console.log(this.errorMessage)
-        return;
-      }
-      
-
-      // Зупинити існуючий інтервал, якщо він вже працює
-      if (this.fetchInterval) {
-        clearInterval(this.fetchInterval);
-      }
-
-      // Почати новий інтервал для запиту кожні 5 секунд
-      this.fetchInterval = setInterval(() => {
-        this.fetchComputerBlockData(computerId);
-      }, 5000);
-
-      // Одразу виконати перший запит
-      this.fetchComputerBlockData(computerId);
+    stopFetching() {
+      stopFetchingData(this.intervalRef);
     },
-    stopFetchingData() {
-      // Зупинити інтервал при необхідності
-      if (this.fetchInterval) {
-        clearInterval(this.fetchInterval);
-        this.fetchInterval = null;
+    updateMachineState(data, errorMessage) {
+      if (data) {
+        this.machineState = data;
+        this.errorMessage.ref = "";
+      } else {
+        this.machineState = null;
+        this.errorMessage.ref = errorMessage;
       }
     },
     changeInfo(){
@@ -158,8 +117,7 @@ export default {
     }
   },
   beforeDestroy() {
-       // Очищення інтервалу при виході з компонента
-       this.stopFetchingData();
+       this.stopFetching();
   },
 };
 </script>

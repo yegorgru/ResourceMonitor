@@ -17,7 +17,7 @@
     },
     methods: {
       handleClick(machineId) {
-        this.$emit('fetchData', machineId); // Emit event to fetch data for the selected computer
+        this.$emit('fetchData', machineId);
       },
     },
   };

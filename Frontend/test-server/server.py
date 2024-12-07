@@ -6,7 +6,7 @@ import random
 app = Flask(__name__)
 CORS(app)  # Дозволяє CORS для всіх роутів
 
-@app.route('/machines/<int:id>', methods=['GET'])
+@app.route('/<int:id>', methods=['GET'])
 def get_data(id):
 
     t = time.localtime()
