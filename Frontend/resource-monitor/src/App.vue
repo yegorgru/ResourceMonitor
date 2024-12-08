@@ -67,7 +67,7 @@
           :key="updateStatuses"  
           :errorMessage="errorMessage"
         />
-       <!--  <ComputerStatusMemory
+        <ComputerStatusMemory
           v-if="this.isMemory && machineState!=null" 
           :machineState="machineState" 
            :n="n"
@@ -90,7 +90,7 @@
           :interval="intervalRef"
           :key="updateStatuses"  
           :errorMessage="errorMessage"
-        /> -->
+        />
         </div>
         <div class="right-space"></div>
       </div>
