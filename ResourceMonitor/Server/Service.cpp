@@ -100,7 +100,7 @@ void Service::processRequestLine()
     if (mRequest.getMethod() == Http::MessageRequest::Method::GET && splitedEndpoint.size() == 3) {
         if (validResources.find(splitedEndpoint[0]) != validResources.end()) {
             int number;
-            if (boost::conversion::try_lexical_convert<int>(splitedEndpoint[1], number) != false) {
+            if (boost::conversion::try_lexical_convert<int>(splitedEndpoint[1], number) != false && number > 0) {
                 boost::system::error_code ec;
                 boost::asio::ip::address::from_string(splitedEndpoint[2], ec);
                 isValidEndpoint = ec.value() == 0;
@@ -199,7 +199,7 @@ void Service::processHeadersAndContent() {
                     LOG::Error(LOG::composeMessage("Error while writing info to database", static_cast<int>(statusCode), "Request:", boost::uuids::to_string(id)));
                     sendResponse(statusCode, response.getBody());
                 }
-                };
+            };
             DatabaseManager::Get().put(mRequest.getResource(), mRequest.getBody(), callback);
         }
         else if (method == Http::MessageRequest::Method::GET) {
@@ -221,7 +221,7 @@ void Service::processHeadersAndContent() {
                     LOG::Error(LOG::composeMessage("Error while getting info from database", static_cast<int>(statusCode), responseStr));
                     sendResponse(statusCode, std::move(responseStr));
                 }
-                };
+            };
             DatabaseManager::Get().get(mRequest.getResource(), callback);
         }
     };
