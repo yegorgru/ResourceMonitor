@@ -5,7 +5,7 @@
     </div>
     <div class="chart-container">
     <div>
-        <h3>Number of CPU</h3>
+        <h3>CPU Count</h3>
         <canvas height="300vh" id="numcpus"></canvas>
       </div>
       <div>
@@ -17,11 +17,11 @@
         <canvas height="300vh" id="total_swap_mem_GB"></canvas>
       </div>
       <div>
-        <h3>Number Disk</h3>
+        <h3>Disk Partitions Count</h3>
         <canvas height="300vh" id="numdisks"></canvas>
       </div>
       <div>
-        <h3>Total C disk GB </h3>
+        <h3>Total Disk GB </h3>
         <canvas height="300vh" id="total_C_disk_GB"></canvas>
       </div>
     </div>
@@ -46,11 +46,11 @@ export default {
     }
   },
   mounted(){
-    const numcpusArray = this.machineState.rows.map(rows => rows.numcpus);
-    const total_virt_mem_GBArray = this.machineState.rows.map(rows => rows["total virt mem GB"]);
-    const total_swap_mem_GBArray = this.machineState.rows.map(rows => rows["total swap mem GB"]);
-    const numdisksArray = this.machineState.rows.map(rows => rows["numdisks"]);
-    const total_C_disk_GBArray = this.machineState.rows.map(rows => rows["total_C_disk GB"]);
+    const numcpusArray = this.machineState.rows.map(rows => rows.numcpus).reverse();
+    const total_virt_mem_GBArray = this.machineState.rows.map(rows => rows["total virt mem GB"]).reverse();
+    const total_swap_mem_GBArray = this.machineState.rows.map(rows => rows["total swap mem GB"]).reverse();
+    const numdisksArray = this.machineState.rows.map(rows => rows["numdisks"]).reverse();
+    const total_C_disk_GBArray = this.machineState.rows.map(rows => rows["total_C_disk GB"]).reverse();
     console.log(numdisksArray)
     console.log(total_C_disk_GBArray)
     const numcpus  = new Chart(document.getElementById('numcpus'), {
@@ -59,7 +59,7 @@ export default {
           labels: Array(numcpusArray.length).fill(''),
           datasets: [
             {
-              label: 'Number of CPU',
+              label: 'CPU Count',
               data: numcpusArray,
               backgroundColor: 'rgba(0, 123, 255, 0.2)',
               borderColor: '#00f',
@@ -170,7 +170,7 @@ export default {
           labels: Array(numdisksArray.length).fill(''),
           datasets: [
             {
-              label: 'Number of Disk',
+              label: 'Disk Partitions Count',
               data: numdisksArray,
               backgroundColor: 'rgba(0, 123, 255, 0.2)',
               borderColor: '#00f',
@@ -207,7 +207,7 @@ export default {
           labels: Array(total_C_disk_GBArray.length).fill(''),
           datasets: [
             {
-              label: 'Total C Disk GB',
+              label: 'Total Disk GB',
               data: total_C_disk_GBArray,
               backgroundColor: 'rgba(0, 123, 255, 0.2)',
               borderColor: '#00f',

@@ -9,7 +9,7 @@
           <canvas height="300vh" id="disk_usage"></canvas>
         </div>
         <div>
-          <h3>Disk Usaged GB</h3>
+          <h3>Disk Used GB</h3>
           <canvas height="300vh" id="disk_used"></canvas>
         </div>
         <div>
@@ -25,11 +25,11 @@
           <canvas height="300vh" id="disk_write_count"></canvas>
         </div>
         <div>
-          <h3>Disk Read Bytes GB</h3>
+          <h3>Read GB</h3>
           <canvas height="300vh" id="disk_read_bytes"></canvas>
         </div>
         <div>
-          <h3>Disk Write Bytes GB</h3>
+          <h3>Written GB</h3>
           <canvas height="300vh" id="disk_write_bytes"></canvas>
         </div>
       </div>
@@ -55,13 +55,13 @@
       }
     },
     mounted(){
-      const diskUsageArray = this.machineState.rows.map(rows => rows["disk usage"]["usage %"]);
-      const diskUsedArray = this.machineState.rows.map(rows => rows["disk usage"]["used GB"]);
-      const diskFreeArray = this.machineState.rows.map(rows => rows["disk usage"]["free GB"]);
-      const diskReadCountArray = this.machineState.rows.map(rows => rows["disk i/o"]["read_count"]);
-      const diskWriteCountArray = this.machineState.rows.map(rows => rows["disk i/o"]["write_count"]);
-      const diskReadBytesArray = this.machineState.rows.map(rows => rows["disk i/o"]["read_bytes GB"]);
-      const diskWriteBytesArray = this.machineState.rows.map(rows => rows["disk i/o"]["write_bytes GB"]);
+      const diskUsageArray = this.machineState.rows.map(rows => rows["disk usage"]["usage %"]).reverse();
+      const diskUsedArray = this.machineState.rows.map(rows => rows["disk usage"]["used GB"]).reverse();
+      const diskFreeArray = this.machineState.rows.map(rows => rows["disk usage"]["free GB"]).reverse();
+      const diskReadCountArray = this.machineState.rows.map(rows => rows["disk i/o"]["read_count"]).reverse();
+      const diskWriteCountArray = this.machineState.rows.map(rows => rows["disk i/o"]["write_count"]).reverse();
+      const diskReadBytesArray = this.machineState.rows.map(rows => rows["disk i/o"]["read_bytes GB"]).reverse();
+      const diskWriteBytesArray = this.machineState.rows.map(rows => rows["disk i/o"]["write_bytes GB"]).reverse();
       const diskUsage  = new Chart(document.getElementById('disk_usage'), {
           type: 'line',
           data:{
@@ -105,7 +105,7 @@
             labels: Array(diskUsedArray.length).fill(''),
             datasets: [
               {
-                label: 'Disk Usaged GB',
+                label: 'Disk Used GB',
                 data: diskUsedArray,
                 backgroundColor: 'rgba(0, 123, 255, 0.2)',
                 borderColor: '#00f',
@@ -253,7 +253,7 @@
             labels: Array(diskReadBytesArray.length).fill(''),
             datasets: [
               {
-                label: 'Disk Read Bytes GB',
+                label: 'Read GB',
                 data: diskReadBytesArray,
                 backgroundColor: 'rgba(0, 123, 255, 0.2)',
                 borderColor: '#00f',
@@ -290,7 +290,7 @@
             labels: Array(diskWriteBytesArray.length).fill(''),
             datasets: [
               {
-                label: 'Disk Write Bytes GB',
+                label: 'Written GB',
                 data: diskWriteBytesArray,
                 backgroundColor: 'rgba(0, 123, 255, 0.2)',
                 borderColor: '#00f',

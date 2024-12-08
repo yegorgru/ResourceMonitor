@@ -5,32 +5,24 @@
       </div>
       <div class="chart-container">
       <div>
-          <h3>Number of CPU User</h3>
+          <h3>Time in User Mode</h3>
           <canvas height="300vh" id="cpu_user"></canvas>
         </div>
         <div>
-          <h3>CPU System</h3>
+          <h3>Time in Kernel Mode</h3>
           <canvas height="300vh" id="cpu_system"></canvas>
         </div>
         <div>
-          <h3>CPU Idle</h3>
+          <h3>CPU Idle Time</h3>
           <canvas height="300vh" id="cpu_idle"></canvas>
         </div>
         <div>
-          <h3>CPU Usage</h3>
+          <h3>CPU Usage %</h3>
           <canvas height="300vh" id="cpu_usage"></canvas>
         </div>
         <div>
-          <h3>Current frequency Mhz</h3>
+          <h3>Current Frequency Mhz</h3>
           <canvas height="300vh" id="freq_curr_Mhz"></canvas>
-        </div>
-        <div>
-          <h3>Min frequency Mhz</h3>
-          <canvas height="300vh" id="freq_min_Mhz"></canvas>
-        </div>
-        <div>
-          <h3>Max frequency Mhz</h3>
-          <canvas height="300vh" id="freq_max_Mhz"></canvas>
         </div>
       </div>
    </div>
@@ -55,20 +47,20 @@
       }
     },
     mounted(){
-      const cpuUserArray = this.machineState.rows.map(rows => rows.cpu_times.cpu_user);
-      const cpuSystemArray = this.machineState.rows.map(rows => rows.cpu_times.cpu_system);
-      const cpuIdleArray = this.machineState.rows.map(rows => rows.cpu_times.cpu_idle);
-      const cpuUsageArray = this.machineState.rows.map(rows => rows["cpu_usage %"]);
-      const freqCurrMhzArray = this.machineState.rows.map(rows => rows.cpu_freq["freq_curr Mhz"]);
-      const freqMinMhzArray = this.machineState.rows.map(rows => rows.cpu_freq["freq_min Mhz"]);
-      const freqMaxMhzArray = this.machineState.rows.map(rows => rows.cpu_freq["freq_max Mhz"]);
+      const cpuUserArray = this.machineState.rows.map(rows => rows.cpu_times.cpu_user).reverse();
+      const cpuSystemArray = this.machineState.rows.map(rows => rows.cpu_times.cpu_system).reverse();
+      const cpuIdleArray = this.machineState.rows.map(rows => rows.cpu_times.cpu_idle).reverse();
+      const cpuUsageArray = this.machineState.rows.map(rows => rows["cpu_usage %"]).reverse();
+      const freqCurrMhzArray = this.machineState.rows.map(rows => rows.cpu_freq["freq_curr Mhz"]).reverse();
+      const freqMinMhzArray = this.machineState.rows.map(rows => rows.cpu_freq["freq_min Mhz"]).reverse();
+      const freqMaxMhzArray = this.machineState.rows.map(rows => rows.cpu_freq["freq_max Mhz"]).reverse();
       const cpuUser  = new Chart(document.getElementById('cpu_user'), {
           type: 'line',
           data:{
             labels: Array(cpuUserArray.length).fill(''),
             datasets: [
               {
-                label: 'Number of CPU User',
+                label: 'Time in User Mode',
                 data: cpuUserArray,
                 backgroundColor: 'rgba(0, 123, 255, 0.2)',
                 borderColor: '#00f',
@@ -105,7 +97,7 @@
             labels: Array(cpuSystemArray.length).fill(''),
             datasets: [
               {
-                label: 'CPU System',
+                label: 'Time in Kernel Mode',
                 data: cpuSystemArray,
                 backgroundColor: 'rgba(0, 123, 255, 0.2)',
                 borderColor: '#00f',
@@ -142,7 +134,7 @@
             labels: Array(cpuIdleArray.length).fill(''),
             datasets: [
               {
-                label: 'CPU Idle',
+                label: 'CPU Idle Time',
                 data: cpuIdleArray,
                 backgroundColor: 'rgba(0, 123, 255, 0.2)',
                 borderColor: '#00f',
@@ -179,7 +171,7 @@
             labels: Array(cpuUsageArray.length).fill(''),
             datasets: [
               {
-                label: 'CPU Usage',
+                label: 'CPU Usage %',
                 data: cpuUsageArray,
                 backgroundColor: 'rgba(0, 123, 255, 0.2)',
                 borderColor: '#00f',
@@ -216,7 +208,7 @@
             labels: Array(freqCurrMhzArray.length).fill(''),
             datasets: [
               {
-                label: 'Current frequency Mhz',
+                label: 'Current Frequency Mhz',
                 data: freqCurrMhzArray,
                 backgroundColor: 'rgba(0, 123, 255, 0.2)',
                 borderColor: '#00f',

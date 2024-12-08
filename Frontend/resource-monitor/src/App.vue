@@ -11,8 +11,8 @@
               <div class="search-container">
                 <input
                   v-model="machineId"
-                  type="number"
-                  placeholder="Enter Computer ID"
+                  type="text"
+                  placeholder="Enter Computer IP"
                   @keyup.enter="startFetching"
                   :class="{'input-error ': this.errorMessage.ref}"
                 />
@@ -22,7 +22,7 @@
                 <input
                   v-model="n"
                   type="number"
-                  placeholder="Enter n"
+                  placeholder="Number of Records"
                 />
               </div>
               
@@ -130,8 +130,6 @@ export default {
       errorMessage:{ ref: "" },
       updateStatuses:  ref(false),
       machines: [
-        { id: '1' },
-        { id: '2' },
       ],
     };
   },

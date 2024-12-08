@@ -5,27 +5,27 @@
       </div>
       <div class="chart-container">
       <div>
-          <h3>Virtual Memory Usage</h3>
+          <h3>Virtual Memory Usage %</h3>
           <canvas height="300vh" id="usage_virt"></canvas>
         </div>
         <div>
-          <h3>Virtual Memory Used</h3>
+          <h3>Virtual Memory Used GB</h3>
           <canvas height="300vh" id="used_virt"></canvas>
         </div>
         <div>
-          <h3>Virtual Memomy Avalible</h3>
+          <h3>Virtual Memory Available GB</h3>
           <canvas height="300vh" id="available_virt"></canvas>
         </div>
         <div>
-          <h3>Usage Swap Memory</h3>
+          <h3>Usage Swap Memory %</h3>
           <canvas height="300vh" id="usage_swap"></canvas>
         </div>
         <div>
-          <h3>Used Swap Memory</h3>
+          <h3>Used Swap Memory GB</h3>
           <canvas height="300vh" id="used_swap"></canvas>
         </div>
         <div>
-          <h3>Free Swap Memory</h3>
+          <h3>Free Swap Memory GB</h3>
           <canvas height="300vh" id="free_swap"></canvas>
         </div>
       </div>
@@ -50,19 +50,19 @@
       }
     },
     mounted(){
-      const usageVirtArray = this.machineState.rows.map(rows => rows.virt_memory["usage virt %"]);
-      const usedVirtArray = this.machineState.rows.map(rows => rows.virt_memory["used virt GB"]);
-      const availableVirtArray = this.machineState.rows.map(rows => rows.virt_memory["available virt GB"]);
-      const  usageSwapArray = this.machineState.rows.map(rows => rows.virt_memory["usage swap %"]);
-      const  usedSwapArray = this.machineState.rows.map(rows => rows.virt_memory["used swap GB"]);
-      const  freeSwapArray = this.machineState.rows.map(rows => rows.virt_memory["free swap GB"]);
+      const usageVirtArray = this.machineState.rows.map(rows => rows.virt_memory["usage virt %"]).reverse();
+      const usedVirtArray = this.machineState.rows.map(rows => rows.virt_memory["used virt GB"]).reverse();
+      const availableVirtArray = this.machineState.rows.map(rows => rows.virt_memory["available virt GB"]).reverse();
+      const  usageSwapArray = this.machineState.rows.map(rows => rows.swap_memory["usage swap %"]).reverse();
+      const  usedSwapArray = this.machineState.rows.map(rows => rows.swap_memory["used swap GB"]).reverse();
+      const  freeSwapArray = this.machineState.rows.map(rows => rows.swap_memory["free swap GB"]).reverse();
       const usageVirt  = new Chart(document.getElementById('usage_virt'), {
           type: 'line',
           data:{
             labels: Array(usageVirtArray.length).fill(''),
             datasets: [
               {
-                label: 'Virtual Memory Usage',
+                label: 'Virtual Memory Usage %',
                 data: usageVirtArray,
                 backgroundColor: 'rgba(0, 123, 255, 0.2)',
                 borderColor: '#00f',
@@ -99,7 +99,7 @@
             labels: Array(usedVirtArray.length).fill(''),
             datasets: [
               {
-                label: 'Virtual Memory Used',
+                label: 'Virtual Memory Used GB',
                 data: usedVirtArray,
                 backgroundColor: 'rgba(0, 123, 255, 0.2)',
                 borderColor: '#00f',
@@ -136,7 +136,7 @@
             labels: Array(availableVirtArray.length).fill(''),
             datasets: [
               {
-                label: 'Virtual Memomy Avalible',
+                label: 'Virtual Memory Available GB',
                 data: availableVirtArray,
                 backgroundColor: 'rgba(0, 123, 255, 0.2)',
                 borderColor: '#00f',
@@ -173,7 +173,7 @@
             labels: Array(usageSwapArray.length).fill(''),
             datasets: [
               {
-                label: 'Usage Swap Memory',
+                label: 'Usage Swap Memory %',
                 data: usageSwapArray,
                 backgroundColor: 'rgba(0, 123, 255, 0.2)',
                 borderColor: '#00f',
@@ -210,7 +210,7 @@
             labels: Array(usedSwapArray.length).fill(''),
             datasets: [
               {
-                label: 'Used Swap Memory',
+                label: 'Used Swap Memory GB',
                 data: usedSwapArray,
                 backgroundColor: 'rgba(0, 123, 255, 0.2)',
                 borderColor: '#00f',
@@ -247,7 +247,7 @@
             labels: Array(freeSwapArray.length).fill(''),
             datasets: [
               {
-                label: 'Free Swap Memory',
+                label: 'Free Swap Memory GB',
                 data: freeSwapArray,
                 backgroundColor: 'rgba(0, 123, 255, 0.2)',
                 borderColor: '#00f',

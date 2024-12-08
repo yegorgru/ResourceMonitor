@@ -17,7 +17,7 @@
           <canvas height="300vh" id="bytes_sent"></canvas>
         </div>
         <div>
-          <h3>Bytes Receiv</h3>
+          <h3>Bytes Receive</h3>
           <canvas height="300vh" id="bytes_receiv"></canvas>
         </div>
         <div>
@@ -65,15 +65,15 @@
       }
     },
     mounted(){
-      const packetsSentArray = this.machineState.rows.map(rows => rows["i/o"]["packets_sent"]);
-      const packetsReceiveArray = this.machineState.rows.map(rows => rows["i/o"]["packets_recv"]);
-      const bytesSentArray = this.machineState.rows.map(rows =>  rows["i/o"]["bytes_sent"]);
-      const  bytesReceiveArray = this.machineState.rows.map(rows => rows["i/o"]["bytes_recv"]);
-      const  bytesErrorInArray = this.machineState.rows.map(rows => rows["i/o"]["errors in"]);
-      const  bytesErrorOutArray = this.machineState.rows.map(rows =>  rows["i/o"]["errors out"]);
-      const  bytesPackDropInArray = this.machineState.rows.map(rows => rows["i/o"]["pack drop in"]);
-      const  bytesPackDropOutArray = this.machineState.rows.map(rows => rows["i/o"]["pack drop out"]);
-      const  connectionsArray = this.machineState.rows.map(rows => rows["connections"]);
+      const packetsSentArray = this.machineState.rows.map(rows => rows["i/o"]["packets_sent"]).reverse();
+      const packetsReceiveArray = this.machineState.rows.map(rows => rows["i/o"]["packets_recv"]).reverse();
+      const bytesSentArray = this.machineState.rows.map(rows =>  rows["i/o"]["bytes_sent"]).reverse();
+      const  bytesReceiveArray = this.machineState.rows.map(rows => rows["i/o"]["bytes_recv"]).reverse();
+      const  bytesErrorInArray = this.machineState.rows.map(rows => rows["i/o"]["errors in"]).reverse();
+      const  bytesErrorOutArray = this.machineState.rows.map(rows =>  rows["i/o"]["errors out"]).reverse();
+      const  bytesPackDropInArray = this.machineState.rows.map(rows => rows["i/o"]["pack drop in"]).reverse();
+      const  bytesPackDropOutArray = this.machineState.rows.map(rows => rows["i/o"]["pack drop out"]).reverse();
+      const  connectionsArray = this.machineState.rows.map(rows => rows["connections"]).reverse();
       const packetsSent  = new Chart(document.getElementById('packets_sent'), {
           type: 'line',
           data:{
