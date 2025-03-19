@@ -9,7 +9,7 @@ server_thread = None
 server_socket = None
 
 def init_db():
-    conn = sqlite3.connect("../Database/machine_states.db")
+    conn = sqlite3.connect("Database\\machine_states.db")
     cursor = conn.cursor()
 
     cursor.execute('''

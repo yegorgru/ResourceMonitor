@@ -5,11 +5,11 @@ import json
 import threading
 
 machine_ip = socket.gethostbyname(socket.gethostname())
-urlBasic = f"http://localhost:8080/basic_info/{machine_ip}"
-urlCPU = f"http://localhost:8080/cpu/{machine_ip}"
-urlMemory = f"http://localhost:8080/memory/{machine_ip}"
-urlDisks = f"http://localhost:8080/disks/{machine_ip}"
-urlNetwork = f"http://localhost:8080/network/{machine_ip}"
+urlBasic = f"http://localhost:3333/basic_info/{machine_ip}"
+urlCPU = f"http://localhost:3333/cpu/{machine_ip}"
+urlMemory = f"http://localhost:3333/memory/{machine_ip}"
+urlDisks = f"http://localhost:3333/disks/{machine_ip}"
+urlNetwork = f"http://localhost:3333/network/{machine_ip}"
 
 
 send_requests = False
@@ -19,19 +19,19 @@ stop_event = threading.Event()
 
 
 def get_basic_stats():
-    numcpus = psutil.cpu_count()
+    num_cpus = psutil.cpu_count()
     virtual_memory = psutil.virtual_memory()
     swap_memory = psutil.swap_memory()
     num_disks = len(psutil.disk_partitions())
-    disk_C_usage = psutil.disk_usage('/')
+    disk_c_usage = psutil.disk_usage('/')
 
     return {
         "ip": machine_ip,
-        "numcpus": numcpus,
+        "numcpus": num_cpus,
         "total virt mem GB": virtual_memory.total / (1024 ** 3),
         "total swap mem GB": swap_memory.total / (1024 ** 3),
         "numdisks": num_disks,
-        "total_C_disk GB": disk_C_usage.total / (1024 ** 3)
+        "total_C_disk GB": disk_c_usage.total / (1024 ** 3)
     }
 
 def get_cpu_stats():

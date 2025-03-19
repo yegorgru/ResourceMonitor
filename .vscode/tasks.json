@@ -1,0 +1,98 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "CMake Configure",
+            "type": "shell",
+            "command": "cmake",
+            "args": [
+                "-B",
+                "${workspaceFolder}/build",
+                "-S",
+                "${workspaceFolder}/ResourceMonitor"
+            ],
+            "group": "build"
+        },
+        {
+            "label": "CMake Build All",
+            "type": "shell",
+            "command": "cmake",
+            "args": [
+                "--build",
+                "${workspaceFolder}/build",
+                "--config",
+                "Debug"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "dependsOn": ["CMake Configure"]
+        },
+        {
+            "label": "Build RMUtils",
+            "type": "shell",
+            "command": "cmake",
+            "args": [
+                "--build",
+                "${workspaceFolder}/build",
+                "--config",
+                "Debug",
+                "--target",
+                "RMUtils"
+            ],
+            "group": "build",
+            "dependsOn": ["CMake Configure"]
+        },
+        {
+            "label": "Build and Run Server",
+            "type": "shell",
+            "command": "${workspaceFolder}/build/Server/Debug/Server.exe",
+            "dependsOn": ["CMake Build All"],
+            "group": "test"
+        },
+        {
+            "label": "Build and Run CommandLineClient",
+            "type": "shell",
+            "command": "${workspaceFolder}/build/CommandLineClient/Debug/CommandLineClient.exe",
+            "dependsOn": ["CMake Build All"],
+            "group": "test"
+        },
+        {
+            "label": "Start DB Agent",
+            "type": "shell",
+            "command": "python",
+            "args": ["${workspaceFolder}/PythonDbAgent/main.py"],
+            "group": "test",
+            "presentation": {
+                "reveal": "always",
+                "panel": "new"
+            }
+        },
+        {
+            "label": "Start Resource Agent",
+            "type": "shell",
+            "command": "python",
+            "args": ["${workspaceFolder}/PythonResourceAgent/main.py"],
+            "group": "test",
+            "presentation": {
+                "reveal": "always",
+                "panel": "new"
+            }
+        },
+        {
+            "label": "Start Frontend",
+            "type": "shell",
+            "command": "npm",
+            "args": ["start"],
+            "options": {
+                "cwd": "${workspaceFolder}/Frontend"
+            },
+            "group": "test",
+            "presentation": {
+                "reveal": "always",
+                "panel": "new"
+            }
+        }
+    ]
+}
