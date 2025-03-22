@@ -8,6 +8,7 @@ namespace Http {
 enum class StatusCode {
     Ok = 200, 
     NotFound = 404,
+    UnsupportedMediaType = 415,
     RequestEntityTooLarge = 413,
     ClientClosedRequest = 499,
     ServerError = 500,

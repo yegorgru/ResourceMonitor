@@ -28,6 +28,7 @@ public:
 public:
     void get(const std::string& resource);
     void put(const std::string& resource, const std::string& body);
+    void addHeader(const std::string& name, const std::string& value);
 public:
     void cancel();
 public:

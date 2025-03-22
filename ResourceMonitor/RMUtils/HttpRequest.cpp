@@ -34,6 +34,10 @@ void Request::put(const std::string& resource, const std::string& body) {
     execute();
 }
 
+void Request::addHeader(const std::string& name, const std::string& value) {
+    mRequestMessage.addHeader(name, value);
+}
+
 void Request::execute() {
     const auto& res = mRequestMessage.getResource();
     if (mPort == 0 || mHost == "" || res == "") {
@@ -164,7 +168,8 @@ void Request::readStatusLine()
     LOG::Debug(LOG::composeMessage("Http version:", httpVersion));
 
     if (httpVersion != "HTTP/1.1") {
-        finish(boost::system::error_code());
+        LOG::Error(LOG::composeMessage("Unsupported HTTP version:", httpVersion));
+        finish(boost::system::errc::make_error_code(boost::system::errc::protocol_error));
         return;
     }
 
@@ -179,7 +184,7 @@ void Request::readStatusLine()
     }
     catch (std::logic_error& ex) {
         LOG::Error(ex.what());
-        finish(boost::system::error_code());
+        finish(boost::system::errc::make_error_code(boost::system::errc::invalid_argument));
         return;
     }
 

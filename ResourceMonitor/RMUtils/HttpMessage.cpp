@@ -33,6 +33,7 @@ namespace {
 		{
 			{ StatusCode::Ok, "200 OK" },
 			{ StatusCode::NotFound, "404 Not Found" },
+			{ StatusCode::UnsupportedMediaType, "415 Unsupported Media Type" },
 			{ StatusCode::RequestEntityTooLarge, "413 Request Entity Too Large" },
 			{ StatusCode::ServerError, "500 Server Error" },
 			{ StatusCode::NotImplemented, "501 Not Implemented" },
@@ -55,6 +56,8 @@ StatusCode intToStatusCode(int value) {
 		return StatusCode::NotFound;
 	case 413:
 		return StatusCode::RequestEntityTooLarge;
+	case 415:
+		return StatusCode::UnsupportedMediaType;
 	case 500:
 		return StatusCode::ServerError;
 	case 501:
