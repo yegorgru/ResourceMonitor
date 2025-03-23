@@ -13,12 +13,13 @@ Controller::~Controller() {
 }
 
 void Controller::init(int argc, char* argv[]) {
-    mIsValidState = mArgumentParser.parseCommandLine(argc, argv);
+    mIsValidState = mConfig.parseCommandLine(argc, argv);
 }
 
 void Controller::printHelpMessage() {
     LOG::SyncPrintLine("\nAvailable commands:", std::cout);
     LOG::SyncPrintLine("  help                    - Display this help message", std::cout);
+    LOG::SyncPrintLine("  config                  - Enter configuration mode", std::cout);
     LOG::SyncPrintLine("  request <resource> <count> <ip>", std::cout);
     LOG::SyncPrintLine("    - Request resource monitoring data", std::cout);
     LOG::SyncPrintLine("    - <resource>: basic_info, cpu, memory, disks, network", std::cout);
@@ -28,13 +29,76 @@ void Controller::printHelpMessage() {
     LOG::SyncPrintLine("  exit                    - Exit the application\n", std::cout);
 }
 
+void Controller::handleCommand(const std::string& command) {
+    if (command == "exit") {
+        LOG::SyncPrintLine("Stopping client...", std::cout);
+        mClient.close();
+        LOG::Info("Exiting application");
+        return;
+    }
+    else if (command == "help") {
+        printHelpMessage();
+    }
+    else if (command == "config") {
+        mConfig.handleConfigCommand();
+    }
+    else if (command == "request") {
+        std::string resource;
+        std::cin >> resource;
+        std::string count;
+        std::cin >> count;
+        std::string ipAddress;
+        std::cin >> ipAddress;
+
+        static const std::set<std::string> validResources = {
+            "basic_info",
+            "cpu",
+            "memory",
+            "disks",
+            "network"
+        };
+
+        bool isValidEndpoint = false;
+        if (validResources.find(resource) != validResources.end()) {
+            int number;
+            if (boost::conversion::try_lexical_convert<int>(count, number) != false) {
+                boost::system::error_code ec;
+                boost::asio::ip::address::from_string(ipAddress, ec);
+                isValidEndpoint = ec.value() == 0;
+            }
+        }
+        std::string endpoint = resource + "/" + count + "/" + ipAddress;
+        if (isValidEndpoint) {
+            auto requestId = mClient.makeRequest(mConfig.getServerPort(), mConfig.getServerName(), resource, count, ipAddress);
+            if (requestId) {
+                LOG::SyncPrintLine(LOG::composeMessage("Created request with id", *requestId, "Endpoint:", endpoint), std::cout);
+            }
+            else {
+                LOG::SyncPrintLine(LOG::composeMessage("Failed to create request", endpoint), std::cout);
+            }
+        }
+        else {
+            LOG::SyncPrintLine(LOG::composeMessage("Incorrect endpoint provided", endpoint), std::cout);
+        }
+    }
+    else if (command == "cancel") {
+        std::string id;
+        std::cin >> id;
+        mClient.cancelRequest(id);
+    }
+    else {
+        LOG::SyncPrintLine("Unknown command. Type 'help' for available commands.", std::cout);
+        LOG::Debug(LOG::composeMessage("Unknown command entered:", command));
+    }
+}
+
 void Controller::run() {
     if (!mIsValidState) {
         return;
     }
 
-    const auto logFilename = mArgumentParser.getLogFilename();
-    const auto logLevel = mArgumentParser.getLogLevel();
+    const auto logFilename = mConfig.getLogFilename();
+    const auto logLevel = mConfig.getLogLevel();
     if (logFilename == "") {
         LOG::initConsoleLogger(logLevel);
     }
@@ -43,70 +107,17 @@ void Controller::run() {
     }
     LOG::Debug("Logger is initialized");
 
-    auto port = mArgumentParser.getServerPort();
-    auto serverName = mArgumentParser.getServerName();
+    auto port = mConfig.getServerPort();
+    auto serverName = mConfig.getServerName();
     LOG::Debug(LOG::composeMessage("Get command line arguments. Port:", port, "Server name:", serverName));
 
     std::string command;
     while (true) {
         LOG::SyncPrintLine("Enter command:", std::cout);
         std::cin >> command;
+        handleCommand(command);
         if (command == "exit") {
-            LOG::SyncPrintLine("Stopping client...", std::cout);
-            mClient.close();
-            LOG::Info("Exiting application");
-            return;
-        }
-        else if (command == "help") {
-            printHelpMessage();
-        }
-        else if (command == "request") {
-            std::string resource;
-            std::cin >> resource;
-            std::string count;
-            std::cin >> count;
-            std::string ipAddress;
-            std::cin >> ipAddress;
-
-            static const std::set<std::string> validResources = {
-                "basic_info",
-                "cpu",
-                "memory",
-                "disks",
-                "network"
-            };
-
-            bool isValidEndpoint = false;
-            if (validResources.find(resource) != validResources.end()) {
-                int number;
-                if (boost::conversion::try_lexical_convert<int>(count, number) != false) {
-                    boost::system::error_code ec;
-                    boost::asio::ip::address::from_string(ipAddress, ec);
-                    isValidEndpoint = ec.value() == 0;
-                }
-            }
-            std::string endpoint = resource + "/" + count + "/" + ipAddress;
-            if (isValidEndpoint) {
-                auto requestId = mClient.makeRequest(port, serverName, resource, count, ipAddress);
-                if (requestId) {
-                    LOG::SyncPrintLine(LOG::composeMessage("Created request with id", *requestId, "Endpoint:", endpoint), std::cout);
-                }
-                else {
-                    LOG::SyncPrintLine(LOG::composeMessage("Failed to create request", endpoint), std::cout);
-                }
-            }
-            else {
-                LOG::SyncPrintLine(LOG::composeMessage("Incorrect endpoint provided", endpoint), std::cout);
-            }
-        }
-        else if (command == "cancel") {
-            std::string id;
-            std::cin >> id;
-            mClient.cancelRequest(id);
-        }
-        else {
-            LOG::SyncPrintLine("Unknown command. Type 'help' for available commands.", std::cout);
-            LOG::Debug(LOG::composeMessage("Unknown command entered:", command));
+            break;
         }
     }
 }

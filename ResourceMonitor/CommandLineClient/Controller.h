@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Client.h"
-#include "ArgumentParser.h"
+#include "Config.h"
 
 namespace ResourceMonitorClient {
 
@@ -15,9 +15,10 @@ public:
     void run();
 private:
     void printHelpMessage();
+    void handleCommand(const std::string& command);
 private:
     Client& mClient;
-    ArgumentParser mArgumentParser;
+    Config mConfig;
     bool mIsValidState;
 };
 
