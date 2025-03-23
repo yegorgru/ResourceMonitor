@@ -15,6 +15,22 @@ void Controller::init(int argc, char* argv[]) {
     mIsValidState = mArgumentParser.parseCommandLine(argc, argv);
 }
 
+void Controller::printHelpMessage() {
+    LOG::SyncPrintLine("\nAvailable commands:", std::cout);
+    LOG::SyncPrintLine("  help              - Display this help message", std::cout);
+    LOG::SyncPrintLine("  exit              - Stop the server and exit the application", std::cout);
+    LOG::SyncPrintLine("\nSupported HTTP endpoints:", std::cout);
+    LOG::SyncPrintLine("  GET /<resource>/<count>/<ip>", std::cout);
+    LOG::SyncPrintLine("    - Retrieve resource monitoring data", std::cout);
+    LOG::SyncPrintLine("    - <resource>: basic_info, cpu, memory, disks, network", std::cout);
+    LOG::SyncPrintLine("    - <count>: number of measurements to retrieve", std::cout);
+    LOG::SyncPrintLine("    - <ip>: target machine IP address", std::cout);
+    LOG::SyncPrintLine("  PUT /<resource>/<ip>", std::cout);
+    LOG::SyncPrintLine("    - Store resource monitoring data", std::cout);
+    LOG::SyncPrintLine("    - <resource>: basic_info, cpu, memory, disks, network", std::cout);
+    LOG::SyncPrintLine("    - <ip>: source machine IP address\n", std::cout);
+}
+
 void Controller::run() {
     if (!mIsValidState) {
         return;
@@ -52,8 +68,11 @@ void Controller::run() {
             LOG::Info("Exiting application");
             return;
         }
+        else if (command == "help") {
+            printHelpMessage();
+        }
         else {
-            LOG::SyncPrintLine("Unknown command", std::cout);
+            LOG::SyncPrintLine("Unknown command. Type 'help' for available commands.", std::cout);
             LOG::Debug(LOG::composeMessage("Unknown command entered:", command));
         }
     }

@@ -8,15 +8,17 @@ namespace ResourceMonitorClient {
 class Controller
 {
 public:
-	Controller(Client& client);
-	~Controller();
+    Controller(Client& client);
+    ~Controller();
 public:
-	void init(int argc, char* argv[]);
-	void run();
+    void init(int argc, char* argv[]);
+    void run();
 private:
-	Client& mClient;
-	ArgumentParser mArgumentParser;
-	bool mIsValidState;
+    void printHelpMessage();
+private:
+    Client& mClient;
+    ArgumentParser mArgumentParser;
+    bool mIsValidState;
 };
 
 } // namespace ResourceMonitorClient

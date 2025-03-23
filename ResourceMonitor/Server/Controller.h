@@ -10,14 +10,16 @@ namespace ResourceMonitorServer {
 class Controller
 {
 public:
-	Controller(Server& server);
+    Controller(Server& server);
 public:
-	void init(int argc, char* argv[]);
-	void run();
+    void init(int argc, char* argv[]);
+    void run();
 private:
-	Server& mServer;
-	ArgumentParser mArgumentParser;
-	bool mIsValidState;
+    void printHelpMessage();
+private:
+    Server& mServer;
+    ArgumentParser mArgumentParser;
+    bool mIsValidState;
 };
 
 } // namespace ResourceMonitorServer

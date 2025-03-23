@@ -20,6 +20,13 @@ void LOG::initFileLogger(LogLevel logLevel, const std::string fileName) {
 	mLogLevel = logLevel;
 }
 
+void LOG::destroyLogger() {
+    if (mLogger) {
+        mLogger.reset();
+        mLogLevel = LogLevel::Error;
+    }
+}
+
 void LOG::Trace(const std::string& message, std::source_location location) {
 	log(LogLevel::Trace, message, location);
 }

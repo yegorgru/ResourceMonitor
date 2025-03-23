@@ -35,6 +35,7 @@ public:
 public:
 	static void initConsoleLogger(LogLevel logLevel);
 	static void initFileLogger(LogLevel logLevel, const std::string fileName);
+	static void destroyLogger();
 private:
 	static void log(LogLevel messageLogLevel, const std::string& message, std::source_location location);
 private:

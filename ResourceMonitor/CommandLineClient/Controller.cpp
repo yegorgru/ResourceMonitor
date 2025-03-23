@@ -16,6 +16,18 @@ void Controller::init(int argc, char* argv[]) {
     mIsValidState = mArgumentParser.parseCommandLine(argc, argv);
 }
 
+void Controller::printHelpMessage() {
+    LOG::SyncPrintLine("\nAvailable commands:", std::cout);
+    LOG::SyncPrintLine("  help                    - Display this help message", std::cout);
+    LOG::SyncPrintLine("  request <resource> <count> <ip>", std::cout);
+    LOG::SyncPrintLine("    - Request resource monitoring data", std::cout);
+    LOG::SyncPrintLine("    - <resource>: basic_info, cpu, memory, disks, network", std::cout);
+    LOG::SyncPrintLine("    - <count>: number of measurements", std::cout);
+    LOG::SyncPrintLine("    - <ip>: target machine IP address", std::cout);
+    LOG::SyncPrintLine("  cancel <request_id>     - Cancel an ongoing request", std::cout);
+    LOG::SyncPrintLine("  exit                    - Exit the application\n", std::cout);
+}
+
 void Controller::run() {
     if (!mIsValidState) {
         return;
@@ -44,6 +56,9 @@ void Controller::run() {
             mClient.close();
             LOG::Info("Exiting application");
             return;
+        }
+        else if (command == "help") {
+            printHelpMessage();
         }
         else if (command == "request") {
             std::string resource;
@@ -90,7 +105,7 @@ void Controller::run() {
             mClient.cancelRequest(id);
         }
         else {
-            LOG::SyncPrintLine("Unknown command", std::cout);
+            LOG::SyncPrintLine("Unknown command. Type 'help' for available commands.", std::cout);
             LOG::Debug(LOG::composeMessage("Unknown command entered:", command));
         }
     }
