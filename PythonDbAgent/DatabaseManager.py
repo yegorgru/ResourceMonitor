@@ -326,6 +326,35 @@ class DatabaseManager:
             "rows": rows
         }, True
 
+    def get_machine_state(self, path):
+        conn = self._get_connection()
+        cursor = conn.cursor()
+        try:
+            parts = path.split('/')
+            if len(parts) < 2:
+                return None, False
+            
+            table = parts[0]
+            ip = parts[-1]  # Last part is IP
+            
+            # Try to get numeric limit if provided
+            limit = 1
+            if len(parts) >= 3 and parts[-2].isdigit():
+                limit = int(parts[-2])
+            
+            # Check if IP exists in database
+            cursor.execute('SELECT id FROM IdIp WHERE ip = ?', (ip,))
+            results = cursor.fetchone()
+            if not results:
+                return None, False
+                
+            machine_id = results[0]
+            
+            return self._get_table_data(cursor, table, machine_id, limit, ip)
+        except Exception as e:
+            logger.error(f"Error getting machine state: {e}")
+            return None, False
+
     def close(self):
         if hasattr(self._local, 'conn'):
             self._local.conn.close()
