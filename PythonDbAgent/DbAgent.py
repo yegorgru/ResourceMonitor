@@ -6,9 +6,6 @@ from config import HOST, PORT, LOG_LEVEL, LOG_FORMAT
 from FlaskServer import FlaskServer
 from werkzeug.serving import make_server, WSGIRequestHandler
 
-class CustomRequestHandler(WSGIRequestHandler):
-    protocol_version = "HTTP/1.1"
-
 class DbAgent:
     def __init__(self):
         logging.basicConfig(level=LOG_LEVEL, format=LOG_FORMAT)
@@ -48,7 +45,7 @@ class DbAgent:
             self.logger.warning("Server is already running")
             return False
             
-        self.server = make_server(HOST, PORT, self.flask_server.app, request_handler=CustomRequestHandler)
+        self.server = make_server(HOST, PORT, self.flask_server.app, request_handler=WSGIRequestHandler)
         self.server_thread = threading.Thread(
             target=self.server.serve_forever
         )

@@ -19,7 +19,6 @@ class FlaskServer:
 
     def _make_response(self, data, status_code=200):
         response = make_response(jsonify(data), status_code)
-        response.headers['Server'] = 'Flask/HTTP/1.1'
         return response
 
     def _handle_request(self, path):
