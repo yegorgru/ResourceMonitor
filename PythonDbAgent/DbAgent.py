@@ -2,7 +2,7 @@ import threading
 import logging
 import signal
 import sys
-from config import HOST, PORT
+from config import HOST, PORT, LOG_LEVEL, LOG_FORMAT
 from FlaskServer import FlaskServer
 from werkzeug.serving import make_server, WSGIRequestHandler
 
@@ -11,7 +11,7 @@ class CustomRequestHandler(WSGIRequestHandler):
 
 class DbAgent:
     def __init__(self):
-        logging.basicConfig(level=logging.INFO)
+        logging.basicConfig(level=LOG_LEVEL, format=LOG_FORMAT)
         self.logger = logging.getLogger(__name__)
         self.running = False
         self.server_active = False

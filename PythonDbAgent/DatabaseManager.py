@@ -1,14 +1,15 @@
 import sqlite3
-from config import DB_PATH
+from config import DB_PATH, LOG_LEVEL, LOG_FORMAT
 import logging
 import threading
 
 logger = logging.getLogger(__name__)
+logging.basicConfig(level=LOG_LEVEL, format=LOG_FORMAT)
 
 class DatabaseManager:
     def __init__(self):
         self._local = threading.local()
-        self._init_db()  # Initialize schema in main thread
+        self._init_db()
     
     def _get_connection(self):
         if not hasattr(self._local, 'conn'):
@@ -180,6 +181,7 @@ class DatabaseManager:
             results = cursor.fetchone()
             
             if not results:
+                logger.debug(f"Creating new entry for IP: {ip}")
                 cursor.execute('INSERT INTO IdIp (ip) VALUES (?)', (ip,))
                 conn.commit()
                 cursor.execute('SELECT * FROM IdIp WHERE ip = ?', (ip,))
@@ -196,10 +198,12 @@ class DatabaseManager:
             }
             
             if table in save_methods:
+                logger.debug(f"Saving {table} data for IP: {ip}")
                 save_methods[table](cursor, machine_id, machine_data)
                 conn.commit()
                 return True
             else:
+                logger.error(f"Unknown table type: {table}")
                 raise ValueError(f"Unknown table type: {table}")
         except Exception as e:
             logger.error(f"Database error: {e}")
@@ -332,23 +336,24 @@ class DatabaseManager:
         try:
             parts = path.split('/')
             if len(parts) < 2:
+                logger.error(f"Invalid path format: {path}")
                 return None, False
             
             table = parts[0]
-            ip = parts[-1]  # Last part is IP
+            ip = parts[-1]
             
-            # Try to get numeric limit if provided
             limit = 1
             if len(parts) >= 3 and parts[-2].isdigit():
                 limit = int(parts[-2])
             
-            # Check if IP exists in database
             cursor.execute('SELECT id FROM IdIp WHERE ip = ?', (ip,))
             results = cursor.fetchone()
             if not results:
+                logger.warning(f"IP not found in database: {ip}")
                 return None, False
                 
             machine_id = results[0]
+            logger.debug(f"Retrieving {table} data for IP: {ip}, limit: {limit}")
             
             return self._get_table_data(cursor, table, machine_id, limit, ip)
         except Exception as e:

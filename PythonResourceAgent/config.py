@@ -1,4 +1,8 @@
 import socket
+import logging
+
+LOG_LEVEL = logging.INFO
+LOG_FORMAT = '%(filename)s:%(lineno)d [%(levelname)s] %(message)s'
 
 MACHINE_IP = socket.gethostbyname(socket.gethostname())
 DB_SERVER_URL = "http://localhost:3333"
@@ -11,4 +15,4 @@ ENDPOINTS = {
     "network": f"{DB_SERVER_URL}/network/{MACHINE_IP}"
 }
 
-UPDATE_INTERVAL = 30  # seconds
+UPDATE_INTERVAL = 30

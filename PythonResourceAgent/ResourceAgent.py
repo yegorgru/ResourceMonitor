@@ -3,11 +3,11 @@ import requests
 import logging
 import signal
 from ResourceMonitor import ResourceMonitor
-from config import ENDPOINTS, UPDATE_INTERVAL
+from config import ENDPOINTS, UPDATE_INTERVAL, LOG_LEVEL, LOG_FORMAT
 
 class ResourceAgent:
     def __init__(self):
-        logging.basicConfig(level=logging.INFO)
+        logging.basicConfig(level=LOG_LEVEL, format=LOG_FORMAT)
         self.logger = logging.getLogger(__name__)
         self.monitor = ResourceMonitor()
         self.running = False
@@ -37,9 +37,10 @@ class ResourceAgent:
             if self.send_requests:
                 try:
                     if self.first_req:
+                        self.logger.debug("Sending initial basic info")
                         self.first_req = not self._send_request("basic_info", self.monitor.get_basic_stats())
                     if not self.first_req:
-                        # Collect and send stats
+                        self.logger.debug("Sending regular stats update")
                         self._send_request("cpu", self.monitor.get_cpu_stats())
                         self._send_request("memory", self.monitor.get_memory_stats())
                         self._send_request("disks", self.monitor.get_disk_stats())
@@ -47,14 +48,12 @@ class ResourceAgent:
                 except Exception as e:
                     self.logger.error(f"Error collecting/sending stats: {e}")
                 
-                # Wait after sending data
                 for _ in range(UPDATE_INTERVAL):
                     if self.stop_event.wait(timeout=1):
                         return
                     if not self.running or not self.send_requests:
                         break
             else:
-                # When not sending, just check every second
                 if self.stop_event.wait(timeout=1):
                     return
 
@@ -85,6 +84,7 @@ class ResourceAgent:
                 return False
         except Exception as e:
             self.logger.error(f"Error sending {endpoint_name} info: {str(e)}")
+            return False
 
     def handle_user_input(self):
         while self.running:
@@ -92,7 +92,7 @@ class ResourceAgent:
             if command == "start":
                 if not self.send_requests:
                     self.send_requests = True
-                    self.first_req = True  # Reset first_req when starting
+                    self.first_req = True
                     self.logger.info("Started collecting and sending data")
                 else:
                     self.logger.warning("Data collection is already running")
@@ -114,6 +114,7 @@ class ResourceAgent:
         data_thread.start()
         
         try:
+            self.logger.info("Resource Agent started")
             self.handle_user_input()
         except KeyboardInterrupt:
             self.stop()
