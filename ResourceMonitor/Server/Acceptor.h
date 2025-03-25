@@ -15,6 +15,7 @@ public:
     using Port = unsigned int;
 public:
     Acceptor(IoService& ios);
+    ~Acceptor() = default;
 public:
     void start(const std::string& rawIp, Port portNum);
     void stop();

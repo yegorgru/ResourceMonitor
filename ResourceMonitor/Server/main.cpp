@@ -12,8 +12,7 @@ int main(int argc, char* argv[])
     using namespace ResourceMonitorServer;
 
     try {
-        IoService::Init();
-        Server server(IoService::Get().getIoService());
+        Server server;
         Controller controller(server);
         controller.init(argc, argv);
         controller.run();

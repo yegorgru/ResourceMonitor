@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Server.h"
-#include "ArgumentParser.h"
+#include "Config.h"
 
 #include <boost/program_options.hpp>
 
@@ -16,9 +16,10 @@ public:
     void run();
 private:
     void printHelpMessage();
+    void handleCommand(const std::string& command);
 private:
     Server& mServer;
-    ArgumentParser mArgumentParser;
+    Config mConfig;
     bool mIsValidState;
 };
 

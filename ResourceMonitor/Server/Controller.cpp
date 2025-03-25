@@ -12,31 +12,49 @@ Controller::Controller(Server& server)
 }
 
 void Controller::init(int argc, char* argv[]) {
-    mIsValidState = mArgumentParser.parseCommandLine(argc, argv);
+    mIsValidState = mConfig.parseCommandLine(argc, argv);
 }
 
 void Controller::printHelpMessage() {
     LOG::SyncPrintLine("\nAvailable commands:", std::cout);
     LOG::SyncPrintLine("  help              - Display this help message", std::cout);
+    LOG::SyncPrintLine("  config            - Enter configuration mode", std::cout);
     LOG::SyncPrintLine("  exit              - Stop the server and exit the application", std::cout);
-    LOG::SyncPrintLine("\nSupported HTTP endpoints:", std::cout);
-    LOG::SyncPrintLine("  GET /<resource>/<count>/<ip>", std::cout);
-    LOG::SyncPrintLine("    - Retrieve resource monitoring data", std::cout);
-    LOG::SyncPrintLine("    - <resource>: basic_info, cpu, memory, disks, network", std::cout);
-    LOG::SyncPrintLine("    - <count>: number of measurements to retrieve", std::cout);
-    LOG::SyncPrintLine("    - <ip>: target machine IP address", std::cout);
-    LOG::SyncPrintLine("  PUT /<resource>/<ip>", std::cout);
-    LOG::SyncPrintLine("    - Store resource monitoring data", std::cout);
-    LOG::SyncPrintLine("    - <resource>: basic_info, cpu, memory, disks, network", std::cout);
-    LOG::SyncPrintLine("    - <ip>: source machine IP address\n", std::cout);
+}
+
+void Controller::handleCommand(const std::string& command) {
+    if (command == "exit") {
+        LOG::SyncPrintLine("Stopping server...", std::cout);
+        mServer.stop();
+        LOG::Info("Exiting application");
+        return;
+    }
+    else if (command == "help") {
+        printHelpMessage();
+    }
+    else if (command == "config") {
+        mConfig.handleConfigCommand();
+        if (mConfig.isServerRestartNeeded()) {
+            LOG::SyncPrintLine("Restarting server to apply configuration changes...", std::cout);
+            mServer.stop();
+            mServer.start(mConfig.getPort(), mConfig.getThreadCount());
+            mConfig.resetServerRestartFlag();
+            LOG::SyncPrintLine("Server restarted successfully", std::cout);
+        }
+    }
+    else {
+        LOG::SyncPrintLine("Unknown command. Type 'help' for available commands.", std::cout);
+        LOG::Debug(LOG::composeMessage("Unknown command entered:", command));
+    }
 }
 
 void Controller::run() {
     if (!mIsValidState) {
         return;
     }
-    const auto logFilename = mArgumentParser.getLogFilename();
-    const auto logLevel = mArgumentParser.getLogLevel();
+
+    const auto logFilename = mConfig.getLogFilename();
+    const auto logLevel = mConfig.getLogLevel();
     if (logFilename == "") {
         LOG::initConsoleLogger(logLevel);
     }
@@ -45,10 +63,10 @@ void Controller::run() {
     }
     LOG::Debug("Logger is initialized");
 
-    const auto port = mArgumentParser.getPort();
-    const auto threadCount = mArgumentParser.getThreadCount();
-    const auto& dbName = mArgumentParser.getDbName();
-    auto dbPort = mArgumentParser.getDbPort();
+    const auto port = mConfig.getPort();
+    const auto threadCount = mConfig.getThreadCount();
+    const auto& dbName = mConfig.getDbName();
+    auto dbPort = mConfig.getDbPort();
     
     LOG::Debug(LOG::composeMessage("Got command-line arguments:", "Port:", port, "Threads count:", threadCount));
     LOG::Debug(LOG::composeMessage("Got command-line db arguments:", "Port:", dbPort, "Db name:", dbName));
@@ -62,18 +80,9 @@ void Controller::run() {
     while (true) {
         LOG::SyncPrintLine("Enter command:", std::cout);
         std::cin >> command;
+        handleCommand(command);
         if (command == "exit") {
-            LOG::SyncPrintLine("Stopping server...", std::cout);
-            mServer.stop();
-            LOG::Info("Exiting application");
-            return;
-        }
-        else if (command == "help") {
-            printHelpMessage();
-        }
-        else {
-            LOG::SyncPrintLine("Unknown command. Type 'help' for available commands.", std::cout);
-            LOG::Debug(LOG::composeMessage("Unknown command entered:", command));
+            break;
         }
     }
 }

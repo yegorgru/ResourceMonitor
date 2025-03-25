@@ -15,6 +15,7 @@ public:
 public:
     template <typename... Args>
     static void Init(Args&&... args);
+    static void Destroy();
     static T& Get();
 protected:
     using Instance = std::unique_ptr<T>;
@@ -36,4 +37,11 @@ T& Singleton<T>::Get() {
         throw std::runtime_error("Singleton is not initialized");
     }
     return *mInstance;
+}
+
+template <typename T>
+void Singleton<T>::Destroy() {
+    if (mInstance) {
+        mInstance.reset();
+    }
 }
