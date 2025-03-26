@@ -32,6 +32,7 @@
                 "--server-port", "3333",
                 "--server-name", "localhost",
                 //"--log-file", "client.log",
+                //"--print-file", "print.txt",
                 "--log-level", "debug"
             ],
             "stopAtEntry": false,

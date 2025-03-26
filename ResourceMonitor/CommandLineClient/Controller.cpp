@@ -97,15 +97,23 @@ void Controller::run() {
         return;
     }
 
+    const auto& printFilename = mConfig.getPrintFilename();
+    if (printFilename.empty()) {
+        PRINT::initConsolePrinter();
+    }
+    else {
+        PRINT::initFilePrinter(printFilename);
+    }
+
     const auto logFilename = mConfig.getLogFilename();
     const auto logLevel = mConfig.getLogLevel();
-    if (logFilename == "") {
+    if (logFilename.empty()) {
         LOG::initConsoleLogger(logLevel);
     }
     else {
         LOG::initFileLogger(logLevel, logFilename);
     }
-    LOG::Debug("Logger is initialized");
+    LOG::Debug("Logger and printer are initialized");
 
     auto port = mConfig.getServerPort();
     auto serverName = mConfig.getServerName();

@@ -19,11 +19,13 @@ public:
     int getServerPort() const;
     const std::string& getServerName() const;
     const std::string& getLogFilename() const;
+    const std::string& getPrintFilename() const;
     LogLevel getLogLevel() const;
 private:
     void setServerPort(int port);
     void setServerName(const std::string& name);
     void setLogFilename(const std::string& filename);
+    void setPrintFilename(const std::string& filename);
     void setLogLevel(const std::string& level);
 private:
     static void validateLogLevel(const std::string& input);
@@ -31,6 +33,7 @@ private:
     void showCurrentConfig() const;
     void initializeConfigCommands();
     void reinitializeLogger();
+    void reinitializePrinter();
 private:
     using VariablesMap = boost::program_options::variables_map;
     using Description = boost::program_options::options_description;

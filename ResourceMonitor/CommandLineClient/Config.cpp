@@ -36,7 +36,8 @@ Config::Config()
         ("server-port,p", po::value<int>()->default_value(3333), "server's port")
         ("server-name,n", po::value<std::string>()->default_value("localhost"), "server's name")
         ("log-level,l", po::value<std::string>()->default_value("info")->notifier(Config::validateLogLevel), "logging level: throw/error/warning/info/debug")
-        ("log-file,L", po::value<std::string>()->default_value(""), "logging file");
+        ("log-file,L", po::value<std::string>()->default_value(""), "logging file")
+        ("print-file,P", po::value<std::string>()->default_value(""), "output print file");
 
     initializeConfigCommands();
 }
@@ -80,6 +81,12 @@ void Config::initializeConfigCommands() {
     };
     mConfigHelp["log-file"] = "Set log file path (e.g., log-file client.log)";
 
+    mConfigCommands["print-file"] = [this](const std::string& value) {
+        setPrintFilename(value);
+        PRINT::PrintLine("Print file set to: " + value);
+    };
+    mConfigHelp["print-file"] = "Set output print file path (e.g., print-file output.txt)";
+
     mConfigCommands["show"] = [this](const std::string&) {
         showCurrentConfig();
     };
@@ -107,9 +114,13 @@ void Config::initializeConfigCommands() {
             setLogFilename(getDefaultValue<std::string>(mDescription, "log-file"));
             PRINT::PrintLine("Log file reset to default (console output)");
         }
+        else if (value == "print-file") {
+            setPrintFilename(getDefaultValue<std::string>(mDescription, "print-file"));
+            PRINT::PrintLine("Print file reset to default (console output)");
+        }
         else {
             PRINT::PrintLine("Unknown config option: " + value);
-            PRINT::PrintLine("Available options: port, server, log-level, log-file");
+            PRINT::PrintLine("Available options: port, server, log-level, log-file, print-file");
         }
     };
     mConfigHelp["no"] = "Reset config option to default (e.g., no port)";
@@ -184,6 +195,10 @@ const std::string& Config::getLogFilename() const {
     return mVariablesMap["log-file"].as<std::string>();
 }
 
+const std::string& Config::getPrintFilename() const {
+    return mVariablesMap["print-file"].as<std::string>();
+}
+
 LogLevel Config::getLogLevel() const {
     const std::string logLevelStr = mVariablesMap["log-level"].as<std::string>();
     return logLevelMap.at(logLevelStr);
@@ -209,6 +224,14 @@ void Config::setLogFilename(const std::string& filename) {
     mVariablesMap.erase("log-file");
     mVariablesMap.insert(std::make_pair("log-file", v));
     reinitializeLogger();
+}
+
+void Config::setPrintFilename(const std::string& filename) {
+    namespace po = boost::program_options;
+    po::variable_value v(filename, false);
+    mVariablesMap.erase("print-file");
+    mVariablesMap.insert(std::make_pair("print-file", v));
+    reinitializePrinter();
 }
 
 void Config::setLogLevel(const std::string& level) {
@@ -240,6 +263,18 @@ void Config::reinitializeLogger() {
     LOG::Debug("Logger reinitialized");
 }
 
+void Config::reinitializePrinter() {
+    const auto& printFile = getPrintFilename();
+    PRINT::destroyPrinter();
+    if (printFile.empty()) {
+        PRINT::initConsolePrinter();
+    }
+    else {
+        PRINT::initFilePrinter(printFile);
+    }
+    LOG::Debug("Printer reinitialized");
+}
+
 void Config::showCurrentConfig() const {
     PRINT::PrintLine("\nCurrent configuration:");
     PRINT::PrintLine("  Server port: " + std::to_string(getServerPort()));
@@ -247,6 +282,8 @@ void Config::showCurrentConfig() const {
     PRINT::PrintLine("  Log level: " + mVariablesMap["log-level"].as<std::string>());
     const auto& logFile = getLogFilename();
     PRINT::PrintLine("  Log file: " + (logFile.empty() ? "(console output)" : logFile));
+    const auto& printFile = getPrintFilename();
+    PRINT::PrintLine("  Print file: " + (printFile.empty() ? "(console output)" : printFile));
     PRINT::PrintLine("");
 }
 
