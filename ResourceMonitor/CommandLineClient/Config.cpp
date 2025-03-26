@@ -48,35 +48,35 @@ void Config::initializeConfigCommands() {
         iss >> port;
         
         if (iss.fail() || !iss.eof()) {
-            LOG::SyncPrintLine("Invalid port value: " + value + ". Port must be a valid integer.", std::cout);
+            PRINT::PrintLine("Invalid port value: " + value + ". Port must be a valid integer.", std::cout);
             return;
         }
         
         setServerPort(port);
-        LOG::SyncPrintLine("Server port set to: " + value, std::cout);
+        PRINT::PrintLine("Server port set to: " + value, std::cout);
     };
     mConfigHelp["port"] = "Set server port (e.g., port 3333)";
 
     mConfigCommands["server"] = [this](const std::string& value) {
         setServerName(value);
-        LOG::SyncPrintLine("Server name set to: " + value, std::cout);
+        PRINT::PrintLine("Server name set to: " + value, std::cout);
     };
     mConfigHelp["server"] = "Set server name (e.g., server localhost)";
 
     mConfigCommands["log-level"] = [this](const std::string& value) {
         try {
             setLogLevel(value);
-            LOG::SyncPrintLine("Log level set to: " + value, std::cout);
+            PRINT::PrintLine("Log level set to: " + value, std::cout);
         }
         catch (const std::exception&) {
-            LOG::SyncPrintLine("Invalid log level: " + value + ". Valid values: throw/error/warning/info/debug/trace", std::cout);
+            PRINT::PrintLine("Invalid log level: " + value + ". Valid values: throw/error/warning/info/debug/trace", std::cout);
         }
     };
     mConfigHelp["log-level"] = "Set log level (throw/error/warning/info/debug/trace)";
 
     mConfigCommands["log-file"] = [this](const std::string& value) {
         setLogFilename(value);
-        LOG::SyncPrintLine("Log file set to: " + value, std::cout);
+        PRINT::PrintLine("Log file set to: " + value, std::cout);
     };
     mConfigHelp["log-file"] = "Set log file path (e.g., log-file client.log)";
 
@@ -93,35 +93,35 @@ void Config::initializeConfigCommands() {
     mConfigCommands["no"] = [this](const std::string& value) {
         if (value == "port") {
             setServerPort(getDefaultValue<int>(mDescription, "server-port"));
-            LOG::SyncPrintLine("Server port reset to default: " + std::to_string(getServerPort()), std::cout);
+            PRINT::PrintLine("Server port reset to default: " + std::to_string(getServerPort()), std::cout);
         }
         else if (value == "server") {
             setServerName(getDefaultValue<std::string>(mDescription, "server-name"));
-            LOG::SyncPrintLine("Server name reset to default: " + getServerName(), std::cout);
+            PRINT::PrintLine("Server name reset to default: " + getServerName(), std::cout);
         }
         else if (value == "log-level") {
             setLogLevel(getDefaultValue<std::string>(mDescription, "log-level"));
-            LOG::SyncPrintLine("Log level reset to default: " + mVariablesMap["log-level"].as<std::string>(), std::cout);
+            PRINT::PrintLine("Log level reset to default: " + mVariablesMap["log-level"].as<std::string>(), std::cout);
         }
         else if (value == "log-file") {
             setLogFilename(getDefaultValue<std::string>(mDescription, "log-file"));
-            LOG::SyncPrintLine("Log file reset to default (console output)", std::cout);
+            PRINT::PrintLine("Log file reset to default (console output)", std::cout);
         }
         else {
-            LOG::SyncPrintLine("Unknown config option: " + value, std::cout);
-            LOG::SyncPrintLine("Available options: port, server, log-level, log-file", std::cout);
+            PRINT::PrintLine("Unknown config option: " + value, std::cout);
+            PRINT::PrintLine("Available options: port, server, log-level, log-file", std::cout);
         }
     };
     mConfigHelp["no"] = "Reset config option to default (e.g., no port)";
 }
 
 void Config::handleConfigCommand() {
-    LOG::SyncPrintLine("Entering config mode. Type 'help' for available commands or 'exit' to leave config mode.", std::cout);
+    PRINT::PrintLine("Entering config mode. Type 'help' for available commands or 'exit' to leave config mode.", std::cout);
     
     std::string line;
     while (std::getline(std::cin, line)) {
         if (line == "exit") {
-            LOG::SyncPrintLine("Exiting config mode", std::cout);
+            PRINT::PrintLine("Exiting config mode", std::cout);
             break;
         }
 
@@ -139,18 +139,18 @@ void Config::handleConfigCommand() {
             mConfigCommands[command](remaining);
         }
         else {
-            LOG::SyncPrintLine("Unknown command: " + command, std::cout);
-            LOG::SyncPrintLine("Type 'help' for available commands", std::cout);
+            PRINT::PrintLine("Unknown command: " + command, std::cout);
+            PRINT::PrintLine("Type 'help' for available commands", std::cout);
         }
     }
 }
 
 void Config::showConfigHelp() const {
-    LOG::SyncPrintLine("Available config commands:", std::cout);
+    PRINT::PrintLine("Available config commands:", std::cout);
     for (const auto& [command, help] : mConfigHelp) {
-        LOG::SyncPrintLine("  " + command + ": " + help, std::cout);
+        PRINT::PrintLine("  " + command + ": " + help, std::cout);
     }
-    LOG::SyncPrintLine("  exit: Leave config mode", std::cout);
+    PRINT::PrintLine("  exit: Leave config mode", std::cout);
 }
 
 bool Config::parseCommandLine(int argc, char* argv[]) {
@@ -161,12 +161,12 @@ bool Config::parseCommandLine(int argc, char* argv[]) {
         po::notify(mVariablesMap);
     }
     catch (const po::error& e) {
-        LOG::SyncPrintLine("Failed to parse command line arguments: " + std::string(e.what()), std::cout);
-        LOG::SyncPrintLine(LOG::composeMessage(mDescription), std::cout);
+        PRINT::PrintLine("Failed to parse command line arguments: " + std::string(e.what()), std::cout);
+        PRINT::PrintLine(PRINT::composeMessage(mDescription), std::cout);
         return false;
     }
     if (mVariablesMap.count("help")) {
-        LOG::SyncPrintLine(LOG::composeMessage(mDescription), std::cout);
+        PRINT::PrintLine(PRINT::composeMessage(mDescription), std::cout);
         return false;
     }
     return true;
@@ -241,13 +241,13 @@ void Config::reinitializeLogger() {
 }
 
 void Config::showCurrentConfig() const {
-    LOG::SyncPrintLine("\nCurrent configuration:", std::cout);
-    LOG::SyncPrintLine("  Server port: " + std::to_string(getServerPort()), std::cout);
-    LOG::SyncPrintLine("  Server name: " + getServerName(), std::cout);
-    LOG::SyncPrintLine("  Log level: " + mVariablesMap["log-level"].as<std::string>(), std::cout);
+    PRINT::PrintLine("\nCurrent configuration:", std::cout);
+    PRINT::PrintLine("  Server port: " + std::to_string(getServerPort()), std::cout);
+    PRINT::PrintLine("  Server name: " + getServerName(), std::cout);
+    PRINT::PrintLine("  Log level: " + mVariablesMap["log-level"].as<std::string>(), std::cout);
     const auto& logFile = getLogFilename();
-    LOG::SyncPrintLine("  Log file: " + (logFile.empty() ? "(console output)" : logFile), std::cout);
-    LOG::SyncPrintLine("", std::cout);
+    PRINT::PrintLine("  Log file: " + (logFile.empty() ? "(console output)" : logFile), std::cout);
+    PRINT::PrintLine("", std::cout);
 }
 
 } // namespace ResourceMonitorClient

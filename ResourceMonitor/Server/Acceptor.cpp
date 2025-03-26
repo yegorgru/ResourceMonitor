@@ -38,7 +38,7 @@ void Acceptor::initAccept() {
                 service->startHandling();
             }
             else {
-                LOG::Error(LOG::composeMessage("Error occured! Error code = ", ec.value(), ". Message: ", ec.message()));
+                LOG::Error(PRINT::composeMessage("Error occured! Error code = ", ec.value(), ". Message: ", ec.message()));
             }
             if (!mIsStopped) {
                 initAccept();

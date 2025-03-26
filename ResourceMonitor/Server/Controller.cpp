@@ -16,15 +16,15 @@ void Controller::init(int argc, char* argv[]) {
 }
 
 void Controller::printHelpMessage() {
-    LOG::SyncPrintLine("\nAvailable commands:", std::cout);
-    LOG::SyncPrintLine("  help              - Display this help message", std::cout);
-    LOG::SyncPrintLine("  config            - Enter configuration mode", std::cout);
-    LOG::SyncPrintLine("  exit              - Stop the server and exit the application", std::cout);
+    PRINT::PrintLine("\nAvailable commands:", std::cout);
+    PRINT::PrintLine("  help              - Display this help message", std::cout);
+    PRINT::PrintLine("  config            - Enter configuration mode", std::cout);
+    PRINT::PrintLine("  exit              - Stop the server and exit the application", std::cout);
 }
 
 void Controller::handleCommand(const std::string& command) {
     if (command == "exit") {
-        LOG::SyncPrintLine("Stopping server...", std::cout);
+        PRINT::PrintLine("Stopping server...", std::cout);
         mServer.stop();
         LOG::Info("Exiting application");
         return;
@@ -35,16 +35,16 @@ void Controller::handleCommand(const std::string& command) {
     else if (command == "config") {
         mConfig.handleConfigCommand();
         if (mConfig.isServerRestartNeeded()) {
-            LOG::SyncPrintLine("Restarting server to apply configuration changes...", std::cout);
+            PRINT::PrintLine("Restarting server to apply configuration changes...", std::cout);
             mServer.stop();
             mServer.start(mConfig.getPort(), mConfig.getThreadCount());
             mConfig.resetServerRestartFlag();
-            LOG::SyncPrintLine("Server restarted successfully", std::cout);
+            PRINT::PrintLine("Server restarted successfully", std::cout);
         }
     }
     else {
-        LOG::SyncPrintLine("Unknown command. Type 'help' for available commands.", std::cout);
-        LOG::Debug(LOG::composeMessage("Unknown command entered:", command));
+        PRINT::PrintLine("Unknown command. Type 'help' for available commands.", std::cout);
+        LOG::Debug(PRINT::composeMessage("Unknown command entered:", command));
     }
 }
 
@@ -68,8 +68,8 @@ void Controller::run() {
     const auto& dbName = mConfig.getDbName();
     auto dbPort = mConfig.getDbPort();
     
-    LOG::Debug(LOG::composeMessage("Got command-line arguments:", "Port:", port, "Threads count:", threadCount));
-    LOG::Debug(LOG::composeMessage("Got command-line db arguments:", "Port:", dbPort, "Db name:", dbName));
+    LOG::Debug(PRINT::composeMessage("Got command-line arguments:", "Port:", port, "Threads count:", threadCount));
+    LOG::Debug(PRINT::composeMessage("Got command-line db arguments:", "Port:", dbPort, "Db name:", dbName));
 
     DatabaseManager::Init(dbName, dbPort);
     LOG::Debug("Database is initialized");
@@ -78,7 +78,7 @@ void Controller::run() {
 
     std::string command;
     while (true) {
-        LOG::SyncPrintLine("Enter command:", std::cout);
+        PRINT::PrintLine("Enter command:", std::cout);
         std::cin >> command;
         handleCommand(command);
         if (command == "exit") {

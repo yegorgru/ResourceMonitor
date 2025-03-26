@@ -1,8 +1,8 @@
 #include "Log.h"
 
-#include <iostream>
 #include <filesystem>
 #include <syncstream>
+#include <format>
 
 void LOG::initConsoleLogger(LogLevel logLevel) {
 	if (mLogger) {
@@ -51,14 +51,9 @@ void LOG::Throw(const std::string& message, std::source_location location) {
 	log(LogLevel::Throw, message, location);
 }
 
-void LOG::SyncPrintLine(const std::string& message, std::ostream& os) {
-	std::osyncstream out{ os };
-	out << message << std::endl;
-}
-
 void LOG::log(LogLevel messageLogLevel, const std::string& message, std::source_location location) {
 	if (!mLogger) {
-		SyncPrintLine(composeMessage("(Logger is not initialized)", message), std::cout);
+		PRINT::PrintLine(PRINT::composeMessage("(Logger is not initialized)", message));
 	}
 	if (messageLogLevel >= mLogLevel) {
 		std::ostringstream oss;
@@ -98,19 +93,25 @@ LOG::LoggerFile::LoggerFile(const std::string& fileName)
 	: mFile(fileName, std::ios::out | std::ios::trunc)
 {
 	if (!mFile.is_open()) {
-		throw std::runtime_error("Failed to open file for logging");
+		throw std::runtime_error("Failed to open file for logging: " + fileName);
+	}
+}
+
+LOG::LoggerFile::~LoggerFile() {
+	if (mFile.is_open()) {
+		mFile.close();
 	}
 }
 
 void LOG::LoggerFile::printMessage(LogLevel logLevel, const std::string& message) {
-	SyncPrintLine(message, mFile);
+	PRINT::PrintLine(message, mFile);
 }
 
 void LOG::LoggerConsole::printMessage(LogLevel logLevel, const std::string& message) {
 	if (logLevel <= LogLevel::Warning) {
-		SyncPrintLine(message, std::cout);
+		PRINT::PrintLine(message, std::cout);
 	}
 	else {
-		SyncPrintLine(message, std::cerr);
+		PRINT::PrintLine(message, std::cerr);
 	}
 }

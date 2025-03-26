@@ -29,7 +29,7 @@ void DatabaseManager::get(const std::string& endpoint, Http::Request::Callback c
 
 void DatabaseManager::put(const std::string& endpoint, const std::string& info, Http::Request::Callback callback) {
     auto request = std::make_shared<Http::Request>(IoService::Get().getIoService(), mName, mPort, callback);
-    LOG::Debug(LOG::composeMessage("Sending info to database:", info));
+    LOG::Debug(PRINT::composeMessage("Sending info to database:", info));
     request->addHeader("Content-Type", "application/json");
     request->addHeader("Content-Length", std::to_string(info.length()));
     request->put(endpoint, info);

@@ -41,9 +41,9 @@ void Request::addHeader(const std::string& name, const std::string& value) {
 void Request::execute() {
     const auto& res = mRequestMessage.getResource();
     if (mPort == 0 || mHost == "" || res == "") {
-        LOG::Throw(LOG::composeMessage("Incorrect request parameters. Port:", mPort, "host:", mHost, "resource:", res));
+        LOG::Throw(PRINT::composeMessage("Incorrect request parameters. Port:", mPort, "host:", mHost, "resource:", res));
     }
-    LOG::Debug(LOG::composeMessage("Start request executing. Port:", mPort, "host:", mHost, "resource:", res));
+    LOG::Debug(PRINT::composeMessage("Start request executing. Port:", mPort, "host:", mHost, "resource:", res));
 
     mSelfPtr = shared_from_this();
 
@@ -71,7 +71,7 @@ void Request::cancel() {
     if (isCompleted()) {
         return;
     }
-    LOG::Debug(LOG::composeMessage("Cancelling request. Id:", boost::uuids::to_string(mId)));
+    LOG::Debug(PRINT::composeMessage("Cancelling request. Id:", boost::uuids::to_string(mId)));
     mResponseMessage.setStatusCode(Http::StatusCode::ClientClosedRequest);
     mCallback(mResponseMessage, mId);
     mIsCanceled = true;
@@ -165,17 +165,17 @@ void Request::readStatusLine()
     std::istream responseStream(&mResponseBuf);
     responseStream >> httpVersion;
 
-    LOG::Debug(LOG::composeMessage("Http version:", httpVersion));
+    LOG::Debug(PRINT::composeMessage("Http version:", httpVersion));
 
     if (httpVersion != "HTTP/1.1") {
-        LOG::Error(LOG::composeMessage("Unsupported HTTP version:", httpVersion));
+        LOG::Error(PRINT::composeMessage("Unsupported HTTP version:", httpVersion));
         finish(boost::system::errc::make_error_code(boost::system::errc::protocol_error));
         return;
     }
 
     responseStream >> strStatusCode;
 
-    LOG::Debug(LOG::composeMessage("Status code:", strStatusCode));
+    LOG::Debug(PRINT::composeMessage("Status code:", strStatusCode));
 
     Http::StatusCode statusCode = Http::StatusCode::Ok;
 
@@ -192,7 +192,7 @@ void Request::readStatusLine()
     std::getline(responseStream, statusMessage, '\r');
     responseStream.get();   // Remove symbol '\n' from the buffer.
 
-    LOG::Debug(LOG::composeMessage("Status message:", statusMessage));
+    LOG::Debug(PRINT::composeMessage("Status message:", statusMessage));
 
     mResponseMessage.setStatusCode(statusCode);
     mResponseMessage.setStatusMessage(statusMessage);
@@ -238,7 +238,7 @@ void Request::readHeaders()
             std::string headerValue = line.substr(colonPos + 1);
             headerValue.erase(0, headerValue.find_first_not_of(" \t"));
             mResponseMessage.addHeader(headerName, headerValue);
-            LOG::Debug(LOG::composeMessage("Add header:", headerName, ":", headerValue));
+            LOG::Debug(PRINT::composeMessage("Add header:", headerName, ":", headerValue));
         }
     }
 
@@ -262,10 +262,10 @@ void Request::readHeaders()
 void Request::finish(const boost::system::error_code& ec) {
     LOG::Debug("Finish request");
     if (ec == boost::asio::error::operation_aborted) {
-        LOG::Info(LOG::composeMessage("Request was canceled"));
+        LOG::Info(PRINT::composeMessage("Request was canceled"));
     }
     else if (ec.value() != 0) {
-        auto message = LOG::composeMessage("Error occured! Error code =", ec.value(), ". Message:", ec.message(), "Request id:", boost::uuids::to_string(mId));
+        auto message = PRINT::composeMessage("Error occured! Error code =", ec.value(), ". Message:", ec.message(), "Request id:", boost::uuids::to_string(mId));
         LOG::Error(message);
         mResponseMessage.addHeader("Content-Length", "0");
         mResponseMessage.setStatusCode(Http::StatusCode::ServerError);

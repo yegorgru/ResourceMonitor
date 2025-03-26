@@ -17,21 +17,21 @@ void Controller::init(int argc, char* argv[]) {
 }
 
 void Controller::printHelpMessage() {
-    LOG::SyncPrintLine("\nAvailable commands:", std::cout);
-    LOG::SyncPrintLine("  help                    - Display this help message", std::cout);
-    LOG::SyncPrintLine("  config                  - Enter configuration mode", std::cout);
-    LOG::SyncPrintLine("  request <resource> <count> <ip>", std::cout);
-    LOG::SyncPrintLine("    - Request resource monitoring data", std::cout);
-    LOG::SyncPrintLine("    - <resource>: basic_info, cpu, memory, disks, network", std::cout);
-    LOG::SyncPrintLine("    - <count>: number of measurements", std::cout);
-    LOG::SyncPrintLine("    - <ip>: target machine IP address", std::cout);
-    LOG::SyncPrintLine("  cancel <request_id>     - Cancel an ongoing request", std::cout);
-    LOG::SyncPrintLine("  exit                    - Exit the application\n", std::cout);
+    PRINT::PrintLine("\nAvailable commands:", std::cout);
+    PRINT::PrintLine("  help                    - Display this help message", std::cout);
+    PRINT::PrintLine("  config                  - Enter configuration mode", std::cout);
+    PRINT::PrintLine("  request <resource> <count> <ip>", std::cout);
+    PRINT::PrintLine("    - Request resource monitoring data", std::cout);
+    PRINT::PrintLine("    - <resource>: basic_info, cpu, memory, disks, network", std::cout);
+    PRINT::PrintLine("    - <count>: number of measurements", std::cout);
+    PRINT::PrintLine("    - <ip>: target machine IP address", std::cout);
+    PRINT::PrintLine("  cancel <request_id>     - Cancel an ongoing request", std::cout);
+    PRINT::PrintLine("  exit                    - Exit the application\n", std::cout);
 }
 
 void Controller::handleCommand(const std::string& command) {
     if (command == "exit") {
-        LOG::SyncPrintLine("Stopping client...", std::cout);
+        PRINT::PrintLine("Stopping client...", std::cout);
         mClient.close();
         LOG::Info("Exiting application");
         return;
@@ -71,14 +71,14 @@ void Controller::handleCommand(const std::string& command) {
         if (isValidEndpoint) {
             auto requestId = mClient.makeRequest(mConfig.getServerPort(), mConfig.getServerName(), resource, count, ipAddress);
             if (requestId) {
-                LOG::SyncPrintLine(LOG::composeMessage("Created request with id", *requestId, "Endpoint:", endpoint), std::cout);
+                PRINT::PrintLine(PRINT::composeMessage("Created request with id", *requestId, "Endpoint:", endpoint), std::cout);
             }
             else {
-                LOG::SyncPrintLine(LOG::composeMessage("Failed to create request", endpoint), std::cout);
+                PRINT::PrintLine(PRINT::composeMessage("Failed to create request", endpoint), std::cout);
             }
         }
         else {
-            LOG::SyncPrintLine(LOG::composeMessage("Incorrect endpoint provided", endpoint), std::cout);
+            PRINT::PrintLine(PRINT::composeMessage("Incorrect endpoint provided", endpoint), std::cout);
         }
     }
     else if (command == "cancel") {
@@ -87,8 +87,8 @@ void Controller::handleCommand(const std::string& command) {
         mClient.cancelRequest(id);
     }
     else {
-        LOG::SyncPrintLine("Unknown command. Type 'help' for available commands.", std::cout);
-        LOG::Debug(LOG::composeMessage("Unknown command entered:", command));
+        PRINT::PrintLine("Unknown command. Type 'help' for available commands.", std::cout);
+        LOG::Debug(PRINT::composeMessage("Unknown command entered:", command));
     }
 }
 
@@ -109,11 +109,11 @@ void Controller::run() {
 
     auto port = mConfig.getServerPort();
     auto serverName = mConfig.getServerName();
-    LOG::Debug(LOG::composeMessage("Get command line arguments. Port:", port, "Server name:", serverName));
+    LOG::Debug(PRINT::composeMessage("Get command line arguments. Port:", port, "Server name:", serverName));
 
     std::string command;
     while (true) {
-        LOG::SyncPrintLine("Enter command:", std::cout);
+        PRINT::PrintLine("Enter command:", std::cout);
         std::cin >> command;
         handleCommand(command);
         if (command == "exit") {
