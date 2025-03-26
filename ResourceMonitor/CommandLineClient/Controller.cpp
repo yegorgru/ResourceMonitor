@@ -17,21 +17,21 @@ void Controller::init(int argc, char* argv[]) {
 }
 
 void Controller::printHelpMessage() {
-    PRINT::PrintLine("\nAvailable commands:", std::cout);
-    PRINT::PrintLine("  help                    - Display this help message", std::cout);
-    PRINT::PrintLine("  config                  - Enter configuration mode", std::cout);
-    PRINT::PrintLine("  request <resource> <count> <ip>", std::cout);
-    PRINT::PrintLine("    - Request resource monitoring data", std::cout);
-    PRINT::PrintLine("    - <resource>: basic_info, cpu, memory, disks, network", std::cout);
-    PRINT::PrintLine("    - <count>: number of measurements", std::cout);
-    PRINT::PrintLine("    - <ip>: target machine IP address", std::cout);
-    PRINT::PrintLine("  cancel <request_id>     - Cancel an ongoing request", std::cout);
-    PRINT::PrintLine("  exit                    - Exit the application\n", std::cout);
+    PRINT::PrintLine("\nAvailable commands:");
+    PRINT::PrintLine("  help                    - Display this help message");
+    PRINT::PrintLine("  config                  - Enter configuration mode");
+    PRINT::PrintLine("  request <resource> <count> <ip>");
+    PRINT::PrintLine("    - Request resource monitoring data");
+    PRINT::PrintLine("    - <resource>: basic_info, cpu, memory, disks, network");
+    PRINT::PrintLine("    - <count>: number of measurements");
+    PRINT::PrintLine("    - <ip>: target machine IP address");
+    PRINT::PrintLine("  cancel <request_id>     - Cancel an ongoing request");
+    PRINT::PrintLine("  exit                    - Exit the application\n");
 }
 
 void Controller::handleCommand(const std::string& command) {
     if (command == "exit") {
-        PRINT::PrintLine("Stopping client...", std::cout);
+        PRINT::PrintLine("Stopping client...");
         mClient.close();
         LOG::Info("Exiting application");
         return;
@@ -71,14 +71,14 @@ void Controller::handleCommand(const std::string& command) {
         if (isValidEndpoint) {
             auto requestId = mClient.makeRequest(mConfig.getServerPort(), mConfig.getServerName(), resource, count, ipAddress);
             if (requestId) {
-                PRINT::PrintLine(PRINT::composeMessage("Created request with id", *requestId, "Endpoint:", endpoint), std::cout);
+                PRINT::PrintLine(PRINT::composeMessage("Created request with id", *requestId, "Endpoint:", endpoint));
             }
             else {
-                PRINT::PrintLine(PRINT::composeMessage("Failed to create request", endpoint), std::cout);
+                PRINT::PrintLine(PRINT::composeMessage("Failed to create request", endpoint));
             }
         }
         else {
-            PRINT::PrintLine(PRINT::composeMessage("Incorrect endpoint provided", endpoint), std::cout);
+            PRINT::PrintLine(PRINT::composeMessage("Incorrect endpoint provided", endpoint));
         }
     }
     else if (command == "cancel") {
@@ -87,7 +87,7 @@ void Controller::handleCommand(const std::string& command) {
         mClient.cancelRequest(id);
     }
     else {
-        PRINT::PrintLine("Unknown command. Type 'help' for available commands.", std::cout);
+        PRINT::PrintLine("Unknown command. Type 'help' for available commands.");
         LOG::Debug(PRINT::composeMessage("Unknown command entered:", command));
     }
 }
@@ -113,7 +113,7 @@ void Controller::run() {
 
     std::string command;
     while (true) {
-        PRINT::PrintLine("Enter command:", std::cout);
+        PRINT::PrintLine("Enter command:");
         std::cin >> command;
         handleCommand(command);
         if (command == "exit") {

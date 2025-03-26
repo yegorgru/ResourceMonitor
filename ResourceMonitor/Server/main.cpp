@@ -17,14 +17,14 @@ int main(int argc, char* argv[])
         controller.init(argc, argv);
         controller.run();
     }
-    catch (boost::system::system_error& e) {
-        PRINT::PrintLine(PRINT::composeMessage("Boost error occured! Error code =", e.code(), ". Message:", e.what()), std::cout);
+    catch (const boost::system::system_error& e) {
+        PRINT::PrintLine(PRINT::composeMessage("Boost error occured! Error code =", e.code(), ". Message:", e.what()));
     }
-    catch (std::exception& e) {
-        PRINT::PrintLine(PRINT::composeMessage("Std error occured! Message:", e.what()), std::cout);
+    catch (const std::exception& e) {
+        PRINT::PrintLine(PRINT::composeMessage("Std error occured! Message:", e.what()));
     }
     catch (...) {
-        PRINT::PrintLine("Unknown error occured!", std::cout);
+        PRINT::PrintLine("Unknown error occured!");
     }
 
     return 0;

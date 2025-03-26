@@ -16,15 +16,15 @@ void Controller::init(int argc, char* argv[]) {
 }
 
 void Controller::printHelpMessage() {
-    PRINT::PrintLine("\nAvailable commands:", std::cout);
-    PRINT::PrintLine("  help              - Display this help message", std::cout);
-    PRINT::PrintLine("  config            - Enter configuration mode", std::cout);
-    PRINT::PrintLine("  exit              - Stop the server and exit the application", std::cout);
+    PRINT::PrintLine("\nAvailable commands:");
+    PRINT::PrintLine("  help              - Display this help message");
+    PRINT::PrintLine("  config            - Enter configuration mode");
+    PRINT::PrintLine("  exit              - Stop the server and exit the application");
 }
 
 void Controller::handleCommand(const std::string& command) {
     if (command == "exit") {
-        PRINT::PrintLine("Stopping server...", std::cout);
+        PRINT::PrintLine("Stopping server...");
         mServer.stop();
         LOG::Info("Exiting application");
         return;
@@ -35,15 +35,15 @@ void Controller::handleCommand(const std::string& command) {
     else if (command == "config") {
         mConfig.handleConfigCommand();
         if (mConfig.isServerRestartNeeded()) {
-            PRINT::PrintLine("Restarting server to apply configuration changes...", std::cout);
+            PRINT::PrintLine("Restarting server to apply configuration changes...");
             mServer.stop();
             mServer.start(mConfig.getPort(), mConfig.getThreadCount());
             mConfig.resetServerRestartFlag();
-            PRINT::PrintLine("Server restarted successfully", std::cout);
+            PRINT::PrintLine("Server restarted successfully");
         }
     }
     else {
-        PRINT::PrintLine("Unknown command. Type 'help' for available commands.", std::cout);
+        PRINT::PrintLine("Unknown command. Type 'help' for available commands.");
         LOG::Debug(PRINT::composeMessage("Unknown command entered:", command));
     }
 }
@@ -78,7 +78,7 @@ void Controller::run() {
 
     std::string command;
     while (true) {
-        PRINT::PrintLine("Enter command:", std::cout);
+        PRINT::PrintLine("Enter command:");
         std::cin >> command;
         handleCommand(command);
         if (command == "exit") {
