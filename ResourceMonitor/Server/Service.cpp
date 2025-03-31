@@ -35,15 +35,15 @@ void Service::startHandling() {
     boost::asio::async_read_until(*mSocket.get(), mRequestBuf, "\r\n",
         [this](const boost::system::error_code& ec, std::size_t bytes_transferred)
         {
-            LOG::Debug("Start handling new connection");
+            Log::Debug("Start handling new connection");
             if (ec.value() != 0) {
                 if (ec == boost::asio::error::not_found) {
-                    LOG::Warning("Content Too Large");
+                    Log::Warning("Content Too Large");
                     sendResponse(Http::StatusCode::RequestEntityTooLarge, "");
                     return;
                 }
                 else {
-                    LOG::Error(PRINT::composeMessage("Error occured! Error code = ", ec.value(), ". Message: ", ec.message()));
+                    Log::Error(Print::composeMessage("Error occured! Error code = ", ec.value(), ". Message: ", ec.message()));
                     finish();
                     return;
                 }
@@ -55,23 +55,23 @@ void Service::startHandling() {
 
 void Service::processRequestLine()
 {
-    LOG::Debug("Start reading request line");
+    Log::Debug("Start reading request line");
 
     std::string requestLine;
     std::istream requestStream(&mRequestBuf);
     std::getline(requestStream, requestLine, '\n');
     if (requestLine.back() != '\r') {
-        LOG::Error("Expected \\r\\n in request line");
+        Log::Error("Expected \\r\\n in request line");
         finish();
     }
     requestLine.pop_back();
-    LOG::Debug(PRINT::composeMessage("Request line: ", requestLine));
+    Log::Debug(Print::composeMessage("Request line: ", requestLine));
 
     std::istringstream requestLineStream(requestLine);
     std::string requestMethod;
     requestLineStream >> requestMethod;
 
-    LOG::Debug(PRINT::composeMessage("Request method: ", requestMethod));
+    Log::Debug(Print::composeMessage("Request method: ", requestMethod));
 
     try
     {
@@ -79,14 +79,14 @@ void Service::processRequestLine()
     }
     catch (const std::runtime_error& ex)
     {
-        LOG::Error(PRINT::composeMessage(std::string(ex.what()) + "Method:", requestMethod));
+        Log::Error(Print::composeMessage(std::string(ex.what()) + "Method:", requestMethod));
         sendResponse(Http::StatusCode::NotImplemented, "");
         return;
     }
 
     std::string endpoint;
     requestLineStream >> endpoint;
-    LOG::Debug(PRINT::composeMessage("Requested resource: ", endpoint));
+    Log::Debug(Print::composeMessage("Requested resource: ", endpoint));
 
     std::deque<std::string> splitedEndpoint;
     boost::algorithm::split(splitedEndpoint, endpoint, boost::is_any_of("/"), boost::token_compress_on);
@@ -124,10 +124,10 @@ void Service::processRequestLine()
     std::string requestHttpVersion;
     requestLineStream >> requestHttpVersion;
 
-    LOG::Debug(PRINT::composeMessage("Request http version: ", requestHttpVersion));
+    Log::Debug(Print::composeMessage("Request http version: ", requestHttpVersion));
 
     if (requestHttpVersion != Http::Message::STANDARD) {
-        LOG::Error(PRINT::composeMessage("Incorrect standard:", requestHttpVersion));
+        Log::Error(Print::composeMessage("Incorrect standard:", requestHttpVersion));
         sendResponse(Http::StatusCode::HttpVersionNotSupported, "");
         return;
     }
@@ -137,14 +137,14 @@ void Service::processRequestLine()
         "\r\n\r\n",
         [this] (const boost::system::error_code& ec, std::size_t bytes_transferred) {
             if (ec.value() != 0) {
-                LOG::Error(PRINT::composeMessage("Error occured! Error code = ", ec.value(), ". Message: ", ec.message()));
+                Log::Error(Print::composeMessage("Error occured! Error code = ", ec.value(), ". Message: ", ec.message()));
 
                 if (ec == boost::asio::error::not_found) {
                     sendResponse(Http::StatusCode::RequestEntityTooLarge, "");
                     return;
                 }
                 else if (ec == boost::asio::error::eof) {
-                    LOG::Debug("Eof, headers are absent");
+                    Log::Debug("Eof, headers are absent");
                 }
                 else {
                     finish();
@@ -157,7 +157,7 @@ void Service::processRequestLine()
 }
 
 void Service::processHeadersAndContent() {
-    LOG::Debug("Start headers processing");
+    Log::Debug("Start headers processing");
 
     std::istream requestStream(&mRequestBuf);
     std::string line;
@@ -175,42 +175,42 @@ void Service::processHeadersAndContent() {
             std::string headerValue = line.substr(colonPos + 1);
             headerValue.erase(0, headerValue.find_first_not_of(" \t"));
             mRequest.addHeader(headerName, headerValue);
-            LOG::Debug(PRINT::composeMessage("Add header:", headerName, ":", headerValue));
+            Log::Debug(Print::composeMessage("Add header:", headerName, ":", headerValue));
         }
     }
 
     mRequest.appendBody(std::string(std::istreambuf_iterator<char>(requestStream), std::istreambuf_iterator<char>()));
-    LOG::Debug(PRINT::composeMessage("Content:", mRequest.getBody()));
+    Log::Debug(Print::composeMessage("Content:", mRequest.getBody()));
 
     auto sendToDbCallback = [this]() {
         auto method = mRequest.getMethod();
         if (method == Http::MessageRequest::Method::PUT) {
-            LOG::Debug("PUT request processing");
+            Log::Debug("PUT request processing");
             auto callback = [this](const Http::MessageResponse& response, const Http::Request::Id& id) {
                 auto statusCode = response.getStatusCode();
                 if (statusCode == Http::StatusCode::Ok) {
-                    LOG::Info(PRINT::composeMessage("Successfuly write info to database. Request:", boost::uuids::to_string(id)));
+                    Log::Info(Print::composeMessage("Successfuly write info to database. Request:", boost::uuids::to_string(id)));
                     sendResponse(statusCode, "");
                 }
                 else {
                     if (statusCode == Http::StatusCode::ClientClosedRequest) {
                         statusCode = Http::StatusCode::ServerError;
                     }
-                    LOG::Error(PRINT::composeMessage("Error while writing info to database", static_cast<int>(statusCode), "Request:", boost::uuids::to_string(id)));
+                    Log::Error(Print::composeMessage("Error while writing info to database", static_cast<int>(statusCode), "Request:", boost::uuids::to_string(id)));
                     sendResponse(statusCode, response.getBody());
                 }
             };
             DatabaseManager::Get().put(mRequest.getResource(), mRequest.getBody(), callback);
         }
         else if (method == Http::MessageRequest::Method::GET) {
-            LOG::Debug("GET request processing");
+            Log::Debug("GET request processing");
             auto callback = [this](const Http::MessageResponse& response, const Http::Request::Id&) {
                 //TODO: review if && or const& should be used
                 auto statusCode = response.getStatusCode();
                 if (statusCode == Http::StatusCode::Ok) {
-                    LOG::Info("Successfuly get info from database");
+                    Log::Info("Successfuly get info from database");
                     std::string responseStr = response.getBody();
-                    LOG::Debug(PRINT::composeMessage("get response from db:", responseStr));
+                    Log::Debug(Print::composeMessage("get response from db:", responseStr));
                     sendResponse(Http::StatusCode::Ok, std::move(responseStr));
                 }
                 else {
@@ -218,7 +218,7 @@ void Service::processHeadersAndContent() {
                         statusCode = Http::StatusCode::ServerError;
                     }
                     auto responseStr = response.getBody();
-                    LOG::Error(PRINT::composeMessage("Error while getting info from database", static_cast<int>(statusCode), responseStr));
+                    Log::Error(Print::composeMessage("Error while getting info from database", static_cast<int>(statusCode), responseStr));
                     sendResponse(statusCode, std::move(responseStr));
                 }
             };
@@ -243,7 +243,7 @@ void Service::processHeadersAndContent() {
 }
 
 void Service::sendResponse(Http::StatusCode statusCode, const std::string& response) {
-    LOG::Debug("Start sending response");
+    Log::Debug("Start sending response");
 
     mSocket->shutdown(boost::asio::ip::tcp::socket::shutdown_receive);
 
@@ -255,7 +255,7 @@ void Service::sendResponse(Http::StatusCode statusCode, const std::string& respo
     boost::asio::async_write(*mSocket.get(), boost::asio::buffer(mResponse.createStringRepresentation()),
         [this](const boost::system::error_code& ec, std::size_t bytes_transferred) {
             if (ec.value() != 0) {
-                LOG::Error(PRINT::composeMessage("Error occured! Error code = ", ec.value(), ". Message: ", ec.message()));
+                Log::Error(Print::composeMessage("Error occured! Error code = ", ec.value(), ". Message: ", ec.message()));
             }
 
             mSocket->shutdown(boost::asio::ip::tcp::socket::shutdown_both);
@@ -265,7 +265,7 @@ void Service::sendResponse(Http::StatusCode statusCode, const std::string& respo
 }
 
 void Service::finish() {
-    LOG::Debug("Finish service");
+    Log::Debug("Finish service");
     mSelfPtr.reset();
 }
 

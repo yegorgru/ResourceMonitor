@@ -3,7 +3,7 @@
 #include <iostream>
 #include <syncstream>
 
-void PRINT::initConsolePrinter() {
+void Print::initConsolePrinter() {
 	if (mPrinter) {
         PrintLine("Printer will be reinialized. Previous printer will be destroyed.");
         destroyPrinter();
@@ -11,7 +11,7 @@ void PRINT::initConsolePrinter() {
     mPrinter = std::make_unique<ConsolePrinter>();
 }
 
-void PRINT::initFilePrinter(const std::string& fileName) {
+void Print::initFilePrinter(const std::string& fileName) {
 	if (mPrinter) {
         PrintLine("Printer will be reinialized. Previous printer will be destroyed.");
         destroyPrinter();
@@ -19,13 +19,13 @@ void PRINT::initFilePrinter(const std::string& fileName) {
     mPrinter = std::make_unique<FilePrinter>(fileName);
 }
 
-void PRINT::destroyPrinter() {
+void Print::destroyPrinter() {
     if (mPrinter) {
         mPrinter.reset();
     }
 }
 
-void PRINT::Print(const std::string& message) {
+void Print::PrintWord(const std::string& message) {
 	if (!mPrinter) {
         initConsolePrinter();
         PrintLine("Printer is not initialized. Default console printer will be used.");
@@ -33,21 +33,21 @@ void PRINT::Print(const std::string& message) {
     mPrinter->printMessage(message);
 }
 
-void PRINT::PrintLine(const std::string& message) {
-    Print(message + "\n");
+void Print::PrintLine(const std::string& message) {
+    PrintWord(message + "\n");
 }
 
-void PRINT::Print(const std::string& message, std::ostream& stream) {
+void Print::PrintWord(const std::string& message, std::ostream& stream) {
 	std::osyncstream out{ stream };
 	out << message;
     out.flush();
 }
 
-void PRINT::PrintLine(const std::string& message, std::ostream& stream) {
-    Print(message + "\n", stream);
+void Print::PrintLine(const std::string& message, std::ostream& stream) {
+    PrintWord(message + "\n", stream);
 }
 
-PRINT::FilePrinter::FilePrinter(const std::string& fileName)
+Print::FilePrinter::FilePrinter(const std::string& fileName)
     : mFile(fileName, std::ios::out | std::ios::trunc)
 {
 	if (!mFile.is_open()) {
@@ -55,16 +55,16 @@ PRINT::FilePrinter::FilePrinter(const std::string& fileName)
 	}
 }
 
-PRINT::FilePrinter::~FilePrinter() {
+Print::FilePrinter::~FilePrinter() {
     if (mFile.is_open()) {
         mFile.close();
     }
 }
 
-void PRINT::FilePrinter::printMessage(const std::string& message) {
-    PRINT::Print(message, mFile);
+void Print::FilePrinter::printMessage(const std::string& message) {
+    Print::PrintWord(message, mFile);
 }
 
-void PRINT::ConsolePrinter::printMessage(const std::string& message) {
-    PRINT::Print(message, std::cout);
+void Print::ConsolePrinter::printMessage(const std::string& message) {
+    Print::PrintWord(message, std::cout);
 }

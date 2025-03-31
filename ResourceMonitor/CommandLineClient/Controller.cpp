@@ -1,4 +1,5 @@
 #include "Controller.h"
+#include "Input.h"
 
 namespace ResourceMonitorClient {
 
@@ -9,7 +10,7 @@ Controller::Controller(Client& client)
 }
 
 Controller::~Controller() {
-    LOG::Debug("Destroying controller");
+    Log::Debug("Destroying controller");
 }
 
 void Controller::init(int argc, char* argv[]) {
@@ -17,23 +18,23 @@ void Controller::init(int argc, char* argv[]) {
 }
 
 void Controller::printHelpMessage() {
-    PRINT::PrintLine("\nAvailable commands:");
-    PRINT::PrintLine("  help                    - Display this help message");
-    PRINT::PrintLine("  config                  - Enter configuration mode");
-    PRINT::PrintLine("  request <resource> <count> <ip>");
-    PRINT::PrintLine("    - Request resource monitoring data");
-    PRINT::PrintLine("    - <resource>: basic_info, cpu, memory, disks, network");
-    PRINT::PrintLine("    - <count>: number of measurements");
-    PRINT::PrintLine("    - <ip>: target machine IP address");
-    PRINT::PrintLine("  cancel <request_id>     - Cancel an ongoing request");
-    PRINT::PrintLine("  exit                    - Exit the application\n");
+    Print::PrintLine("\nAvailable commands:");
+    Print::PrintLine("  help                    - Display this help message");
+    Print::PrintLine("  config                  - Enter configuration mode");
+    Print::PrintLine("  request <resource> <count> <ip>");
+    Print::PrintLine("    - Request resource monitoring data");
+    Print::PrintLine("    - <resource>: basic_info, cpu, memory, disks, network");
+    Print::PrintLine("    - <count>: number of measurements");
+    Print::PrintLine("    - <ip>: target machine IP address");
+    Print::PrintLine("  cancel <request_id>     - Cancel an ongoing request");
+    Print::PrintLine("  exit                    - Exit the application\n");
 }
 
 void Controller::handleCommand(const std::string& command) {
     if (command == "exit") {
-        PRINT::PrintLine("Stopping client...");
+        Print::PrintLine("Stopping client...");
         mClient.close();
-        LOG::Info("Exiting application");
+        Log::Info("Exiting application");
         return;
     }
     else if (command == "help") {
@@ -43,12 +44,9 @@ void Controller::handleCommand(const std::string& command) {
         mConfig.handleConfigCommand();
     }
     else if (command == "request") {
-        std::string resource;
-        std::cin >> resource;
-        std::string count;
-        std::cin >> count;
-        std::string ipAddress;
-        std::cin >> ipAddress;
+        std::string resource = Input::Read();
+        std::string count = Input::Read();
+        std::string ipAddress = Input::Read();
 
         static const std::set<std::string> validResources = {
             "basic_info",
@@ -71,24 +69,23 @@ void Controller::handleCommand(const std::string& command) {
         if (isValidEndpoint) {
             auto requestId = mClient.makeRequest(mConfig.getServerPort(), mConfig.getServerName(), resource, count, ipAddress);
             if (requestId) {
-                PRINT::PrintLine(PRINT::composeMessage("Created request with id", *requestId, "Endpoint:", endpoint));
+                Print::PrintLine(Print::composeMessage("Created request with id", *requestId, "Endpoint:", endpoint));
             }
             else {
-                PRINT::PrintLine(PRINT::composeMessage("Failed to create request", endpoint));
+                Print::PrintLine(Print::composeMessage("Failed to create request", endpoint));
             }
         }
         else {
-            PRINT::PrintLine(PRINT::composeMessage("Incorrect endpoint provided", endpoint));
+            Print::PrintLine(Print::composeMessage("Incorrect endpoint provided", endpoint));
         }
     }
     else if (command == "cancel") {
-        std::string id;
-        std::cin >> id;
+        std::string id = Input::Read();
         mClient.cancelRequest(id);
     }
     else {
-        PRINT::PrintLine("Unknown command. Type 'help' for available commands.");
-        LOG::Debug(PRINT::composeMessage("Unknown command entered:", command));
+        Print::PrintLine("Unknown command. Type 'help' for available commands.");
+        Log::Debug(Print::composeMessage("Unknown command entered:", command));
     }
 }
 
@@ -99,30 +96,38 @@ void Controller::run() {
 
     const auto& printFilename = mConfig.getPrintFilename();
     if (printFilename.empty()) {
-        PRINT::initConsolePrinter();
+        Print::initConsolePrinter();
     }
     else {
-        PRINT::initFilePrinter(printFilename);
+        Print::initFilePrinter(printFilename);
     }
 
     const auto logFilename = mConfig.getLogFilename();
     const auto logLevel = mConfig.getLogLevel();
     if (logFilename.empty()) {
-        LOG::initConsoleLogger(logLevel);
+        Log::initConsoleLogger(logLevel);
     }
     else {
-        LOG::initFileLogger(logLevel, logFilename);
+        Log::initFileLogger(logLevel, logFilename);
     }
-    LOG::Debug("Logger and printer are initialized");
+
+    const auto& inputFilename = mConfig.getInputFilename();
+    if (!inputFilename.empty()) {
+        Input::initFileReader(inputFilename);
+    }
+    else {
+        Input::initConsoleReader();
+    }
+
+    Log::Debug("Logger, printer and reader are initialized");
 
     auto port = mConfig.getServerPort();
     auto serverName = mConfig.getServerName();
-    LOG::Debug(PRINT::composeMessage("Get command line arguments. Port:", port, "Server name:", serverName));
+    Log::Debug(Print::composeMessage("Get command line arguments. Port:", port, "Server name:", serverName));
 
-    std::string command;
     while (true) {
-        PRINT::PrintLine("Enter command:");
-        std::cin >> command;
+        Print::PrintLine("Enter command:");
+        std::string command = Input::Read();
         handleCommand(command);
         if (command == "exit") {
             break;

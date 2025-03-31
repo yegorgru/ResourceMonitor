@@ -1,6 +1,7 @@
 #include "Config.h"
 #include "Log.h"
 #include "DatabaseManager.h"
+#include "Input.h"
 
 #include <iostream>
 #include <sstream>
@@ -61,11 +62,11 @@ void Config::initializeConfigCommands() {
             return port >= 0 && port <= 65535; 
         });
         if (!portOpt) {
-            PRINT::PrintLine("Invalid port value: " + value + ". Port must be a valid integer between 0 and 65535.");
+            Print::PrintLine("Invalid port value: " + value + ". Port must be a valid integer between 0 and 65535.");
             return;
         }
         setPort(*portOpt);
-        PRINT::PrintLine("Server port set to: " + value);
+        Print::PrintLine("Server port set to: " + value);
     };
     mConfigHelp["port"] = "Set server port (e.g., port 3333). Change will be applied after leaving config mode.";
 
@@ -74,11 +75,11 @@ void Config::initializeConfigCommands() {
             return count >= 2; 
         });
         if (!threadCountOpt) {
-            PRINT::PrintLine("Invalid thread count: " + value + ". Must be an integer bigger than 2.");
+            Print::PrintLine("Invalid thread count: " + value + ". Must be an integer bigger than 2.");
             return;
         }       
         setThreadCount(*threadCountOpt);
-        PRINT::PrintLine("Thread count set to: " + value);
+        Print::PrintLine("Thread count set to: " + value);
     };
     mConfigHelp["threads"] = "Set thread pool size (e.g., threads 4). Change will be applied after leaving config mode.";
 
@@ -87,34 +88,34 @@ void Config::initializeConfigCommands() {
             return port >= 0 && port <= 65535; 
         });
         if (!dbPortOpt) {
-            PRINT::PrintLine("Invalid db port value: " + value + ". Port must be a valid integer between 0 and 65535.");
+            Print::PrintLine("Invalid db port value: " + value + ". Port must be a valid integer between 0 and 65535.");
             return;
         }        
         setDbPort(*dbPortOpt);
-        PRINT::PrintLine("Database port set to: " + value);
+        Print::PrintLine("Database port set to: " + value);
     };
     mConfigHelp["db-port"] = "Set database port (e.g., db-port 10000)";
 
     mConfigCommands["db-name"] = [this](const std::string& value) {
         setDbName(value);
-        PRINT::PrintLine("Database name set to: " + value);
+        Print::PrintLine("Database name set to: " + value);
     };
     mConfigHelp["db-name"] = "Set database name (e.g., db-name localhost)";
 
     mConfigCommands["log-level"] = [this](const std::string& value) {
         try {
             setLogLevel(value);
-            PRINT::PrintLine("Log level set to: " + value);
+            Print::PrintLine("Log level set to: " + value);
         }
         catch (const std::exception&) {
-            PRINT::PrintLine("Invalid log level: " + value + ". Valid values: throw/error/warning/info/debug/trace");
+            Print::PrintLine("Invalid log level: " + value + ". Valid values: throw/error/warning/info/debug/trace");
         }
     };
     mConfigHelp["log-level"] = "Set log level (throw/error/warning/info/debug/trace)";
 
     mConfigCommands["log-file"] = [this](const std::string& value) {
         setLogFilename(value);
-        PRINT::PrintLine("Log file set to: " + value);
+        Print::PrintLine("Log file set to: " + value);
     };
     mConfigHelp["log-file"] = "Set log file path (e.g., log-file server.log)";
 
@@ -131,43 +132,45 @@ void Config::initializeConfigCommands() {
     mConfigCommands["no"] = [this](const std::string& value) {
         if (value == "port") {
             setPort(getDefaultValue<int>(mDescription, "port"));
-            PRINT::PrintLine("Server port reset to default: " + std::to_string(getPort()));
+            Print::PrintLine("Server port reset to default: " + std::to_string(getPort()));
         }
         else if (value == "threads") {
             setThreadCount(getDefaultValue<int>(mDescription, "threads-count"));
-            PRINT::PrintLine("Thread count reset to default: " + std::to_string(getThreadCount()));
+            Print::PrintLine("Thread count reset to default: " + std::to_string(getThreadCount()));
         }
         else if (value == "db-port") {
             setDbPort(getDefaultValue<int>(mDescription, "db-port"));
-            PRINT::PrintLine("Database port reset to default: " + std::to_string(getDbPort()));
+            Print::PrintLine("Database port reset to default: " + std::to_string(getDbPort()));
         }
         else if (value == "db-name") {
             setDbName(getDefaultValue<std::string>(mDescription, "db-name"));
-            PRINT::PrintLine("Database name reset to default: " + getDbName());
+            Print::PrintLine("Database name reset to default: " + getDbName());
         }
         else if (value == "log-level") {
             setLogLevel(getDefaultValue<std::string>(mDescription, "log-level"));
-            PRINT::PrintLine("Log level reset to default: " + mVariablesMap["log-level"].as<std::string>());
+            Print::PrintLine("Log level reset to default: " + mVariablesMap["log-level"].as<std::string>());
         }
         else if (value == "log-file") {
             setLogFilename(getDefaultValue<std::string>(mDescription, "log-file"));
-            PRINT::PrintLine("Log file reset to default (console output)");
+            Print::PrintLine("Log file reset to default (console output)");
         }
         else {
-            PRINT::PrintLine("Unknown config option: " + value);
-            PRINT::PrintLine("Available options: port, threads, db-port, db-name, log-level, log-file");
+            Print::PrintLine("Unknown config option: " + value);
+            Print::PrintLine("Available options: port, threads, db-port, db-name, log-level, log-file");
         }
     };
     mConfigHelp["no"] = "Reset config option to default (e.g., no port)";
 }
 
 void Config::handleConfigCommand() {
-    PRINT::PrintLine("Entering config mode. Type 'help' for available commands or 'exit' to leave config mode.");
+    Print::PrintLine("Entering config mode. Type 'help' for available commands or 'exit' to leave config mode.");
     
     std::string line;
-    while (std::getline(std::cin, line)) {
+    while (true) {
+        line = Input::ReadLine();
+        
         if (line == "exit") {
-            PRINT::PrintLine("Exiting config mode");
+            Print::PrintLine("Exiting config mode");
             break;
         }
 
@@ -185,30 +188,30 @@ void Config::handleConfigCommand() {
             mConfigCommands[command](remaining);
         }
         else {
-            PRINT::PrintLine("Unknown command: " + command);
-            PRINT::PrintLine("Type 'help' for available commands");
+            Print::PrintLine("Unknown command: " + command);
+            Print::PrintLine("Type 'help' for available commands");
         }
     }
 }
 
 void Config::showConfigHelp() const {
-    PRINT::PrintLine("Available config commands:");
+    Print::PrintLine("Available config commands:");
     for (const auto& [command, help] : mConfigHelp) {
-        PRINT::PrintLine("  " + command + ": " + help);
+        Print::PrintLine("  " + command + ": " + help);
     }
-    PRINT::PrintLine("  exit: Leave config mode. Server will restart if needed to apply changes");
+    Print::PrintLine("  exit: Leave config mode. Server will restart if needed to apply changes");
 }
 
 void Config::showCurrentConfig() const {
-    PRINT::PrintLine("\nCurrent configuration:");
-    PRINT::PrintLine("  Server port: " + std::to_string(getPort()));
-    PRINT::PrintLine("  Thread count: " + std::to_string(getThreadCount()));
-    PRINT::PrintLine("  Database port: " + std::to_string(getDbPort()));
-    PRINT::PrintLine("  Database name: " + getDbName());
-    PRINT::PrintLine("  Log level: " + mVariablesMap["log-level"].as<std::string>());
+    Print::PrintLine("\nCurrent configuration:");
+    Print::PrintLine("  Server port: " + std::to_string(getPort()));
+    Print::PrintLine("  Thread count: " + std::to_string(getThreadCount()));
+    Print::PrintLine("  Database port: " + std::to_string(getDbPort()));
+    Print::PrintLine("  Database name: " + getDbName());
+    Print::PrintLine("  Log level: " + mVariablesMap["log-level"].as<std::string>());
     const auto& logFile = getLogFilename();
-    PRINT::PrintLine("  Log file: " + (logFile.empty() ? "(console output)" : logFile));
-    PRINT::PrintLine("");
+    Print::PrintLine("  Log file: " + (logFile.empty() ? "(console output)" : logFile));
+    Print::PrintLine("");
 }
 
 bool Config::parseCommandLine(int argc, char* argv[]) {
@@ -219,12 +222,12 @@ bool Config::parseCommandLine(int argc, char* argv[]) {
         po::notify(mVariablesMap);
     }
     catch (const po::error& e) {
-        PRINT::PrintLine("Failed to parse command line arguments: " + std::string(e.what()));
-        PRINT::PrintLine(PRINT::composeMessage(mDescription));
+        Print::PrintLine("Failed to parse command line arguments: " + std::string(e.what()));
+        Print::PrintLine(Print::composeMessage(mDescription));
         return false;
     }
     if (mVariablesMap.count("help")) {
-        PRINT::PrintLine(PRINT::composeMessage(mDescription));
+        Print::PrintLine(Print::composeMessage(mDescription));
         return false;
     }
     return true;
@@ -279,7 +282,7 @@ void Config::setDbPort(int port) {
 
     DatabaseManager::Destroy();
     DatabaseManager::Init(getDbName(), port);
-    LOG::Debug("Database reinitialized with new port");
+    Log::Debug("Database reinitialized with new port");
 }
 
 void Config::setDbName(const std::string& name) {
@@ -290,7 +293,7 @@ void Config::setDbName(const std::string& name) {
 
     DatabaseManager::Destroy();
     DatabaseManager::Init(name, getDbPort());
-    LOG::Debug("Database reinitialized with new name");
+    Log::Debug("Database reinitialized with new name");
 }
 
 void Config::setLogFilename(const std::string& filename) {
@@ -320,14 +323,14 @@ void Config::validateLogLevel(const std::string& input) {
 void Config::reinitializeLogger() {
     const auto logFilename = getLogFilename();
     const auto logLevel = getLogLevel();
-    LOG::destroyLogger();
+    Log::destroyLogger();
     if (logFilename.empty()) {
-        LOG::initConsoleLogger(logLevel);
+        Log::initConsoleLogger(logLevel);
     }
     else {
-        LOG::initFileLogger(logLevel, logFilename);
+        Log::initFileLogger(logLevel, logFilename);
     }
-    LOG::Debug("Logger reinitialized");
+    Log::Debug("Logger reinitialized");
 }
 
 bool Config::isServerRestartNeeded() const { 

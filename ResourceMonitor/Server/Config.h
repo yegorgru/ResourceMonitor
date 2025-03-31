@@ -41,11 +41,13 @@ private:
     using VariablesMap = boost::program_options::variables_map;
     using Description = boost::program_options::options_description;
     using ConfigCommand = std::function<void(const std::string&)>;
+    using ConfigCommandsMap = std::map<std::string, ConfigCommand>;
+    using ConfigHelpMap = std::map<std::string, std::string>;
 private:
     VariablesMap mVariablesMap;
     Description mDescription;
-    std::map<std::string, ConfigCommand> mConfigCommands;
-    std::map<std::string, std::string> mConfigHelp;
+    ConfigCommandsMap mConfigCommands;
+    ConfigHelpMap mConfigHelp;
     bool mServerRestartNeeded;
 };
 

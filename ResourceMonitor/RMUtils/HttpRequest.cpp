@@ -18,7 +18,7 @@ Request::Request(IoService& ios, const std::string& host, unsigned int port, Cal
 }
 
 Request::~Request() {
-    LOG::Trace("Request destructor");
+    Log::Trace("Request destructor");
 }
 
 void Request::get(const std::string& resource) {
@@ -41,9 +41,9 @@ void Request::addHeader(const std::string& name, const std::string& value) {
 void Request::execute() {
     const auto& res = mRequestMessage.getResource();
     if (mPort == 0 || mHost == "" || res == "") {
-        LOG::Throw(PRINT::composeMessage("Incorrect request parameters. Port:", mPort, "host:", mHost, "resource:", res));
+        Log::Throw(Print::composeMessage("Incorrect request parameters. Port:", mPort, "host:", mHost, "resource:", res));
     }
-    LOG::Debug(PRINT::composeMessage("Start request executing. Port:", mPort, "host:", mHost, "resource:", res));
+    Log::Debug(Print::composeMessage("Start request executing. Port:", mPort, "host:", mHost, "resource:", res));
 
     mSelfPtr = shared_from_this();
 
@@ -71,7 +71,7 @@ void Request::cancel() {
     if (isCompleted()) {
         return;
     }
-    LOG::Debug(PRINT::composeMessage("Cancelling request. Id:", boost::uuids::to_string(mId)));
+    Log::Debug(Print::composeMessage("Cancelling request. Id:", boost::uuids::to_string(mId)));
     mResponseMessage.setStatusCode(Http::StatusCode::ClientClosedRequest);
     mCallback(mResponseMessage, mId);
     mIsCanceled = true;
@@ -91,7 +91,7 @@ const Request::Id& Request::getId() const {
 }
 
 void Request::connect(boost::asio::ip::tcp::resolver::iterator iterator) {
-    LOG::Debug("Start connecting to server");
+    Log::Debug("Start connecting to server");
     if (mIsCanceled) {
         finish(boost::system::error_code(boost::asio::error::operation_aborted));
         return;
@@ -109,7 +109,7 @@ void Request::connect(boost::asio::ip::tcp::resolver::iterator iterator) {
 }
 
 void Request::sendRequest() {
-    LOG::Debug("Start request creation");
+    Log::Debug("Start request creation");
 
     mRequestMessage.addHeader("Host", mHost);
 
@@ -125,7 +125,7 @@ void Request::sendRequest() {
                 finish(ec);
                 return;
             }
-            LOG::Debug("Request sent");
+            Log::Debug("Request sent");
             readResponse();
         }
     );
@@ -140,7 +140,7 @@ void Request::readResponse()
         return;
     }
 
-    LOG::Debug("Start waiting for response");
+    Log::Debug("Start waiting for response");
 
     boost::asio::async_read_until(mSock, mResponseBuf, "\r\n",
         [this](const boost::system::error_code& ec, std::size_t bytes_transferred)
@@ -156,7 +156,7 @@ void Request::readResponse()
 
 void Request::readStatusLine()
 {
-    LOG::Debug("Start response status line reading");
+    Log::Debug("Start response status line reading");
 
     std::string httpVersion;
     std::string strStatusCode;
@@ -165,17 +165,17 @@ void Request::readStatusLine()
     std::istream responseStream(&mResponseBuf);
     responseStream >> httpVersion;
 
-    LOG::Debug(PRINT::composeMessage("Http version:", httpVersion));
+    Log::Debug(Print::composeMessage("Http version:", httpVersion));
 
     if (httpVersion != "HTTP/1.1") {
-        LOG::Error(PRINT::composeMessage("Unsupported HTTP version:", httpVersion));
+        Log::Error(Print::composeMessage("Unsupported HTTP version:", httpVersion));
         finish(boost::system::errc::make_error_code(boost::system::errc::protocol_error));
         return;
     }
 
     responseStream >> strStatusCode;
 
-    LOG::Debug(PRINT::composeMessage("Status code:", strStatusCode));
+    Log::Debug(Print::composeMessage("Status code:", strStatusCode));
 
     Http::StatusCode statusCode = Http::StatusCode::Ok;
 
@@ -183,7 +183,7 @@ void Request::readStatusLine()
         statusCode = intToStatusCode(std::stoi(strStatusCode));
     }
     catch (std::logic_error& ex) {
-        LOG::Error(ex.what());
+        Log::Error(ex.what());
         finish(boost::system::errc::make_error_code(boost::system::errc::invalid_argument));
         return;
     }
@@ -192,7 +192,7 @@ void Request::readStatusLine()
     std::getline(responseStream, statusMessage, '\r');
     responseStream.get();   // Remove symbol '\n' from the buffer.
 
-    LOG::Debug(PRINT::composeMessage("Status message:", statusMessage));
+    Log::Debug(Print::composeMessage("Status message:", statusMessage));
 
     mResponseMessage.setStatusCode(statusCode);
     mResponseMessage.setStatusMessage(statusMessage);
@@ -211,7 +211,7 @@ void Request::readStatusLine()
                 return;
             }
             else if (ec == boost::asio::error::eof) {
-                LOG::Debug("Eof, headers are absent");
+                Log::Debug("Eof, headers are absent");
             }
             readHeaders();
         }
@@ -220,7 +220,7 @@ void Request::readStatusLine()
 
 void Request::readHeaders()
 {
-    LOG::Debug("Start response headers reading");
+    Log::Debug("Start response headers reading");
 
     std::istream requestStream(&mResponseBuf);
     std::string line;
@@ -238,7 +238,7 @@ void Request::readHeaders()
             std::string headerValue = line.substr(colonPos + 1);
             headerValue.erase(0, headerValue.find_first_not_of(" \t"));
             mResponseMessage.addHeader(headerName, headerValue);
-            LOG::Debug(PRINT::composeMessage("Add header:", headerName, ":", headerValue));
+            Log::Debug(Print::composeMessage("Add header:", headerName, ":", headerValue));
         }
     }
 
@@ -260,13 +260,13 @@ void Request::readHeaders()
 }
 
 void Request::finish(const boost::system::error_code& ec) {
-    LOG::Debug("Finish request");
+    Log::Debug("Finish request");
     if (ec == boost::asio::error::operation_aborted) {
-        LOG::Info(PRINT::composeMessage("Request was canceled"));
+        Log::Info(Print::composeMessage("Request was canceled"));
     }
     else if (ec.value() != 0) {
-        auto message = PRINT::composeMessage("Error occured! Error code =", ec.value(), ". Message:", ec.message(), "Request id:", boost::uuids::to_string(mId));
-        LOG::Error(message);
+        auto message = Print::composeMessage("Error occured! Error code =", ec.value(), ". Message:", ec.message(), "Request id:", boost::uuids::to_string(mId));
+        Log::Error(message);
         mResponseMessage.addHeader("Content-Length", "0");
         mResponseMessage.setStatusCode(Http::StatusCode::ServerError);
         mCallback(mResponseMessage, mId);

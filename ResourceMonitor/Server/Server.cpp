@@ -9,17 +9,17 @@ namespace ResourceMonitorServer {
 
 Server::~Server()
 {
-    LOG::Debug("Destroying server");
+    Log::Debug("Destroying server");
     if (mWork && mWork->owns_work()) {
         stop();
     }
 }
 
 void Server::start(Port portNum, unsigned int threadPoolSize) {
-    LOG::Info("Start server");
+    Log::Info("Start server");
     IoService::Init();
     if (threadPoolSize < 2) {
-        LOG::Throw("threadPoolSize should be > 1");
+        Log::Throw("threadPoolSize should be > 1");
     }
     mWork.emplace(boost::asio::make_work_guard(IoService::Get().getIoService()));
     mAcceptor.emplace(IoService::Get().getIoService());
@@ -32,11 +32,11 @@ void Server::start(Port portNum, unsigned int threadPoolSize) {
         );
     }
 
-    LOG::Info("Server started");
+    Log::Info("Server started");
 }
 
 void Server::stop() {
-    LOG::Info("Stop server");
+    Log::Info("Stop server");
     if (mAcceptor) {
         mAcceptor->stop();
         mAcceptor.reset();
@@ -50,7 +50,7 @@ void Server::stop() {
     }
     mThreadPool.clear();
     IoService::Destroy();
-    LOG::Debug("Server stopped");
+    Log::Debug("Server stopped");
 }
 
 } // namespace ResourceMonitorServer

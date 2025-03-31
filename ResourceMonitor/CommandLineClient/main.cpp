@@ -18,13 +18,13 @@ int main(int argc, char* argv[])
         controller.run();
     }
     catch (const boost::system::system_error& e) {
-        PRINT::PrintLine(PRINT::composeMessage("Boost error occured! Error code =", e.code(), ". Message:", e.what()));
+        Print::PrintLine(Print::composeMessage("Boost error occured! Error code =", e.code(), ". Message:", e.what()));
     }
     catch (const std::exception& e) {
-        PRINT::PrintLine(PRINT::composeMessage("Std error occured! Message:", e.what()));
+        Print::PrintLine(Print::composeMessage("Std error occured! Message:", e.what()));
     }
     catch (...) {
-        PRINT::PrintLine("Unknown error occured!");
+        Print::PrintLine("Unknown error occured!");
     }
 
     return 0;

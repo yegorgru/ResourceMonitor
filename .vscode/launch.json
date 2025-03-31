@@ -33,6 +33,7 @@
                 "--server-name", "localhost",
                 //"--log-file", "client.log",
                 //"--print-file", "print.txt",
+                //"--input-file", "a.txt",
                 "--log-level", "debug"
             ],
             "stopAtEntry": false,

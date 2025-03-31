@@ -4,7 +4,7 @@
 #include <syncstream>
 #include <format>
 
-void LOG::initConsoleLogger(LogLevel logLevel) {
+void Log::initConsoleLogger(LogLevel logLevel) {
 	if (mLogger) {
 		throw std::runtime_error("Logger is already initialized");
 	}
@@ -12,7 +12,7 @@ void LOG::initConsoleLogger(LogLevel logLevel) {
 	mLogLevel = logLevel;
 }
 
-void LOG::initFileLogger(LogLevel logLevel, const std::string fileName) {
+void Log::initFileLogger(LogLevel logLevel, const std::string fileName) {
 	if (mLogger) {
 		throw std::runtime_error("Logger is already initialized");
 	}
@@ -20,40 +20,40 @@ void LOG::initFileLogger(LogLevel logLevel, const std::string fileName) {
 	mLogLevel = logLevel;
 }
 
-void LOG::destroyLogger() {
+void Log::destroyLogger() {
     if (mLogger) {
         mLogger.reset();
         mLogLevel = LogLevel::Error;
     }
 }
 
-void LOG::Trace(const std::string& message, std::source_location location) {
+void Log::Trace(const std::string& message, std::source_location location) {
 	log(LogLevel::Trace, message, location);
 }
 
-void LOG::Debug(const std::string& message, std::source_location location) {
+void Log::Debug(const std::string& message, std::source_location location) {
 	log(LogLevel::Debug, message, location);
 }
 
-void LOG::Info(const std::string& message, std::source_location location) {
+void Log::Info(const std::string& message, std::source_location location) {
 	log(LogLevel::Info, message, location);
 }
 
-void LOG::Warning(const std::string& message, std::source_location location) {
+void Log::Warning(const std::string& message, std::source_location location) {
 	log(LogLevel::Warning, message, location);
 }
 
-void LOG::Error(const std::string& message, std::source_location location) {
+void Log::Error(const std::string& message, std::source_location location) {
 	log(LogLevel::Error, message, location);
 }
 
-void LOG::Throw(const std::string& message, std::source_location location) {
+void Log::Throw(const std::string& message, std::source_location location) {
 	log(LogLevel::Throw, message, location);
 }
 
-void LOG::log(LogLevel messageLogLevel, const std::string& message, std::source_location location) {
+void Log::log(LogLevel messageLogLevel, const std::string& message, std::source_location location) {
 	if (!mLogger) {
-		PRINT::PrintLine(PRINT::composeMessage("(Logger is not initialized)", message));
+		Print::PrintLine(Print::composeMessage("(Logger is not initialized)", message));
 	}
 	if (messageLogLevel >= mLogLevel) {
 		std::ostringstream oss;
@@ -89,7 +89,7 @@ void LOG::log(LogLevel messageLogLevel, const std::string& message, std::source_
 	}
 }
 
-LOG::LoggerFile::LoggerFile(const std::string& fileName) 
+Log::LoggerFile::LoggerFile(const std::string& fileName) 
 	: mFile(fileName, std::ios::out | std::ios::trunc)
 {
 	if (!mFile.is_open()) {
@@ -97,21 +97,21 @@ LOG::LoggerFile::LoggerFile(const std::string& fileName)
 	}
 }
 
-LOG::LoggerFile::~LoggerFile() {
+Log::LoggerFile::~LoggerFile() {
 	if (mFile.is_open()) {
 		mFile.close();
 	}
 }
 
-void LOG::LoggerFile::printMessage(LogLevel logLevel, const std::string& message) {
-	PRINT::PrintLine(message, mFile);
+void Log::LoggerFile::printMessage(LogLevel logLevel, const std::string& message) {
+	Print::PrintLine(message, mFile);
 }
 
-void LOG::LoggerConsole::printMessage(LogLevel logLevel, const std::string& message) {
+void Log::LoggerConsole::printMessage(LogLevel logLevel, const std::string& message) {
 	if (logLevel <= LogLevel::Warning) {
-		PRINT::PrintLine(message, std::cout);
+		Print::PrintLine(message, std::cout);
 	}
 	else {
-		PRINT::PrintLine(message, std::cerr);
+		Print::PrintLine(message, std::cerr);
 	}
 }

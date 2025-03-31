@@ -16,14 +16,14 @@ Client::Client()
 
 Client::~Client()
 {
-    LOG::Debug("Destroying client");
+    Log::Debug("Destroying client");
     if (mWork.owns_work()) {
         close();
     }
 }
 
 Client::OptionalRequestId Client::makeRequest(int serverPort, const std::string& serverName, const std::string& resource, const std::string& count, const std::string& ipAddress) {
-    LOG::Debug("Making request");
+    Log::Debug("Making request");
     auto callback = getCallback(resource);
     if (!callback) {
         return std::nullopt;
@@ -32,12 +32,15 @@ Client::OptionalRequestId Client::makeRequest(int serverPort, const std::string&
     std::string endpoint = resource + "/" + count + "/" + ipAddress;
     request->get(endpoint);
     const auto& id = request->getId();
-    mRequests[id] = request;
+    {
+        std::lock_guard<std::mutex> lg(mRequestsMutex);
+        mRequests[id] = request;
+    }
     return boost::uuids::to_string(id);
 }
 
 void Client::cancelRequest(const std::string strId) {
-    LOG::Debug("Canceling request");
+    Log::Debug("Canceling request");
     static boost::uuids::string_generator stringGen;
     std::string message;
     try
@@ -48,31 +51,31 @@ void Client::cancelRequest(const std::string strId) {
         if (found != mRequests.end()) {
             if (!found->second->isCompleted()) {
                 found->second->cancel();
-                message = PRINT::composeMessage("Request canceled. Id:", strId);
-                LOG::Info(message);
+                message = Print::composeMessage("Request canceled. Id:", strId);
+                Log::Info(message);
                 mRequests.erase(found);
-                LOG::Debug(PRINT::composeMessage("Canceled request removed from storage. Id:", boost::uuids::to_string(id)));
+                Log::Debug(Print::composeMessage("Canceled request removed from storage. Id:", boost::uuids::to_string(id)));
             }
             else {
-                message = PRINT::composeMessage("Error: completed request still in storage. Id:", strId);
-                LOG::Error(message);
+                message = Print::composeMessage("Error: completed request still in storage. Id:", strId);
+                Log::Error(message);
             }
         }
         else {
-            message = PRINT::composeMessage("No requests with such id in storage. Id:", strId);
-            LOG::Info(message);
+            message = Print::composeMessage("No requests with such id in storage. Id:", strId);
+            Log::Info(message);
         }
     }
     catch (const std::runtime_error&)
     {
-        message = PRINT::composeMessage("Failed to convert string to valid id. Id:", strId);
-        LOG::Error(message);
+        message = Print::composeMessage("Failed to convert string to valid id. Id:", strId);
+        Log::Error(message);
     }
-    PRINT::PrintLine(message);
+    Print::PrintLine(message);
 }
 
 void Client::close() {
-    LOG::Debug("Client close");
+    Log::Debug("Client close");
     mWork.reset();
     mThreadIo.join();
 }
@@ -83,88 +86,88 @@ Client::OptionalCallback Client::getCallback(const std::string& resource) {
         {
             "basic_info",
             [this](const nlohmann::json& parsedJson) {
-                PRINT::PrintLine(PRINT::composeMessage("Basic info for", parsedJson["machineIp"]));
+                Print::PrintLine(Print::composeMessage("Basic info for", parsedJson["machineIp"]));
                 for (const auto& row : parsedJson["rows"]) {
-                    LOG::Debug(PRINT::composeMessage(parsedJson.dump()));
-                    PRINT::PrintLine("==================================");
-                    PRINT::PrintLine(PRINT::composeMessage("Timestamp:", row["timestamp"]));
-                    PRINT::PrintLine(PRINT::composeMessage("Cpu count:", row["numcpus"]));
-                    PRINT::PrintLine(PRINT::composeMessage("Total virtual memory (GB):", row["total virt mem GB"]));
-                    PRINT::PrintLine(PRINT::composeMessage("Total swap memory (GB):", row["total swap mem GB"]));
-                    PRINT::PrintLine(PRINT::composeMessage("Disk partitions count:", row["numdisks"]));
-                    PRINT::PrintLine(PRINT::composeMessage("Total disk (GB):", row["total_C_disk GB"]));
-                    PRINT::PrintLine("==================================");
+                    Log::Debug(Print::composeMessage(parsedJson.dump()));
+                    Print::PrintLine("==================================");
+                    Print::PrintLine(Print::composeMessage("Timestamp:", row["timestamp"]));
+                    Print::PrintLine(Print::composeMessage("Cpu count:", row["numcpus"]));
+                    Print::PrintLine(Print::composeMessage("Total virtual memory (GB):", row["total virt mem GB"]));
+                    Print::PrintLine(Print::composeMessage("Total swap memory (GB):", row["total swap mem GB"]));
+                    Print::PrintLine(Print::composeMessage("Disk partitions count:", row["numdisks"]));
+                    Print::PrintLine(Print::composeMessage("Total disk (GB):", row["total_C_disk GB"]));
+                    Print::PrintLine("==================================");
                 }
             }
         },
         {
             "cpu",
             [this](const nlohmann::json& parsedJson) {
-                PRINT::PrintLine(PRINT::composeMessage("Cpu info for", parsedJson["machineIp"]));
+                Print::PrintLine(Print::composeMessage("Cpu info for", parsedJson["machineIp"]));
                 for (const auto& row : parsedJson["rows"]) {
-                    PRINT::PrintLine("==================================");
-                    PRINT::PrintLine(PRINT::composeMessage("Timestamp:", row["timestamp"]));
-                    PRINT::PrintLine(PRINT::composeMessage("Cpu usage (%):", row["cpu_usage %"]));
-                    PRINT::PrintLine(PRINT::composeMessage("Time spent by normal processes executing in user mode:", row["cpu_times"]["cpu_user"]));
-                    PRINT::PrintLine(PRINT::composeMessage("Time spent by processes executing in kernel mode:", row["cpu_times"]["cpu_system"]));
-                    PRINT::PrintLine(PRINT::composeMessage("Idle time:", row["cpu_times"]["cpu_idle"]));
-                    PRINT::PrintLine(PRINT::composeMessage("Current cpu frequency Mhz:", row["cpu_freq"]["freq_curr Mhz"]));
-                    PRINT::PrintLine("==================================");
+                    Print::PrintLine("==================================");
+                    Print::PrintLine(Print::composeMessage("Timestamp:", row["timestamp"]));
+                    Print::PrintLine(Print::composeMessage("Cpu usage (%):", row["cpu_usage %"]));
+                    Print::PrintLine(Print::composeMessage("Time spent by normal processes executing in user mode:", row["cpu_times"]["cpu_user"]));
+                    Print::PrintLine(Print::composeMessage("Time spent by processes executing in kernel mode:", row["cpu_times"]["cpu_system"]));
+                    Print::PrintLine(Print::composeMessage("Idle time:", row["cpu_times"]["cpu_idle"]));
+                    Print::PrintLine(Print::composeMessage("Current cpu frequency Mhz:", row["cpu_freq"]["freq_curr Mhz"]));
+                    Print::PrintLine("==================================");
                 }
             }
         },
         {
             "memory",
             [this](const nlohmann::json& parsedJson) {
-                PRINT::PrintLine(PRINT::composeMessage("Memory info for", parsedJson["machineIp"]));
+                Print::PrintLine(Print::composeMessage("Memory info for", parsedJson["machineIp"]));
                 for (const auto& row : parsedJson["rows"]) {
-                    PRINT::PrintLine("==================================");
-                    PRINT::PrintLine(PRINT::composeMessage("Timestamp:", row["timestamp"]));
-                    PRINT::PrintLine(PRINT::composeMessage("Virtual memory usage (%):", row["virt_memory"]["usage virt %"]));
-                    PRINT::PrintLine(PRINT::composeMessage("Used virtual memory (GB):", row["virt_memory"]["used virt GB"]));
-                    PRINT::PrintLine(PRINT::composeMessage("Available virtual memory (GB):", row["virt_memory"]["available virt GB"]));
-                    PRINT::PrintLine(PRINT::composeMessage("Swap memory usage (%):", row["swap_memory"]["usage swap %"]));
-                    PRINT::PrintLine(PRINT::composeMessage("Used swap memory (GB):", row["swap_memory"]["used swap GB"]));
-                    PRINT::PrintLine(PRINT::composeMessage("Free swap memory (GB):", row["virt_memory"]["available virt GB"]));
-                    PRINT::PrintLine("==================================");
+                    Print::PrintLine("==================================");
+                    Print::PrintLine(Print::composeMessage("Timestamp:", row["timestamp"]));
+                    Print::PrintLine(Print::composeMessage("Virtual memory usage (%):", row["virt_memory"]["usage virt %"]));
+                    Print::PrintLine(Print::composeMessage("Used virtual memory (GB):", row["virt_memory"]["used virt GB"]));
+                    Print::PrintLine(Print::composeMessage("Available virtual memory (GB):", row["virt_memory"]["available virt GB"]));
+                    Print::PrintLine(Print::composeMessage("Swap memory usage (%):", row["swap_memory"]["usage swap %"]));
+                    Print::PrintLine(Print::composeMessage("Used swap memory (GB):", row["swap_memory"]["used swap GB"]));
+                    Print::PrintLine(Print::composeMessage("Free swap memory (GB):", row["virt_memory"]["available virt GB"]));
+                    Print::PrintLine("==================================");
                 }
             }
         },
         {
             "disks",
             [this](const nlohmann::json& parsedJson) {
-                PRINT::PrintLine(PRINT::composeMessage("Disks info for", parsedJson["machineIp"]));
+                Print::PrintLine(Print::composeMessage("Disks info for", parsedJson["machineIp"]));
                 for (const auto& row : parsedJson["rows"]) {
-                    PRINT::PrintLine("==================================");
-                    PRINT::PrintLine(PRINT::composeMessage("Timestamp:", row["timestamp"]));
-                    PRINT::PrintLine(PRINT::composeMessage("Disk usage (%):", row["disk usage"]["usage %"]));
-                    PRINT::PrintLine(PRINT::composeMessage("Used disk (GB):", row["disk usage"]["used GB"]));
-                    PRINT::PrintLine(PRINT::composeMessage("Free disk (GB):", row["disk usage"]["free GB"]));
-                    PRINT::PrintLine(PRINT::composeMessage("Disk i/o read count:", row["disk i/o"]["read_count"]));
-                    PRINT::PrintLine(PRINT::composeMessage("Disk i/o write count:", row["disk i/o"]["read_count"]));
-                    PRINT::PrintLine(PRINT::composeMessage("Number of GB read:", row["disk i/o"]["read_bytes GB"]));
-                    PRINT::PrintLine(PRINT::composeMessage("Number of GB written:", row["disk i/o"]["write_bytes GB"]));
-                    PRINT::PrintLine("==================================");
+                    Print::PrintLine("==================================");
+                    Print::PrintLine(Print::composeMessage("Timestamp:", row["timestamp"]));
+                    Print::PrintLine(Print::composeMessage("Disk usage (%):", row["disk usage"]["usage %"]));
+                    Print::PrintLine(Print::composeMessage("Used disk (GB):", row["disk usage"]["used GB"]));
+                    Print::PrintLine(Print::composeMessage("Free disk (GB):", row["disk usage"]["free GB"]));
+                    Print::PrintLine(Print::composeMessage("Disk i/o read count:", row["disk i/o"]["read_count"]));
+                    Print::PrintLine(Print::composeMessage("Disk i/o write count:", row["disk i/o"]["read_count"]));
+                    Print::PrintLine(Print::composeMessage("Number of GB read:", row["disk i/o"]["read_bytes GB"]));
+                    Print::PrintLine(Print::composeMessage("Number of GB written:", row["disk i/o"]["write_bytes GB"]));
+                    Print::PrintLine("==================================");
                 }
             }
         },
         {
             "network",
             [this](const nlohmann::json& parsedJson) {
-                PRINT::PrintLine(PRINT::composeMessage("Network info for", parsedJson["machineIp"]));
+                Print::PrintLine(Print::composeMessage("Network info for", parsedJson["machineIp"]));
                 for (const auto& row : parsedJson["rows"]) {
-                    PRINT::PrintLine("==================================");
-                    PRINT::PrintLine(PRINT::composeMessage("Timestamp:", row["timestamp"]));
-                    PRINT::PrintLine(PRINT::composeMessage("Number of connections:", row["connections"]));
-                    PRINT::PrintLine(PRINT::composeMessage("Number of packets sent:", row["i/o"]["packets_sent"]));
-                    PRINT::PrintLine(PRINT::composeMessage("Number of packets received:", row["i/o"]["packets_recv"]));
-                    PRINT::PrintLine(PRINT::composeMessage("Number of bytes sent:", row["i/o"]["bytes_sent"]));
-                    PRINT::PrintLine(PRINT::composeMessage("Number of bytes received:", row["i/o"]["bytes_recv"]));
-                    PRINT::PrintLine(PRINT::composeMessage("Total number of errors while receiving:", row["i/o"]["errors in"]));
-                    PRINT::PrintLine(PRINT::composeMessage("Total number of errors while sending:", row["i/o"]["errors out"]));
-                    PRINT::PrintLine(PRINT::composeMessage("Total number of incoming packets which were dropped:", row["i/o"]["pack drop in"]));
-                    PRINT::PrintLine(PRINT::composeMessage("Total number of outgoing packets which were dropped:", row["i/o"]["pack drop out"]));
-                    PRINT::PrintLine("==================================");
+                    Print::PrintLine("==================================");
+                    Print::PrintLine(Print::composeMessage("Timestamp:", row["timestamp"]));
+                    Print::PrintLine(Print::composeMessage("Number of connections:", row["connections"]));
+                    Print::PrintLine(Print::composeMessage("Number of packets sent:", row["i/o"]["packets_sent"]));
+                    Print::PrintLine(Print::composeMessage("Number of packets received:", row["i/o"]["packets_recv"]));
+                    Print::PrintLine(Print::composeMessage("Number of bytes sent:", row["i/o"]["bytes_sent"]));
+                    Print::PrintLine(Print::composeMessage("Number of bytes received:", row["i/o"]["bytes_recv"]));
+                    Print::PrintLine(Print::composeMessage("Total number of errors while receiving:", row["i/o"]["errors in"]));
+                    Print::PrintLine(Print::composeMessage("Total number of errors while sending:", row["i/o"]["errors out"]));
+                    Print::PrintLine(Print::composeMessage("Total number of incoming packets which were dropped:", row["i/o"]["pack drop in"]));
+                    Print::PrintLine(Print::composeMessage("Total number of outgoing packets which were dropped:", row["i/o"]["pack drop out"]));
+                    Print::PrintLine("==================================");
                 }
             }
         },
@@ -177,13 +180,13 @@ Client::OptionalCallback Client::getCallback(const std::string& resource) {
         return [this, found](const Http::MessageResponse& response, const Http::Request::Id& id) {
             auto statusCode = response.getStatusCode();
             if (statusCode == Http::StatusCode::ClientClosedRequest) {
-                LOG::Debug("Callback for canceled request");
+                Log::Debug("Callback for canceled request");
                 return;
             }
             else {
                 std::lock_guard<std::mutex> lg(mRequestsMutex);
                 mRequests.erase(id);
-                LOG::Debug(PRINT::composeMessage("Completed request removed from storage. Id:", boost::uuids::to_string(id)));
+                Log::Debug(Print::composeMessage("Completed request removed from storage. Id:", boost::uuids::to_string(id)));
             }
             std::string message;
             if (statusCode == Http::StatusCode::Ok) {
@@ -194,25 +197,25 @@ Client::OptionalCallback Client::getCallback(const std::string& resource) {
                     found->second(parsedJson);
 
                     message = "Request processed successfully";
-                    LOG::Info(message);
+                    Log::Info(message);
                 }
                 else if (parsedJson.empty()) {
-                    message = PRINT::composeMessage("Failed to parse json response", jsonStr);
-                    LOG::Error(message);
+                    message = Print::composeMessage("Failed to parse json response", jsonStr);
+                    Log::Error(message);
                 }
                 else {
-                    message = PRINT::composeMessage("Error message from server", parsedJson["error"]);
-                    LOG::Error(message);
+                    message = Print::composeMessage("Error message from server", parsedJson["error"]);
+                    Log::Error(message);
                 }
             }
             else {
-                message = PRINT::composeMessage("Failed to get info from server", static_cast<int>(statusCode), response.getStatusMessage(), response.getBody());
-                LOG::Error(message);
+                message = Print::composeMessage("Failed to get info from server", static_cast<int>(statusCode), response.getStatusMessage(), response.getBody());
+                Log::Error(message);
             }
-            PRINT::PrintLine(message);
-            auto finishMessage = PRINT::composeMessage("Finished request:", boost::uuids::to_string(id));
-            LOG::Info(finishMessage);
-            PRINT::PrintLine(finishMessage);
+            Print::PrintLine(message);
+            auto finishMessage = Print::composeMessage("Finished request:", boost::uuids::to_string(id));
+            Log::Info(finishMessage);
+            Print::PrintLine(finishMessage);
         };
     }
 }

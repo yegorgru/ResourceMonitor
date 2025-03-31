@@ -18,7 +18,7 @@ enum class LogLevel {
 	Throw
 };
 
-class LOG {
+class Log {
 public:
 	static void Trace(const std::string& message, std::source_location location = std::source_location::current());
 	static void Debug(const std::string& message, std::source_location location = std::source_location::current());

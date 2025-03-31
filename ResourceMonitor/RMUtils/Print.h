@@ -7,11 +7,11 @@
 #include <fstream>
 #include <iostream>
 
-class PRINT {
+class Print {
 public:
-    static void Print(const std::string& message);
+    static void PrintWord(const std::string& message);
     static void PrintLine(const std::string& message);
-    static void Print(const std::string& message, std::ostream& stream);
+    static void PrintWord(const std::string& message, std::ostream& stream);
     static void PrintLine(const std::string& message, std::ostream& stream);
 public:
     template <typename... Args>
@@ -42,6 +42,7 @@ private:
     class ConsolePrinter : public Printer {
     public:
         ConsolePrinter() = default;
+        ~ConsolePrinter() = default;
     private:
         void printMessage(const std::string& message) override;
     };
@@ -53,7 +54,7 @@ private:
 };
 
 template <typename... Args>
-std::string PRINT::composeMessage(Args&&... args) {
+std::string Print::composeMessage(Args&&... args) {
     std::ostringstream oss;
     ((oss << args << " "), ...);
     std::string message = oss.str();

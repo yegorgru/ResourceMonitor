@@ -43,7 +43,7 @@ namespace {
 		if (found != httpStatusTable.end()) {
 			return found->second;
 		}
-		LOG::Throw("Status code not found");
+		Log::Throw("Status code not found");
 		return "";
 	}
 }
@@ -77,7 +77,7 @@ const std::string& Message::getHeader(const std::string& name) const {
 	if (found != mHeaders.end()) {
 		return found->second;
 	}
-	LOG::Throw("Header not found");
+	Log::Throw("Header not found");
 	return "";
 }
 
@@ -101,7 +101,7 @@ MessageRequest::MessageRequest()
 
 const std::string& MessageRequest::createStringRepresentation() {
 	if (mStringRepresentation != "") {
-		LOG::Throw("String representation was already created");
+		Log::Throw("String representation was already created");
 	}
 	mStringRepresentation = methodToStr(mMethod) + " " + mResource + " " + STANDARD + "\r\n";
 	for (auto& [name, value] : mHeaders) {
@@ -135,7 +135,7 @@ MessageResponse::MessageResponse()
 
 const std::string& MessageResponse::createStringRepresentation() {
 	if (mStringRepresentation != "") {
-		LOG::Throw("String representation was already created");
+		Log::Throw("String representation was already created");
 	}
 	mStringRepresentation = std::string("HTTP/1.1 ") + (mStatusMessage == "" ? getStatusLine(mStatusCode) : mStatusMessage) + "\r\n";
 	for (const auto& [key, value] : mHeaders) {

@@ -1,5 +1,6 @@
 #include "Controller.h"
 #include "Log.h"
+#include "Input.h"
 
 #include <iostream>
 
@@ -16,17 +17,17 @@ void Controller::init(int argc, char* argv[]) {
 }
 
 void Controller::printHelpMessage() {
-    PRINT::PrintLine("\nAvailable commands:");
-    PRINT::PrintLine("  help              - Display this help message");
-    PRINT::PrintLine("  config            - Enter configuration mode");
-    PRINT::PrintLine("  exit              - Stop the server and exit the application");
+    Print::PrintLine("\nAvailable commands:");
+    Print::PrintLine("  help              - Display this help message");
+    Print::PrintLine("  config            - Enter configuration mode");
+    Print::PrintLine("  exit              - Stop the server and exit the application");
 }
 
 void Controller::handleCommand(const std::string& command) {
     if (command == "exit") {
-        PRINT::PrintLine("Stopping server...");
+        Print::PrintLine("Stopping server...");
         mServer.stop();
-        LOG::Info("Exiting application");
+        Log::Info("Exiting application");
         return;
     }
     else if (command == "help") {
@@ -35,16 +36,16 @@ void Controller::handleCommand(const std::string& command) {
     else if (command == "config") {
         mConfig.handleConfigCommand();
         if (mConfig.isServerRestartNeeded()) {
-            PRINT::PrintLine("Restarting server to apply configuration changes...");
+            Print::PrintLine("Restarting server to apply configuration changes...");
             mServer.stop();
             mServer.start(mConfig.getPort(), mConfig.getThreadCount());
             mConfig.resetServerRestartFlag();
-            PRINT::PrintLine("Server restarted successfully");
+            Print::PrintLine("Server restarted successfully");
         }
     }
     else {
-        PRINT::PrintLine("Unknown command. Type 'help' for available commands.");
-        LOG::Debug(PRINT::composeMessage("Unknown command entered:", command));
+        Print::PrintLine("Unknown command. Type 'help' for available commands.");
+        Log::Debug(Print::composeMessage("Unknown command entered:", command));
     }
 }
 
@@ -53,33 +54,36 @@ void Controller::run() {
         return;
     }
 
+    Print::initConsolePrinter();
     const auto logFilename = mConfig.getLogFilename();
     const auto logLevel = mConfig.getLogLevel();
     if (logFilename == "") {
-        LOG::initConsoleLogger(logLevel);
+        Log::initConsoleLogger(logLevel);
     }
     else {
-        LOG::initFileLogger(logLevel, logFilename);
+        Log::initFileLogger(logLevel, logFilename);
     }
-    LOG::Debug("Logger is initialized");
+
+    Input::initConsoleReader();
+
+    Log::Debug("Logger, printer and reader are initialized");
 
     const auto port = mConfig.getPort();
     const auto threadCount = mConfig.getThreadCount();
     const auto& dbName = mConfig.getDbName();
     auto dbPort = mConfig.getDbPort();
     
-    LOG::Debug(PRINT::composeMessage("Got command-line arguments:", "Port:", port, "Threads count:", threadCount));
-    LOG::Debug(PRINT::composeMessage("Got command-line db arguments:", "Port:", dbPort, "Db name:", dbName));
+    Log::Debug(Print::composeMessage("Got command-line arguments:", "Port:", port, "Threads count:", threadCount));
+    Log::Debug(Print::composeMessage("Got command-line db arguments:", "Port:", dbPort, "Db name:", dbName));
 
     DatabaseManager::Init(dbName, dbPort);
-    LOG::Debug("Database is initialized");
+    Log::Debug("Database is initialized");
 
     mServer.start(port, threadCount);
 
-    std::string command;
     while (true) {
-        PRINT::PrintLine("Enter command:");
-        std::cin >> command;
+        Print::PrintLine("Enter command:");
+        std::string command = Input::Read();
         handleCommand(command);
         if (command == "exit") {
             break;
