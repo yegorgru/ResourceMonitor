@@ -43,6 +43,18 @@
             "preLaunchTask": "CMake Build All"
         },
         {
+            "name": "Debug CommandLineClientBeast",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/CommandLineClientBeast/Debug/CommandLineClientBeast.exe",
+            "args": ["localhost", "3333", "cpu/3/192.168.56.1"],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "console": "externalTerminal",
+            "preLaunchTask": "CMake Build All"
+        },
+        {
             "name": "Python: DB Agent",
             "type": "debugpy",
             "request": "launch",
