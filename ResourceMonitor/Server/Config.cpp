@@ -2,6 +2,7 @@
 #include "Log.h"
 #include "DatabaseManager.h"
 #include "Input.h"
+#include "Utils.h"
 
 #include <iostream>
 #include <sstream>
@@ -47,19 +48,9 @@ Config::Config()
 }
 
 void Config::initializeConfigCommands() {
-    auto validateIntInput = [](const std::string& value, const auto& condition) -> std::optional<int> {
-        std::istringstream iss(value);
-        int result;
-        iss >> result;
-        if (iss.fail() || !iss.eof() || !condition(result)) {
-            return std::nullopt;
-        }
-        return result;
-    };
-
-    mConfigCommands["port"] = [this, validateIntInput](const std::string& value) {
-        auto portOpt = validateIntInput(value, [](int port) { 
-            return port >= 0 && port <= 65535; 
+    mConfigCommands["port"] = [this](const std::string& value) {
+        auto portOpt = stringToInt(value, [](int port) { 
+            return isValidPort(port); 
         });
         if (!portOpt) {
             Print::PrintLine("Invalid port value: " + value + ". Port must be a valid integer between 0 and 65535.");
@@ -70,8 +61,8 @@ void Config::initializeConfigCommands() {
     };
     mConfigHelp["port"] = "Set server port (e.g., port 3333). Change will be applied after leaving config mode.";
 
-    mConfigCommands["threads"] = [this, validateIntInput](const std::string& value) {
-        auto threadCountOpt = validateIntInput(value, [](int count) { 
+    mConfigCommands["threads"] = [this](const std::string& value) {
+        auto threadCountOpt = stringToInt(value, [](int count) { 
             return count >= 2; 
         });
         if (!threadCountOpt) {
@@ -83,8 +74,8 @@ void Config::initializeConfigCommands() {
     };
     mConfigHelp["threads"] = "Set thread pool size (e.g., threads 4). Change will be applied after leaving config mode.";
 
-    mConfigCommands["db-port"] = [this, validateIntInput](const std::string& value) {
-        auto dbPortOpt = validateIntInput(value, [](int port) { 
+    mConfigCommands["db-port"] = [this](const std::string& value) {
+        auto dbPortOpt = stringToInt(value, [](int port) { 
             return port >= 0 && port <= 65535; 
         });
         if (!dbPortOpt) {

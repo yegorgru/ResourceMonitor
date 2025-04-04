@@ -1,10 +1,11 @@
 #include "Controller.h"
 #include "Input.h"
+#include "Utils.h"
 
 namespace ResourceMonitorClient {
 
-Controller::Controller(Client& client)
-    : mClient(client)
+Controller::Controller(Http::ClientPtr&& client)
+    : mClient(std::move(client))
     , mIsValidState(true)
 {
 }
@@ -33,7 +34,7 @@ void Controller::printHelpMessage() {
 void Controller::handleCommand(const std::string& command) {
     if (command == "exit") {
         Print::PrintLine("Stopping client...");
-        mClient.close();
+        mClient->close();
         Log::Info("Exiting application");
         return;
     }
@@ -58,16 +59,17 @@ void Controller::handleCommand(const std::string& command) {
 
         bool isValidEndpoint = false;
         if (validResources.find(resource) != validResources.end()) {
-            int number;
-            if (boost::conversion::try_lexical_convert<int>(count, number) != false) {
-                boost::system::error_code ec;
-                boost::asio::ip::address::from_string(ipAddress, ec);
-                isValidEndpoint = ec.value() == 0;
+            auto numberOpt = stringToInt(count, [](int value) { return value > 0; });
+            if (!numberOpt) {
+                isValidEndpoint = false;
+            }
+            else {
+                isValidEndpoint = isValidIpAddress(ipAddress);
             }
         }
         std::string endpoint = resource + "/" + count + "/" + ipAddress;
         if (isValidEndpoint) {
-            auto requestId = mClient.makeRequest(mConfig.getServerPort(), mConfig.getServerName(), resource, count, ipAddress);
+            auto requestId = mClient->makeRequest(mConfig.getServerPort(), mConfig.getServerName(), resource, count, ipAddress);
             if (requestId) {
                 Print::PrintLine(Print::composeMessage("Created request with id", *requestId, "Endpoint:", endpoint));
             }
@@ -81,7 +83,7 @@ void Controller::handleCommand(const std::string& command) {
     }
     else if (command == "cancel") {
         std::string id = Input::Read();
-        mClient.cancelRequest(id);
+        mClient->cancelRequest(id);
     }
     else {
         Print::PrintLine("Unknown command. Type 'help' for available commands.");

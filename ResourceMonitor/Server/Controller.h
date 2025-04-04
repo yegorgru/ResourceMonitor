@@ -3,8 +3,6 @@
 #include "Server.h"
 #include "Config.h"
 
-#include <boost/program_options.hpp>
-
 namespace ResourceMonitorServer {
 
 class Controller

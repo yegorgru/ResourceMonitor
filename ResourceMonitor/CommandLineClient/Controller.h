@@ -1,14 +1,16 @@
 #pragma once
 
-#include "Client.h"
+#include "IClient.h"
 #include "Config.h"
+
+#include <memory>
 
 namespace ResourceMonitorClient {
 
 class Controller
 {
 public:
-    Controller(Client& client);
+    Controller(Http::ClientPtr&& client);
     ~Controller();
 public:
     void init(int argc, char* argv[]);
@@ -17,7 +19,7 @@ private:
     void printHelpMessage();
     void handleCommand(const std::string& command);
 private:
-    Client& mClient;
+    Http::ClientPtr mClient;
     Config mConfig;
     bool mIsValidState;
 };

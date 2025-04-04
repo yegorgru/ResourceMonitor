@@ -5,7 +5,7 @@
 
 #include <stdexcept>
 
-namespace Http {
+namespace Http::Asio {
 
 namespace {
 	std::string methodToStr(MessageRequest::Method method) {
@@ -162,4 +162,4 @@ const std::string& MessageResponse::getStatusMessage() const {
 	return mStatusMessage;
 }
 
-}
+} // namespace Http::Asio

@@ -4,7 +4,7 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <nlohmann/json.hpp>
 
-namespace ResourceMonitorClient {
+namespace Http::Asio {
 
 Client::Client()
     : mWork(boost::asio::make_work_guard(mIoService))
@@ -28,7 +28,7 @@ Client::OptionalRequestId Client::makeRequest(int serverPort, const std::string&
     if (!callback) {
         return std::nullopt;
     }
-    auto request = std::make_shared<Http::Request>(mIoService, serverName, serverPort, *callback);
+    auto request = std::make_shared<Request>(mIoService, serverName, serverPort, *callback);
     std::string endpoint = resource + "/" + count + "/" + ipAddress;
     request->get(endpoint);
     const auto& id = request->getId();
@@ -45,7 +45,7 @@ void Client::cancelRequest(const std::string strId) {
     std::string message;
     try
     {
-        Http::Request::Id id = stringGen(strId);
+        Request::Id id = stringGen(strId);
         std::lock_guard<std::mutex> lg(mRequestsMutex);
         auto found = mRequests.find(id);
         if (found != mRequests.end()) {
@@ -177,9 +177,9 @@ Client::OptionalCallback Client::getCallback(const std::string& resource) {
         return std::nullopt;
     }
     else {
-        return [this, found](const Http::MessageResponse& response, const Http::Request::Id& id) {
+        return [this, found](const MessageResponse& response, const Request::Id& id) {
             auto statusCode = response.getStatusCode();
-            if (statusCode == Http::StatusCode::ClientClosedRequest) {
+            if (statusCode == StatusCode::ClientClosedRequest) {
                 Log::Debug("Callback for canceled request");
                 return;
             }
@@ -189,7 +189,7 @@ Client::OptionalCallback Client::getCallback(const std::string& resource) {
                 Log::Debug(Print::composeMessage("Completed request removed from storage. Id:", boost::uuids::to_string(id)));
             }
             std::string message;
-            if (statusCode == Http::StatusCode::Ok) {
+            if (statusCode == StatusCode::Ok) {
                 const auto& jsonStr = response.getBody();
                 auto parsedJson = json::parse(jsonStr);
                 if (!parsedJson.empty() && !parsedJson.contains("error")) {
@@ -220,4 +220,4 @@ Client::OptionalCallback Client::getCallback(const std::string& resource) {
     }
 }
 
-} // namespace ResourceMonitorClient
+} // namespace Http::Asio

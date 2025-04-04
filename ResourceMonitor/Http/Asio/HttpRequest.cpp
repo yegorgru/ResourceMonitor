@@ -3,7 +3,7 @@
 
 #include <boost/uuid/uuid_io.hpp>
 
-namespace Http {
+namespace Http::Asio {
 
 Request::Request(IoService& ios, const std::string& host, unsigned int port, Callback callback)
     : mId(mGenerator())
@@ -72,7 +72,7 @@ void Request::cancel() {
         return;
     }
     Log::Debug(Print::composeMessage("Cancelling request. Id:", boost::uuids::to_string(mId)));
-    mResponseMessage.setStatusCode(Http::StatusCode::ClientClosedRequest);
+    mResponseMessage.setStatusCode(StatusCode::ClientClosedRequest);
     mCallback(mResponseMessage, mId);
     mIsCanceled = true;
     mResolver.cancel();
@@ -177,7 +177,7 @@ void Request::readStatusLine()
 
     Log::Debug(Print::composeMessage("Status code:", strStatusCode));
 
-    Http::StatusCode statusCode = Http::StatusCode::Ok;
+    StatusCode statusCode = StatusCode::Ok;
 
     try {
         statusCode = intToStatusCode(std::stoi(strStatusCode));
@@ -268,7 +268,7 @@ void Request::finish(const boost::system::error_code& ec) {
         auto message = Print::composeMessage("Error occured! Error code =", ec.value(), ". Message:", ec.message(), "Request id:", boost::uuids::to_string(mId));
         Log::Error(message);
         mResponseMessage.addHeader("Content-Length", "0");
-        mResponseMessage.setStatusCode(Http::StatusCode::ServerError);
+        mResponseMessage.setStatusCode(StatusCode::ServerError);
         mCallback(mResponseMessage, mId);
         mSelfPtr.reset();
     }
@@ -278,4 +278,4 @@ void Request::finish(const boost::system::error_code& ec) {
     }
 }
 
-} // namespace ResourceMonitorClient::Http
+} // namespace Http::Asio

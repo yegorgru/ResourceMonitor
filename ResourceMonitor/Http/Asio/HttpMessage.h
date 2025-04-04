@@ -3,7 +3,7 @@
 #include <string>
 #include <map>
 
-namespace Http {
+namespace Http::Asio {
 
 enum class StatusCode {
     Ok = 200, 
@@ -72,4 +72,4 @@ private:
     std::string mStatusMessage;
 };
 
-} // namespace Http
+} // namespace Http::Asio

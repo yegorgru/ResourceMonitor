@@ -14,19 +14,33 @@
             "group": "build"
         },
         {
-            "label": "CMake Build All",
+            "label": "Build Server",
             "type": "shell",
             "command": "cmake",
             "args": [
                 "--build",
                 "${workspaceFolder}/build",
                 "--config",
-                "Debug"
+                "Debug",
+                "--target",
+                "Server"
             ],
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            },
+            "group": "build",
+            "dependsOn": ["CMake Configure"]
+        },
+        {
+            "label": "Build CommandLineClient",
+            "type": "shell",
+            "command": "cmake",
+            "args": [
+                "--build",
+                "${workspaceFolder}/build",
+                "--config",
+                "Debug",
+                "--target",
+                "CommandLineClient"
+            ],
+            "group": "build",
             "dependsOn": ["CMake Configure"]
         },
         {
@@ -45,54 +59,19 @@
             "dependsOn": ["CMake Configure"]
         },
         {
-            "label": "Build and Run Server",
+            "label": "Build Http",
             "type": "shell",
-            "command": "${workspaceFolder}/build/Server/Debug/Server.exe",
-            "dependsOn": ["CMake Build All"],
-            "group": "test"
-        },
-        {
-            "label": "Build and Run CommandLineClient",
-            "type": "shell",
-            "command": "${workspaceFolder}/build/CommandLineClient/Debug/CommandLineClient.exe",
-            "dependsOn": ["CMake Build All"],
-            "group": "test"
-        },
-        {
-            "label": "Start DB Agent",
-            "type": "shell",
-            "command": "python",
-            "args": ["${workspaceFolder}/PythonDbAgent/main.py"],
-            "group": "test",
-            "presentation": {
-                "reveal": "always",
-                "panel": "new"
-            }
-        },
-        {
-            "label": "Start Resource Agent",
-            "type": "shell",
-            "command": "python",
-            "args": ["${workspaceFolder}/PythonResourceAgent/main.py"],
-            "group": "test",
-            "presentation": {
-                "reveal": "always",
-                "panel": "new"
-            }
-        },
-        {
-            "label": "Start Frontend",
-            "type": "shell",
-            "command": "npm",
-            "args": ["start"],
-            "options": {
-                "cwd": "${workspaceFolder}/Frontend"
-            },
-            "group": "test",
-            "presentation": {
-                "reveal": "always",
-                "panel": "new"
-            }
+            "command": "cmake",
+            "args": [
+                "--build",
+                "${workspaceFolder}/build",
+                "--config",
+                "Debug",
+                "--target",
+                "Http"
+            ],
+            "group": "build",
+            "dependsOn": ["CMake Configure"]
         }
     ]
 }

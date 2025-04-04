@@ -9,27 +9,28 @@
 
 #include <boost/asio.hpp>
 
+#include "IClient.h"
 #include "HttpRequest.h"
 
-namespace ResourceMonitorClient {
+namespace Http::Asio {
 
-class Client {
+class Client : public IClient {
 private:
     using TcpSocket = boost::asio::ip::tcp::socket;
-    using HttpRequestPtr = std::shared_ptr<Http::Request>;
+    using RequestPtr = std::shared_ptr<Request>;
     using OptionalRequestId = std::optional<std::string>;
 public:
     Client();
     ~Client();
 public:
-    OptionalRequestId makeRequest(int serverPort, const std::string& serverName, const std::string& resource, const std::string& count, const std::string& ipAddress);
-    void cancelRequest(const std::string strId);
-    void close();
+    OptionalRequestId makeRequest(int serverPort, const std::string& serverName, const std::string& resource, const std::string& count, const std::string& ipAddress) override;
+    void cancelRequest(const std::string strId) override;
+    void close() override;
 private:
     using IoService = boost::asio::io_service;
     using Work = boost::asio::executor_work_guard<boost::asio::io_context::executor_type>;
-    using RequestStorage = std::map<Http::Request::Id, Http::RequestPtr>;
-    using OptionalCallback = std::optional<Http::Request::Callback>;
+    using RequestStorage = std::map<Request::Id, RequestPtr>;
+    using OptionalCallback = std::optional<Request::Callback>;
 private:
     OptionalCallback getCallback(const std::string& resource);
 private:
@@ -40,4 +41,4 @@ private:
     RequestStorage mRequests;
 };
 
-} // namespace ResourceMonitorClient
+} // namespace Http::Asio

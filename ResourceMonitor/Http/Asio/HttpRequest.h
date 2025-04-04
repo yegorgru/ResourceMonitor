@@ -9,7 +9,7 @@
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 
-namespace Http {
+namespace Http::Asio {
 
 class Request;
 using RequestPtr = std::shared_ptr<Request>;
@@ -74,4 +74,4 @@ private:
     IoService& mIoService;
 };
 
-} // namespace Http
+} // namespace Http::Asio
