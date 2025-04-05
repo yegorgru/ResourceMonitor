@@ -7,7 +7,7 @@
 
 #include "Service.h"
 
-namespace ResourceMonitorServer {
+namespace Http::Asio {
 
 class Acceptor {
 public:
@@ -34,4 +34,4 @@ private:
     AtomicFlag mIsStopped;
 };
 
-} // namespace ResourceMonitorServer
+} // namespace Http::Asio

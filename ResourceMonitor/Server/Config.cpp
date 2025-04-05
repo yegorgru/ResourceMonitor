@@ -1,6 +1,5 @@
 #include "Config.h"
 #include "Log.h"
-#include "DatabaseManager.h"
 #include "Input.h"
 #include "Utils.h"
 
@@ -30,9 +29,9 @@ namespace {
     }
 }
 
-Config::Config()
-    : mDescription("Allowed options")
-    , mServerRestartNeeded(false)
+Config::Config(Http::IServer& server)
+    : mServer(server)
+    , mDescription("Allowed options")
 {
     namespace po = boost::program_options;
     mDescription.add_options()
@@ -254,7 +253,7 @@ void Config::setPort(int port) {
     po::variable_value v(port, false);
     mVariablesMap.erase("port");
     mVariablesMap.insert(std::make_pair("port", v));
-    mServerRestartNeeded = true;
+    restartServer();
 }
 
 void Config::setThreadCount(int count) {
@@ -262,7 +261,7 @@ void Config::setThreadCount(int count) {
     po::variable_value v(count, false);
     mVariablesMap.erase("threads-count");
     mVariablesMap.insert(std::make_pair("threads-count", v));
-    mServerRestartNeeded = true;
+    restartServer();
 }
 
 void Config::setDbPort(int port) {
@@ -271,8 +270,7 @@ void Config::setDbPort(int port) {
     mVariablesMap.erase("db-port");
     mVariablesMap.insert(std::make_pair("db-port", v));
 
-    DatabaseManager::Destroy();
-    DatabaseManager::Init(getDbName(), port);
+    mServer.configureDatabase(getDbName(), port);
     Log::Debug("Database reinitialized with new port");
 }
 
@@ -282,8 +280,7 @@ void Config::setDbName(const std::string& name) {
     mVariablesMap.erase("db-name");
     mVariablesMap.insert(std::make_pair("db-name", v));
 
-    DatabaseManager::Destroy();
-    DatabaseManager::Init(name, getDbPort());
+    mServer.configureDatabase(name, getDbPort());
     Log::Debug("Database reinitialized with new name");
 }
 
@@ -324,12 +321,11 @@ void Config::reinitializeLogger() {
     Log::Debug("Logger reinitialized");
 }
 
-bool Config::isServerRestartNeeded() const { 
-    return mServerRestartNeeded;
-}
-
-void Config::resetServerRestartFlag() { 
-    mServerRestartNeeded = false; 
+void Config::restartServer() {
+    Print::PrintLine("Restarting server to apply configuration changes...");
+    mServer.stop();
+    mServer.start(getPort(), getThreadCount());
+    Print::PrintLine("Server restarted successfully");
 }
 
 } // namespace ResourceMonitorServer

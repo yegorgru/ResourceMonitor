@@ -4,7 +4,7 @@
 #include <iostream>
 #include <map>
 
-#include "ClientFactory.h"
+#include "Factory.h"
 #include "Controller.h"
 
 int main(int argc, char* argv[])

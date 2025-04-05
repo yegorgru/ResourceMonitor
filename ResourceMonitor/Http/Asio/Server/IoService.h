@@ -4,7 +4,7 @@
 
 #include <boost/asio.hpp>
 
-namespace ResourceMonitorServer {
+namespace Http::Asio {
 
 using IoServiceBoost = boost::asio::io_service;
 
@@ -19,4 +19,4 @@ private:
     IoServiceBoost mIoService;
 };
 
-} // namespace ResourceMonitorServer
+} // namespace Http::Asio

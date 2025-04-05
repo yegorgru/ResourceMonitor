@@ -5,14 +5,14 @@
 
 #include <string>
 
-namespace ResourceMonitorServer {
+namespace Http::Asio {
 
 class DatabaseManager : public Singleton<DatabaseManager>
 {
     friend class Singleton<DatabaseManager>;
 public:
-    void get(const std::string& endpoint, Http::Request::Callback callback) const;
-    void put(const std::string& endpoint, const std::string& info, Http::Request::Callback callback);
+    void get(const std::string& endpoint, Request::Callback callback) const;
+    void put(const std::string& endpoint, const std::string& info, Request::Callback callback);
 private:
     DatabaseManager(const std::string& name, int port);
 private:
@@ -20,4 +20,4 @@ private:
     int mPort;
 };
 
-} // namespace ResourceMonitorServer
+} // namespace Http::Asio

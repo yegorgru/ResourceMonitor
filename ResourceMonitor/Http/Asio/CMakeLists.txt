@@ -12,4 +12,12 @@ target_include_directories(HttpAsio PUBLIC
 )
 
 target_link_directories(HttpAsio PUBLIC "${BOOST_LIB_DIR}")
-target_link_libraries(HttpAsio PUBLIC RMUtils)
+
+if(CLIENT_BOOST_ASIO)
+    add_subdirectory ("Client")
+    target_link_libraries(HttpAsio PUBLIC HttpAsioClient)
+endif()
+if(SERVER_BOOST_ASIO)
+    add_subdirectory ("Server")
+    target_link_libraries(HttpAsio PUBLIC HttpAsioServer)
+endif()

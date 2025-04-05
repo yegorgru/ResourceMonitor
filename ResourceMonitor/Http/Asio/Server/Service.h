@@ -8,7 +8,7 @@
 
 #include <boost/asio.hpp>
 
-namespace ResourceMonitorServer {
+namespace Http::Asio {
 
 class Service;
 using ServicePtr = std::shared_ptr<Service>;
@@ -21,7 +21,7 @@ public:
     Service(TcpSocketPtr socket);
 public:
     void startHandling();
-    void sendResponse(Http::StatusCode statusCode, const std::string& response);
+    void sendResponse(StatusCode statusCode, const std::string& response);
 private:
     void processRequestLine();
     void processHeadersAndContent();
@@ -32,8 +32,8 @@ private:
     ServicePtr mSelfPtr;
     TcpSocketPtr mSocket;
     RequestBuf mRequestBuf;
-    Http::MessageRequest mRequest;
-    Http::MessageResponse mResponse;
+    MessageRequest mRequest;
+    MessageResponse mResponse;
 };
 
-} // namespace ResourceMonitorServer
+} // namespace Http::Asio

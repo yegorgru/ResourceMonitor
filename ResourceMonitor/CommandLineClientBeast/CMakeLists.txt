@@ -10,4 +10,3 @@ target_include_directories(CommandLineClientBeast PUBLIC
 )
 
 target_link_directories(CommandLineClientBeast PUBLIC "${BOOST_LIB_DIR}")
-target_link_libraries(CommandLineClientBeast PUBLIC RMUtils)

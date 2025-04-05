@@ -1,7 +1,7 @@
 #include "Acceptor.h"
 #include "Log.h"
 
-namespace ResourceMonitorServer {
+namespace Http::Asio {
 
 Acceptor::Acceptor(IoService& ios)
     : mIos(ios)
@@ -47,4 +47,4 @@ void Acceptor::initAccept() {
     );
 }
 
-} // namespace ResourceMonitorServer
+} // namespace Http::Asio

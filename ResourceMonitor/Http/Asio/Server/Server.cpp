@@ -2,10 +2,11 @@
 
 #include "Log.h"
 #include "IoService.h"
+#include "DatabaseManager.h"
 
 #include <iostream>
 
-namespace ResourceMonitorServer {
+namespace Http::Asio {
 
 Server::~Server()
 {
@@ -53,4 +54,9 @@ void Server::stop() {
     Log::Debug("Server stopped");
 }
 
-} // namespace ResourceMonitorServer
+void Server::configureDatabase(const std::string& dbName, int dbPort) {
+    DatabaseManager::Destroy();
+    DatabaseManager::Init(dbName, dbPort);
+}
+
+} // namespace Http::Asio

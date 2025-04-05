@@ -7,13 +7,33 @@ target_include_directories(Http PUBLIC
     "${CMAKE_CURRENT_SOURCE_DIR}"
 )
 
-option(USE_BOOST_ASIO "Use Boost.Asio for networking" ON)
+option(CLIENT_BOOST_ASIO "Use Boost.Asio for client-side networking" ON)
+option(SERVER_BOOST_ASIO "Use Boost.Asio for server-side networking" ON)
 
-if(USE_BOOST_ASIO)
+option(CLIENT_BOOST_BEAST "Use Boost.Beast for client-side networking" OFF)
+option(SERVER_BOOST_BEAST "Use Boost.Beast for server-side networking" OFF)
+
+if(CLIENT_BOOST_ASIO OR SERVER_BOOST_ASIO)
     add_subdirectory(Asio)
     target_link_libraries(Http PUBLIC HttpAsio)
-    target_compile_definitions(Http PUBLIC USE_BOOST_ASIO)
-else()
+endif()
+
+message(CLIENT_BOOST_BEAST FLAG: ${CLIENT_BOOST_BEAST})
+message(SERVER_BOOST_BEAST FLAG: ${SERVER_BOOST_BEAST})
+if(CLIENT_BOOST_BEAST OR SERVER_BOOST_BEAST)
     add_subdirectory(Beast)
     target_link_libraries(Http PUBLIC HttpBeast)
+endif()
+
+if(CLIENT_BOOST_ASIO)
+    target_compile_definitions(Http PUBLIC CLIENT_BOOST_ASIO)
+endif()
+if(SERVER_BOOST_ASIO)
+    target_compile_definitions(Http PUBLIC SERVER_BOOST_ASIO)
+endif()
+if(CLIENT_BOOST_BEAST)
+    target_compile_definitions(Http PUBLIC CLIENT_BOOST_BEAST)
+endif()
+if(SERVER_BOOST_BEAST)
+    target_compile_definitions(Http PUBLIC SERVER_BOOST_BEAST)
 endif()

@@ -1,11 +1,12 @@
 #include "DatabaseManager.h"
 #include "IoService.h"
 #include "Log.h"
+#include "Utils.h"
 
-namespace ResourceMonitorServer {
+namespace Http::Asio {
 
 namespace {
-    void createTimerForRequest(Http::RequestPtr request) {
+    void createTimerForRequest(RequestPtr request) {
         auto& ioService = IoService::Get().getIoService();
         auto timer = std::make_shared<boost::asio::steady_timer>(ioService);
         timer->expires_after(std::chrono::seconds(30));
@@ -21,14 +22,14 @@ namespace {
     }
 }
 
-void DatabaseManager::get(const std::string& endpoint, Http::Request::Callback callback) const {
-    auto request = std::make_shared<Http::Request>(IoService::Get().getIoService(), mName, mPort, callback);
+void DatabaseManager::get(const std::string& endpoint, Request::Callback callback) const {
+    auto request = std::make_shared<Request>(IoService::Get().getIoService(), mName, mPort, callback);
     request->get(endpoint);
     createTimerForRequest(request);
 }
 
-void DatabaseManager::put(const std::string& endpoint, const std::string& info, Http::Request::Callback callback) {
-    auto request = std::make_shared<Http::Request>(IoService::Get().getIoService(), mName, mPort, callback);
+void DatabaseManager::put(const std::string& endpoint, const std::string& info, Request::Callback callback) {
+    auto request = std::make_shared<Request>(IoService::Get().getIoService(), mName, mPort, callback);
     Log::Debug(Print::composeMessage("Sending info to database:", info));
     request->addHeader("Content-Type", "application/json");
     request->addHeader("Content-Length", std::to_string(info.length()));
@@ -37,9 +38,15 @@ void DatabaseManager::put(const std::string& endpoint, const std::string& info, 
 }
 
 DatabaseManager::DatabaseManager(const std::string& name, int port)
-    : mName(name)
-    , mPort(port)
 {
+    if(isValidPort(port) && !name.empty()) {
+        mName = name;
+        mPort = port;
+        Log::Debug(Print::composeMessage("DatabaseManager created. Name:", name, "Port:", port));
+    }
+    else {
+        Log::Throw(Print::composeMessage("Invalid parameters for DatabaseManager. Name:", name, ". Port:", port));
+    }
 }
 
-} // namespace ResourceMonitorServer
+} // namespace Http::Asio

@@ -1,9 +1,9 @@
 #include "IoService.h"
 
-namespace ResourceMonitorServer {
+namespace Http::Asio {
 
 IoServiceBoost& IoService::getIoService() {
 	return mIoService;
 }
 
-} // namespace ResourceMonitorServer
+} // namespace Http::Asio

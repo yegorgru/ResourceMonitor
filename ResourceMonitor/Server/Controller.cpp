@@ -6,8 +6,9 @@
 
 namespace ResourceMonitorServer {
 
-Controller::Controller(Server& server)
-    : mServer(server)
+Controller::Controller(Http::ServerPtr&& server)
+    : mServer(std::move(server))
+    , mConfig(*mServer)
     , mIsValidState(true)
 {
 }
@@ -26,7 +27,7 @@ void Controller::printHelpMessage() {
 void Controller::handleCommand(const std::string& command) {
     if (command == "exit") {
         Print::PrintLine("Stopping server...");
-        mServer.stop();
+        mServer->stop();
         Log::Info("Exiting application");
         return;
     }
@@ -35,13 +36,6 @@ void Controller::handleCommand(const std::string& command) {
     }
     else if (command == "config") {
         mConfig.handleConfigCommand();
-        if (mConfig.isServerRestartNeeded()) {
-            Print::PrintLine("Restarting server to apply configuration changes...");
-            mServer.stop();
-            mServer.start(mConfig.getPort(), mConfig.getThreadCount());
-            mConfig.resetServerRestartFlag();
-            Print::PrintLine("Server restarted successfully");
-        }
     }
     else {
         Print::PrintLine("Unknown command. Type 'help' for available commands.");
@@ -76,10 +70,10 @@ void Controller::run() {
     Log::Debug(Print::composeMessage("Got command-line arguments:", "Port:", port, "Threads count:", threadCount));
     Log::Debug(Print::composeMessage("Got command-line db arguments:", "Port:", dbPort, "Db name:", dbName));
 
-    DatabaseManager::Init(dbName, dbPort);
+    mServer->configureDatabase(dbName, dbPort);
     Log::Debug("Database is initialized");
 
-    mServer.start(port, threadCount);
+    mServer->start(port, threadCount);
 
     while (true) {
         Print::PrintLine("Enter command:");

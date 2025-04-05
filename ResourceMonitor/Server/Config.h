@@ -1,5 +1,6 @@
 #pragma once
 
+#include "IServer.h"
 #include "Log.h"
 #include <boost/program_options.hpp>
 #include <functional>
@@ -11,12 +12,10 @@ namespace ResourceMonitorServer {
 class Config
 {
 public:
-    Config();
+    Config(Http::IServer& server);
 public:
     bool parseCommandLine(int argc, char* argv[]);
     void handleConfigCommand();
-    bool isServerRestartNeeded() const;
-    void resetServerRestartFlag();
 public:
     const std::string& getLogFilename() const;
     LogLevel getLogLevel() const;
@@ -38,17 +37,19 @@ private:
     void initializeConfigCommands();
     void reinitializeLogger();
 private:
+    void restartServer();
+private:
     using VariablesMap = boost::program_options::variables_map;
     using Description = boost::program_options::options_description;
     using ConfigCommand = std::function<void(const std::string&)>;
     using ConfigCommandsMap = std::map<std::string, ConfigCommand>;
     using ConfigHelpMap = std::map<std::string, std::string>;
 private:
+    Http::IServer& mServer;
     VariablesMap mVariablesMap;
     Description mDescription;
     ConfigCommandsMap mConfigCommands;
     ConfigHelpMap mConfigHelp;
-    bool mServerRestartNeeded;
 };
 
 } // namespace ResourceMonitorServer

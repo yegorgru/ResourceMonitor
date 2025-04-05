@@ -11,7 +11,7 @@
 #include <set>
 #include <deque>
 
-namespace ResourceMonitorServer {
+namespace Http::Asio {
 
 namespace {
     const std::set<std::string> validResources = {
@@ -39,7 +39,7 @@ void Service::startHandling() {
             if (ec.value() != 0) {
                 if (ec == boost::asio::error::not_found) {
                     Log::Warning("Content Too Large");
-                    sendResponse(Http::StatusCode::RequestEntityTooLarge, "");
+                    sendResponse(StatusCode::RequestEntityTooLarge, "");
                     return;
                 }
                 else {
@@ -80,7 +80,7 @@ void Service::processRequestLine()
     catch (const std::runtime_error& ex)
     {
         Log::Error(Print::composeMessage(std::string(ex.what()) + "Method:", requestMethod));
-        sendResponse(Http::StatusCode::NotImplemented, "");
+        sendResponse(StatusCode::NotImplemented, "");
         return;
     }
 
@@ -97,7 +97,7 @@ void Service::processRequestLine()
         splitedEndpoint.pop_back();
     }
     bool isValidEndpoint = false;
-    if (mRequest.getMethod() == Http::MessageRequest::Method::GET && splitedEndpoint.size() == 3) {
+    if (mRequest.getMethod() == MessageRequest::Method::GET && splitedEndpoint.size() == 3) {
         if (validResources.find(splitedEndpoint[0]) != validResources.end()) {
             int number;
             if (boost::conversion::try_lexical_convert<int>(splitedEndpoint[1], number) != false && number > 0) {
@@ -107,7 +107,7 @@ void Service::processRequestLine()
             }
         }
     }
-    else if (mRequest.getMethod() == Http::MessageRequest::Method::PUT && splitedEndpoint.size() == 2) {
+    else if (mRequest.getMethod() == MessageRequest::Method::PUT && splitedEndpoint.size() == 2) {
         if (validResources.find(splitedEndpoint[0]) != validResources.end()) {
             boost::system::error_code ec;
             boost::asio::ip::address::from_string(splitedEndpoint[1], ec);
@@ -115,7 +115,7 @@ void Service::processRequestLine()
         }
     }
     if (!isValidEndpoint) {
-        sendResponse(Http::StatusCode::NotFound, "");
+        sendResponse(StatusCode::NotFound, "");
         return;
     }
 
@@ -126,9 +126,9 @@ void Service::processRequestLine()
 
     Log::Debug(Print::composeMessage("Request http version: ", requestHttpVersion));
 
-    if (requestHttpVersion != Http::Message::STANDARD) {
+    if (requestHttpVersion != Message::STANDARD) {
         Log::Error(Print::composeMessage("Incorrect standard:", requestHttpVersion));
-        sendResponse(Http::StatusCode::HttpVersionNotSupported, "");
+        sendResponse(StatusCode::HttpVersionNotSupported, "");
         return;
     }
 
@@ -140,7 +140,7 @@ void Service::processRequestLine()
                 Log::Error(Print::composeMessage("Error occured! Error code = ", ec.value(), ". Message: ", ec.message()));
 
                 if (ec == boost::asio::error::not_found) {
-                    sendResponse(Http::StatusCode::RequestEntityTooLarge, "");
+                    sendResponse(StatusCode::RequestEntityTooLarge, "");
                     return;
                 }
                 else if (ec == boost::asio::error::eof) {
@@ -184,17 +184,17 @@ void Service::processHeadersAndContent() {
 
     auto sendToDbCallback = [this]() {
         auto method = mRequest.getMethod();
-        if (method == Http::MessageRequest::Method::PUT) {
+        if (method == MessageRequest::Method::PUT) {
             Log::Debug("PUT request processing");
-            auto callback = [this](const Http::MessageResponse& response, const Http::Request::Id& id) {
+            auto callback = [this](const MessageResponse& response, const Request::Id& id) {
                 auto statusCode = response.getStatusCode();
-                if (statusCode == Http::StatusCode::Ok) {
+                if (statusCode == StatusCode::Ok) {
                     Log::Info(Print::composeMessage("Successfuly write info to database. Request:", boost::uuids::to_string(id)));
                     sendResponse(statusCode, "");
                 }
                 else {
-                    if (statusCode == Http::StatusCode::ClientClosedRequest) {
-                        statusCode = Http::StatusCode::ServerError;
+                    if (statusCode == StatusCode::ClientClosedRequest) {
+                        statusCode = StatusCode::ServerError;
                     }
                     Log::Error(Print::composeMessage("Error while writing info to database", static_cast<int>(statusCode), "Request:", boost::uuids::to_string(id)));
                     sendResponse(statusCode, response.getBody());
@@ -202,20 +202,20 @@ void Service::processHeadersAndContent() {
             };
             DatabaseManager::Get().put(mRequest.getResource(), mRequest.getBody(), callback);
         }
-        else if (method == Http::MessageRequest::Method::GET) {
+        else if (method == MessageRequest::Method::GET) {
             Log::Debug("GET request processing");
-            auto callback = [this](const Http::MessageResponse& response, const Http::Request::Id&) {
+            auto callback = [this](const MessageResponse& response, const Request::Id&) {
                 //TODO: review if && or const& should be used
                 auto statusCode = response.getStatusCode();
-                if (statusCode == Http::StatusCode::Ok) {
+                if (statusCode == StatusCode::Ok) {
                     Log::Info("Successfuly get info from database");
                     std::string responseStr = response.getBody();
                     Log::Debug(Print::composeMessage("get response from db:", responseStr));
-                    sendResponse(Http::StatusCode::Ok, std::move(responseStr));
+                    sendResponse(StatusCode::Ok, std::move(responseStr));
                 }
                 else {
-                    if (statusCode == Http::StatusCode::ClientClosedRequest) {
-                        statusCode = Http::StatusCode::ServerError;
+                    if (statusCode == StatusCode::ClientClosedRequest) {
+                        statusCode = StatusCode::ServerError;
                     }
                     auto responseStr = response.getBody();
                     Log::Error(Print::composeMessage("Error while getting info from database", static_cast<int>(statusCode), responseStr));
@@ -242,7 +242,7 @@ void Service::processHeadersAndContent() {
     }
 }
 
-void Service::sendResponse(Http::StatusCode statusCode, const std::string& response) {
+void Service::sendResponse(StatusCode statusCode, const std::string& response) {
     Log::Debug("Start sending response");
 
     mSocket->shutdown(boost::asio::ip::tcp::socket::shutdown_receive);
@@ -269,4 +269,4 @@ void Service::finish() {
     mSelfPtr.reset();
 }
 
-} // namespace ResourceMonitorServer
+} // namespace Http::Asio

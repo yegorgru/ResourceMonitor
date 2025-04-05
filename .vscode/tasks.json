@@ -72,6 +72,22 @@
             ],
             "group": "build",
             "dependsOn": ["CMake Configure"]
+        },
+        {
+            "label": "Clear CMake Cache",
+            "type": "shell",
+            "command": "cmd",
+            "args": [
+                "/c",
+                "rmdir /s /q ${workspaceFolder}\\build && mkdir ${workspaceFolder}\\build"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            },
+            "presentation": {
+                "close": true
+            }
         }
     ]
 }
