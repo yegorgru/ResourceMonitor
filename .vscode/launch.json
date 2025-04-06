@@ -78,6 +78,22 @@
             "runtimeExecutable": "npm",
             "runtimeArgs": ["run", "dev"],
             "console": "integratedTerminal"
+        },
+        {
+            "name": "Launch CommandLineClientBeast",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/CommandLineClientBeast/Debug/CommandLineClientBeast.exe",
+            "args": [
+                "localhost",
+                "3333",
+                "cpu/5/1.2.3.4"
+            ],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "console": "externalTerminal",
+            "preLaunchTask": "Build CommandLineClientBeast"
         }
     ]
 }

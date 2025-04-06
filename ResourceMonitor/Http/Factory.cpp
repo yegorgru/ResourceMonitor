@@ -3,7 +3,7 @@
 #ifdef CLIENT_BOOST_ASIO
 #include "Asio/Client/Client.h"
 #else
-#include "Beast/Client.h"
+#include "Beast/Client/Client.h"
 #endif
 
 #ifdef SERVER_BOOST_ASIO

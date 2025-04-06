@@ -74,6 +74,21 @@
             "dependsOn": ["CMake Configure"]
         },
         {
+            "label": "Build CommandLineClientBeast",
+            "type": "shell",
+            "command": "cmake",
+            "args": [
+                "--build",
+                "${workspaceFolder}/build",
+                "--config",
+                "Debug",
+                "--target",
+                "CommandLineClientBeast"
+            ],
+            "group": "build",
+            "dependsOn": ["CMake Configure"]
+        },
+        {
             "label": "Clear CMake Cache",
             "type": "shell",
             "command": "cmd",

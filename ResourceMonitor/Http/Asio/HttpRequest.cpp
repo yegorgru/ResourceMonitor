@@ -1,12 +1,14 @@
 #include "HttpRequest.h"
 #include "Log.h"
+#include "Utils.h"
+#include "HttpCommons.h"
 
 #include <boost/uuid/uuid_io.hpp>
 
 namespace Http::Asio {
 
 Request::Request(IoService& ios, const std::string& host, unsigned int port, Callback callback)
-    : mId(mGenerator())
+    : mId(Commons::generateId())
     , mHost(host)
     , mPort(port)
     , mCallback(callback)
@@ -40,7 +42,7 @@ void Request::addHeader(const std::string& name, const std::string& value) {
 
 void Request::execute() {
     const auto& res = mRequestMessage.getResource();
-    if (mPort == 0 || mHost == "" || res == "") {
+    if (!isValidPort(mPort) || mHost == "" || res == "") {
         Log::Throw(Print::composeMessage("Incorrect request parameters. Port:", mPort, "host:", mHost, "resource:", res));
     }
     Log::Debug(Print::composeMessage("Start request executing. Port:", mPort, "host:", mHost, "resource:", res));

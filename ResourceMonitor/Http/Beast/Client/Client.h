@@ -7,12 +7,15 @@
 #include <mutex>
 #include <optional>
 
-#include <boost/asio.hpp>
+#include <boost/beast/core.hpp>
+#include <boost/beast/http.hpp>
+#include <boost/beast/version.hpp>
+#include <boost/asio/strand.hpp>
 
 #include "IClient.h"
-#include "Asio/HttpRequest.h"
+#include "Beast/HttpSession.h"
 
-namespace Http::Asio {
+namespace Http::Beast {
 
 class Client : public IClient {
 public:
@@ -25,18 +28,18 @@ public:
     void cancelRequest(const std::string strId) override;
     void close() override;
 private:
-    using IoService = boost::asio::io_service;
+    using IoContext = boost::asio::io_context;
     using Work = boost::asio::executor_work_guard<boost::asio::io_context::executor_type>;
-    using RequestStorage = std::map<Request::Id, RequestPtr>;
-    using OptionalCallback = std::optional<Request::Callback>;
+    using SessionStorage = std::map<Session::Id, SessionPtr>;
+    using OptionalCallback = std::optional<Session::Callback>;
 private:
     OptionalCallback getCallback(const std::string& resource);
 private:
-    IoService mIoService;
+    IoContext mIoContext;
     Work mWork;
     std::jthread mThreadIo;
-    std::mutex mRequestsMutex;
-    RequestStorage mRequests;
+    std::mutex mSessionsMutex;
+    SessionStorage mSessions;
 };
 
-} // namespace Http::Asio
+} // namespace Http::Beast

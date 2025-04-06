@@ -5,12 +5,14 @@ set_property(TARGET Http PROPERTY CXX_STANDARD 20)
 
 target_include_directories(Http PUBLIC 
     "${CMAKE_CURRENT_SOURCE_DIR}"
+    "${CMAKE_CURRENT_SOURCE_DIR}../RMUtils"
+    "${CMAKE_CURRENT_SOURCE_DIR}../ThirdParties"
 )
 
-option(CLIENT_BOOST_ASIO "Use Boost.Asio for client-side networking" ON)
+option(CLIENT_BOOST_ASIO "Use Boost.Asio for client-side networking" OFF)
 option(SERVER_BOOST_ASIO "Use Boost.Asio for server-side networking" ON)
 
-option(CLIENT_BOOST_BEAST "Use Boost.Beast for client-side networking" OFF)
+option(CLIENT_BOOST_BEAST "Use Boost.Beast for client-side networking" ON)
 option(SERVER_BOOST_BEAST "Use Boost.Beast for server-side networking" OFF)
 
 if(CLIENT_BOOST_ASIO OR SERVER_BOOST_ASIO)
@@ -18,8 +20,6 @@ if(CLIENT_BOOST_ASIO OR SERVER_BOOST_ASIO)
     target_link_libraries(Http PUBLIC HttpAsio)
 endif()
 
-message(CLIENT_BOOST_BEAST FLAG: ${CLIENT_BOOST_BEAST})
-message(SERVER_BOOST_BEAST FLAG: ${SERVER_BOOST_BEAST})
 if(CLIENT_BOOST_BEAST OR SERVER_BOOST_BEAST)
     add_subdirectory(Beast)
     target_link_libraries(Http PUBLIC HttpBeast)
