@@ -8,9 +8,6 @@
 #include <optional>
 
 #include <boost/beast/core.hpp>
-#include <boost/beast/http.hpp>
-#include <boost/beast/version.hpp>
-#include <boost/asio/strand.hpp>
 
 #include "IClient.h"
 #include "Beast/HttpSession.h"
@@ -28,12 +25,12 @@ public:
     void cancelRequest(const std::string strId) override;
     void close() override;
 private:
+    using OptionalCallback = std::optional<Session::Callback>;
+    OptionalCallback getCallback(const std::string& resource);
+private:
     using IoContext = boost::asio::io_context;
     using Work = boost::asio::executor_work_guard<boost::asio::io_context::executor_type>;
     using SessionStorage = std::map<Session::Id, SessionPtr>;
-    using OptionalCallback = std::optional<Session::Callback>;
-private:
-    OptionalCallback getCallback(const std::string& resource);
 private:
     IoContext mIoContext;
     Work mWork;

@@ -36,7 +36,14 @@ void Session::get(const std::string& resource) {
 }
 
 void Session::put(const std::string& resource, const std::string& body) {
-    Log::Debug("Boost beast temporary put method. Not implemented yet.");
+    mRequest.method(http::verb::put);
+    mRequest.target(resource);
+    mRequest.set(http::field::host, mHost);
+    mRequest.set(http::field::user_agent, BOOST_BEAST_VERSION_STRING);
+    mRequest.set(http::field::content_type, "application/json");
+    mRequest.body() = body;
+    mRequest.prepare_payload();
+    execute();
 }
 
 void Session::addHeader(boost::beast::http::field name, const std::string& value) {

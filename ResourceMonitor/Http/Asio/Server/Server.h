@@ -6,6 +6,7 @@
 
 #include "IServer.h"
 #include "Acceptor.h"
+#include "Service.h"
 
 namespace Http::Asio {
 
@@ -22,7 +23,8 @@ public:
 private:
     using WorkOptional = std::optional<boost::asio::executor_work_guard<boost::asio::io_context::executor_type>>;
     using ThreadPool = std::vector<std::thread>;
-    using AcceptorOptional = std::optional<Acceptor>;
+    using AsioIoService = boost::asio::io_service; 
+    using AcceptorOptional = std::optional<Commons::Acceptor<AsioIoService, Service>>;
 private:
     WorkOptional mWork;
     AcceptorOptional mAcceptor;

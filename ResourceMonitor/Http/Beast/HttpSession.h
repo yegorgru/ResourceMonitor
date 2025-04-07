@@ -45,7 +45,7 @@ private:
     using Resolver = tcp::resolver;
     using TcpStream = boost::beast::tcp_stream;
     using FlatBuffer = boost::beast::flat_buffer;
-    using HttpRequest = boost::beast::http::request<boost::beast::http::empty_body>;
+    using HttpRequest = boost::beast::http::request<boost::beast::http::string_body>;
     using AtomicFlag = std::atomic<bool>;
     using Timeout = std::optional<int>;
 private:

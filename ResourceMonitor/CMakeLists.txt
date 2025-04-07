@@ -15,6 +15,5 @@ endif()
 
 add_subdirectory ("Server")
 add_subdirectory ("CommandLineClient")
-add_subdirectory ("CommandLineClientBeast")
 add_subdirectory ("Http")
 add_subdirectory ("RMUtils")
