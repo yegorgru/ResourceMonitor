@@ -3,6 +3,7 @@
 #include "Log.h"
 #include "IoService.h"
 #include "DatabaseManager.h"
+#include "Asio/HttpRequest.h"
 
 #include <iostream>
 
@@ -18,17 +19,17 @@ Server::~Server()
 
 void Server::start(Port portNum, unsigned int threadPoolSize) {
     Log::Info("Start server");
-    IoService::Init();
+    Commons::IoService<AsioIoService>::Init();
     if (threadPoolSize < 2) {
         Log::Throw("threadPoolSize should be > 1");
     }
-    mWork.emplace(boost::asio::make_work_guard(IoService::Get().getIoService()));
-    mAcceptor.emplace(IoService::Get().getIoService());
+    mWork.emplace(boost::asio::make_work_guard(Commons::IoService<AsioIoService>::Get().getIoService()));
+    mAcceptor.emplace(Commons::IoService<AsioIoService>::Get().getIoService());
     mAcceptor->start("127.0.0.1", portNum);
     for (unsigned int i = 0; i < threadPoolSize; i++) {
         mThreadPool.emplace_back(
             [this]() {
-                IoService::Get().getIoService().run();
+                Commons::IoService<AsioIoService>::Get().getIoService().run();
             }
         );
     }
@@ -50,11 +51,12 @@ void Server::stop() {
         mThreadPool[i].join();
     }
     mThreadPool.clear();
-    IoService::Destroy();
+    Commons::IoService<AsioIoService>::Destroy();
     Log::Debug("Server stopped");
 }
 
 void Server::configureDatabase(const std::string& dbName, int dbPort) {
+    using DatabaseManager = Commons::DatabaseManager<AsioIoService, Request>;
     DatabaseManager::Destroy();
     DatabaseManager::Init(dbName, dbPort);
 }

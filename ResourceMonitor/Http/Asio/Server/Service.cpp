@@ -1,6 +1,7 @@
 #include "Service.h"
 #include "Log.h"
 #include "DatabaseManager.h"
+#include "Asio/HttpRequest.h"
 
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/algorithm/string/split.hpp>       
@@ -183,6 +184,8 @@ void Service::processHeadersAndContent() {
     Log::Debug(Print::composeMessage("Content:", mRequest.getBody()));
 
     auto sendToDbCallback = [this]() {
+        using AsioIoService = boost::asio::io_service;
+        using DatabaseManager = Commons::DatabaseManager<AsioIoService, Request>;
         auto method = mRequest.getMethod();
         if (method == MessageRequest::Method::PUT) {
             Log::Debug("PUT request processing");
