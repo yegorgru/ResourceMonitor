@@ -34,7 +34,6 @@ public:
     const Id& getId() const;
     bool isCompleted();
     void addHeader(boost::beast::http::field name, const std::string& value);
-    void setTimeout(int seconds);
 private:
     void execute();
     void connect(tcp::resolver::results_type results);
@@ -47,7 +46,6 @@ private:
     using FlatBuffer = boost::beast::flat_buffer;
     using HttpRequest = boost::beast::http::request<boost::beast::http::string_body>;
     using AtomicFlag = std::atomic<bool>;
-    using Timeout = std::optional<int>;
 private:
     Id mId;
 
@@ -59,7 +57,6 @@ private:
     Callback mCallback;
 
     AtomicFlag mIsCanceled;
-    Timeout mTimeout;
 
     Resolver mResolver;
     TcpStream mStream;

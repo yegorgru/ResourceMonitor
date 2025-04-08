@@ -68,9 +68,6 @@ void Session::execute() {
 }
 
 void Session::connect(tcp::resolver::results_type results) {
-    if(mTimeout) {
-        mStream.expires_after(std::chrono::seconds(*mTimeout));
-    }
     mStream.async_connect(results, 
         [this](beast::error_code ec, tcp::resolver::results_type::endpoint_type) {
             if (ec.value() != 0) {
@@ -83,9 +80,6 @@ void Session::connect(tcp::resolver::results_type results) {
 }
 
 void Session::sendRequest() {
-    if (mTimeout) {
-        mStream.expires_after(std::chrono::seconds(*mTimeout));
-    }
     http::async_write(mStream, mRequest,
         [this](beast::error_code ec, std::size_t) {
             if (ec.value() != 0) {
@@ -127,10 +121,6 @@ void Session::finish(beast::error_code ec) {
         mCallback(mResponse, mId);
         mSelfPtr.reset();
     }    
-}
-
-void Session::setTimeout(int seconds) {
-    mTimeout = seconds;
 }
 
 bool Session::isCompleted() {
