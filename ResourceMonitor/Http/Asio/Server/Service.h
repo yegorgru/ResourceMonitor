@@ -1,12 +1,12 @@
 #pragma once
 
-#include "HttpMessage.h"
-
 #include <memory>
 #include <string>
 #include <map>
 
 #include <boost/asio.hpp>
+
+#include "Asio/HttpRequest.h"
 
 namespace Http::Asio {
 
@@ -17,6 +17,7 @@ class Service : public std::enable_shared_from_this<Service> {
 public:
     using TcpSocket = boost::asio::ip::tcp::socket;
     using TcpSocketPtr = std::shared_ptr<TcpSocket>;
+    using RequestType = Request;
 public:
     Service(TcpSocketPtr socket);
 public:

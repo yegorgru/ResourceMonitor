@@ -7,10 +7,11 @@
 #endif
 
 #ifdef SERVER_BOOST_ASIO
-#include "Asio/Server/Server.h"
+#include "Asio/Server/Service.h"
 #else
-#include "Beast/Client.h"
+#include "Beast/Server/Service.h"
 #endif
+#include "Server.h"
 
 namespace Http {
 
@@ -24,9 +25,11 @@ ClientPtr createNetworkClient() {
 
 ServerPtr createNetworkServer() {
     #ifdef SERVER_BOOST_ASIO
-    return std::make_unique<Asio::Server>();
+    using ServerType = Commons::Server<boost::asio::io_service, Asio::Service>;
+    return std::make_unique<ServerType>();
     #else
-    return std::make_unique<Beast::Server>();
+    using ServerType = Commons::Server<boost::asio::io_context, Beast::Service>;
+    return std::make_unique<ServerType>();
     #endif
 }
 

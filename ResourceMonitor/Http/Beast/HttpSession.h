@@ -1,3 +1,5 @@
+#pragma once
+
 #include <memory>
 #include <functional>
 
@@ -33,7 +35,7 @@ public:
 public:
     const Id& getId() const;
     bool isCompleted();
-    void addHeader(boost::beast::http::field name, const std::string& value);
+    void addHeader(const std::string& name, const std::string& value);
 private:
     void execute();
     void connect(tcp::resolver::results_type results);

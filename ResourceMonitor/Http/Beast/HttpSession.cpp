@@ -46,7 +46,7 @@ void Session::put(const std::string& resource, const std::string& body) {
     execute();
 }
 
-void Session::addHeader(boost::beast::http::field name, const std::string& value) {
+void Session::addHeader(const std::string& name, const std::string& value) {
     mRequest.set(name, value);
 }
 

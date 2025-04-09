@@ -34,7 +34,7 @@ private:
 };
 
 template <typename Context, typename Service>
-Acceptor<Context, Service>::Acceptor<Context, Service>(Context& ios)
+Acceptor<Context, Service>::Acceptor(Context& ios)
     : mIos(ios)
     , mAcceptor(nullptr)
     , mIsStopped(false)

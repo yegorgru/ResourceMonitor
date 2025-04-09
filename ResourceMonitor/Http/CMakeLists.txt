@@ -9,11 +9,11 @@ target_include_directories(Http PUBLIC
     "${CMAKE_CURRENT_SOURCE_DIR}../ThirdParties"
 )
 
-option(CLIENT_BOOST_ASIO "Use Boost.Asio for client-side networking" ON)
-option(SERVER_BOOST_ASIO "Use Boost.Asio for server-side networking" ON)
+option(CLIENT_BOOST_ASIO "Use Boost.Asio for client-side networking" OFF)
+option(SERVER_BOOST_ASIO "Use Boost.Asio for server-side networking" OFF)
 
-option(CLIENT_BOOST_BEAST "Use Boost.Beast for client-side networking" OFF)
-option(SERVER_BOOST_BEAST "Use Boost.Beast for server-side networking" OFF)
+option(CLIENT_BOOST_BEAST "Use Boost.Beast for client-side networking" ON)
+option(SERVER_BOOST_BEAST "Use Boost.Beast for server-side networking" ON)
 
 if(CLIENT_BOOST_ASIO OR SERVER_BOOST_ASIO)
     add_subdirectory(Asio)

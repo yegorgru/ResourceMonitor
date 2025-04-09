@@ -1,7 +1,6 @@
 #include "Service.h"
 #include "Log.h"
 #include "DatabaseManager.h"
-#include "Asio/HttpRequest.h"
 
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/algorithm/string/split.hpp>       
@@ -192,7 +191,7 @@ void Service::processHeadersAndContent() {
             auto callback = [this](const MessageResponse& response, const Request::Id& id) {
                 auto statusCode = response.getStatusCode();
                 if (statusCode == StatusCode::Ok) {
-                    Log::Info(Print::composeMessage("Successfuly write info to database. Request:", boost::uuids::to_string(id)));
+                    Log::Debug(Print::composeMessage("Successfuly write info to database. Request:", boost::uuids::to_string(id)));
                     sendResponse(statusCode, "");
                 }
                 else {
@@ -211,18 +210,15 @@ void Service::processHeadersAndContent() {
                 //TODO: review if && or const& should be used
                 auto statusCode = response.getStatusCode();
                 if (statusCode == StatusCode::Ok) {
-                    Log::Info("Successfuly get info from database");
-                    std::string responseStr = response.getBody();
-                    Log::Debug(Print::composeMessage("get response from db:", responseStr));
-                    sendResponse(StatusCode::Ok, std::move(responseStr));
+                    Log::Debug("Successfuly get info from database");
+                    sendResponse(StatusCode::Ok, std::move(response.getBody()));
                 }
                 else {
                     if (statusCode == StatusCode::ClientClosedRequest) {
                         statusCode = StatusCode::ServerError;
                     }
-                    auto responseStr = response.getBody();
-                    Log::Error(Print::composeMessage("Error while getting info from database", static_cast<int>(statusCode), responseStr));
-                    sendResponse(statusCode, std::move(responseStr));
+                    Log::Error(Print::composeMessage("Error while getting info from database", static_cast<int>(statusCode), response.getBody()));
+                    sendResponse(statusCode, response.getBody());
                 }
             };
             DatabaseManager::Get().get(mRequest.getResource(), callback);
