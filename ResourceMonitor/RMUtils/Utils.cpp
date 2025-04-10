@@ -1,17 +1,6 @@
 #include "Utils.h"
 
-#include <sstream>
 #include <algorithm>
-
-std::optional<int> stringToInt(const std::string& value, const std::function<bool(int)>& condition) {
-    std::istringstream iss(value);
-    int result;
-    iss >> result;
-    if (iss.fail() || !iss.eof() || !condition(result)) {
-        return std::nullopt;
-    }
-    return result;
-}
 
 bool isValidIpAddress(const std::string& ipAddress) {
     std::istringstream iss(ipAddress);
@@ -34,4 +23,17 @@ bool isValidIpAddress(const std::string& ipAddress) {
 
 bool isValidPort(int port) {
     return port >= 0 && port <= 65535;
+}
+
+Id generateId() {
+    static Id id = 0;
+    return ++id;
+}
+
+std::optional<Id> stringToId(const std::string& idString) {
+    return stringToInt<Id>(idString);
+}
+
+std::string idToString(const Id& id) {
+    return std::to_string(id);
 }

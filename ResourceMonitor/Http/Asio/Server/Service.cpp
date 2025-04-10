@@ -1,8 +1,7 @@
 #include "Service.h"
 #include "Log.h"
-#include "DatabaseManager.h"
+#include "BoostCommon/DatabaseManager.h"
 
-#include <boost/uuid/uuid_io.hpp>
 #include <boost/algorithm/string/split.hpp>       
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
@@ -188,17 +187,17 @@ void Service::processHeadersAndContent() {
         auto method = mRequest.getMethod();
         if (method == MessageRequest::Method::PUT) {
             Log::Debug("PUT request processing");
-            auto callback = [this](const MessageResponse& response, const Request::Id& id) {
+            auto callback = [this](const MessageResponse& response, const Id& id) {
                 auto statusCode = response.getStatusCode();
                 if (statusCode == StatusCode::Ok) {
-                    Log::Debug(Print::composeMessage("Successfuly write info to database. Request:", boost::uuids::to_string(id)));
+                    Log::Debug(Print::composeMessage("Successfuly write info to database. Request:", id));
                     sendResponse(statusCode, "");
                 }
                 else {
                     if (statusCode == StatusCode::ClientClosedRequest) {
                         statusCode = StatusCode::ServerError;
                     }
-                    Log::Error(Print::composeMessage("Error while writing info to database", static_cast<int>(statusCode), "Request:", boost::uuids::to_string(id)));
+                    Log::Error(Print::composeMessage("Error while writing info to database", static_cast<int>(statusCode), "Request:", id));
                     sendResponse(statusCode, response.getBody());
                 }
             };
@@ -206,7 +205,7 @@ void Service::processHeadersAndContent() {
         }
         else if (method == MessageRequest::Method::GET) {
             Log::Debug("GET request processing");
-            auto callback = [this](const MessageResponse& response, const Request::Id&) {
+            auto callback = [this](const MessageResponse& response, const Id&) {
                 //TODO: review if && or const& should be used
                 auto statusCode = response.getStatusCode();
                 if (statusCode == StatusCode::Ok) {

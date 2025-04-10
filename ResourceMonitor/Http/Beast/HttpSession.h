@@ -5,8 +5,8 @@
 
 #include <boost/beast/core.hpp>
 #include <boost/beast/http.hpp>
-#include <boost/uuid/uuid.hpp>
-#include <boost/uuid/uuid_generators.hpp>
+
+#include "Utils.h"
 
 namespace Http::Beast {
 
@@ -18,7 +18,6 @@ public:
     using tcp = boost::asio::ip::tcp;
     using IoContext = boost::asio::io_context;
     using Port = unsigned int;
-    using Id = boost::uuids::uuid;
     using HttpResponse = boost::beast::http::response<boost::beast::http::string_body>;
     using Callback = std::function<void(const HttpResponse&, const Id& id)>;
 public:

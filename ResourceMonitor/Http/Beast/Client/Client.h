@@ -30,7 +30,7 @@ private:
 private:
     using IoContext = boost::asio::io_context;
     using Work = boost::asio::executor_work_guard<boost::asio::io_context::executor_type>;
-    using SessionStorage = std::map<Session::Id, SessionPtr>;
+    using SessionStorage = std::map<Id, SessionPtr>;
 private:
     IoContext mIoContext;
     Work mWork;

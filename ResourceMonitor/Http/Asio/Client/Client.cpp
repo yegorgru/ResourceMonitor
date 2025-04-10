@@ -1,8 +1,7 @@
 #include "Client.h"
 #include "Log.h"
 #include "HttpCommons.h"
-
-#include <boost/uuid/uuid_io.hpp>
+#include "Utils.h"
 
 namespace Http::Asio {
 
@@ -36,39 +35,35 @@ Client::OptionalRequestId Client::makeRequest(int serverPort, const std::string&
         std::lock_guard<std::mutex> lg(mRequestsMutex);
         mRequests[id] = request;
     }
-    return boost::uuids::to_string(id);
+    return idToString(id);
 }
 
 void Client::cancelRequest(const std::string strId) {
     Log::Debug("Canceling request");
     std::string message;
-    try
-    {
-        Request::Id id = Commons::stringToId(strId);
-        std::lock_guard<std::mutex> lg(mRequestsMutex);
-        auto found = mRequests.find(id);
-        if (found != mRequests.end()) {
-            if (!found->second->isCompleted()) {
-                found->second->cancel();
-                message = Print::composeMessage("Request canceled. Id:", strId);
-                Log::Info(message);
-                mRequests.erase(found);
-                Log::Debug(Print::composeMessage("Canceled request removed from storage. Id:", boost::uuids::to_string(id)));
-            }
-            else {
-                message = Print::composeMessage("Error: completed request still in storage. Id:", strId);
-                Log::Error(message);
-            }
+    auto idOpt = stringToId(strId);
+    if (!idOpt) {
+        Log::Error(Print::composeMessage("Failed to convert string to valid id. Id:", strId));
+    }
+    auto id = *idOpt;
+    std::lock_guard<std::mutex> lg(mRequestsMutex);
+    auto found = mRequests.find(id);
+    if (found != mRequests.end()) {
+        if (!found->second->isCompleted()) {
+            found->second->cancel();
+            message = Print::composeMessage("Request canceled. Id:", strId);
+            Log::Info(message);
+            mRequests.erase(found);
+            Log::Debug(Print::composeMessage("Canceled request removed from storage. Id:", id));
         }
         else {
-            message = Print::composeMessage("No requests with such id in storage. Id:", strId);
-            Log::Info(message);
+            message = Print::composeMessage("Error: completed request still in storage. Id:", strId);
+            Log::Error(message);
         }
     }
-    catch (const std::runtime_error&)
-    {
-        message = Print::composeMessage("Failed to convert string to valid id. Id:", strId);
-        Log::Error(message);
+    else {
+        message = Print::composeMessage("No requests with such id in storage. Id:", strId);
+        Log::Info(message);
     }
     Print::PrintLine(message);
 }
@@ -86,7 +81,7 @@ Client::OptionalCallback Client::getCallback(const std::string& resource) {
         return std::nullopt;
     }
     else {
-        return [this, printCallback](const MessageResponse& response, const Request::Id& id) {
+        return [this, printCallback](const MessageResponse& response, const Id& id) {
             auto statusCode = response.getStatusCode();
             if (statusCode == StatusCode::ClientClosedRequest) {
                 Log::Debug("Callback for canceled request");
@@ -95,7 +90,7 @@ Client::OptionalCallback Client::getCallback(const std::string& resource) {
             else {
                 std::lock_guard<std::mutex> lg(mRequestsMutex);
                 mRequests.erase(id);
-                Log::Debug(Print::composeMessage("Completed request removed from storage. Id:", boost::uuids::to_string(id)));
+                Log::Debug(Print::composeMessage("Completed request removed from storage. Id:", id));
             }
             std::string message;
             if (statusCode == StatusCode::Ok) {
@@ -122,7 +117,7 @@ Client::OptionalCallback Client::getCallback(const std::string& resource) {
                 Log::Error(message);
             }
             Print::PrintLine(message);
-            auto finishMessage = Print::composeMessage("Finished request:", boost::uuids::to_string(id));
+            auto finishMessage = Print::composeMessage("Finished request:", id);
             Log::Info(finishMessage);
             Print::PrintLine(finishMessage);
         };

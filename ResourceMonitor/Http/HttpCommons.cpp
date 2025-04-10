@@ -1,23 +1,10 @@
 #include "HttpCommons.h"
 #include "Print.h"
-
-#include <boost/uuid/uuid_generators.hpp>
+#include "Utils.h"
 
 #include <map>
 
 namespace Http::Commons {
-
-Id generateId() {
-    using IdGenerator = boost::uuids::random_generator;
-    static IdGenerator generator;
-    return generator();
-}
-
-Id stringToId(const std::string& idString) {
-    using IdGenerator = boost::uuids::string_generator;
-    static IdGenerator generator;
-    return generator(idString);
-}
 
 OptionalPrintCallback getPrintCallback(const std::string& resource) {
     using json = nlohmann::json;

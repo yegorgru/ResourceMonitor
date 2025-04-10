@@ -19,16 +19,16 @@
 #endif
 
 #if defined(SERVER_BOOST_ASIO)
+#include "BoostCommon/Server.h"
 #include "Asio/Server/Service.h"
 #elif defined(SERVER_BOOST_BEAST)
+#include "BoostCommon/Server.h"
 #include "Beast/Server/Service.h"
 #elif defined(SERVER_POCO)
-#include "Poco/Server/Service.h"
+#error "Poco server not implemented yet."
 #else 
 #error "No server macro defined. Define one of SERVER_BOOST_ASIO, SERVER_BOOST_BEAST, or SERVER_POCO."
 #endif
-
-#include "Server.h"
 
 namespace Http {
 

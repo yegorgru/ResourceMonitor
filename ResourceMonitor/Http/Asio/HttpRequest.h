@@ -2,6 +2,7 @@
 
 #include "HttpMessage.h"
 #include "HttpCommons.h"
+#include "Utils.h"
 
 #include <functional>
 
@@ -16,7 +17,6 @@ class Request : public std::enable_shared_from_this<Request> {
 public:
     using IoService = boost::asio::io_service;
     using Port = unsigned int;
-    using Id = Http::Commons::Id;
     using Callback = std::function<void(const MessageResponse&, const Id& id)>;
 public:
     static const Port DEFAULT_PORT = 80;

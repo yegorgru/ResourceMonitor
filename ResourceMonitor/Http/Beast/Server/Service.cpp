@@ -1,8 +1,7 @@
 #include "Service.h"
 #include "Log.h"
-#include "DatabaseManager.h"
+#include "BoostCommon/DatabaseManager.h"
 
-#include <boost/uuid/uuid_io.hpp>
 #include <boost/algorithm/string/split.hpp>       
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
@@ -63,17 +62,17 @@ void Service::prepareResponse() {
     auto method = mRequest.method();
     if (method == http::verb::put) {
         Log::Debug("PUT request processing");
-        auto callback = [this](const HttpResponse& response, const Session::Id& id) {
+        auto callback = [this](const HttpResponse& response, const Id& id) {
             auto status = response.result();
             if (status == http::status::ok) {
-                Log::Debug(Print::composeMessage("Successfuly write info to database. Request:", boost::uuids::to_string(id)));
+                Log::Debug(Print::composeMessage("Successfuly write info to database. Request:",id));
                 sendResponse(status, "");
             }
             else {
                 if (status == static_cast<boost::beast::http::status>(Session::CANCELED_HTTP_STATUS)) {
                     status = boost::beast::http::status::internal_server_error;
                 }
-                Log::Error(Print::composeMessage("Error while writing info to database", response.result_int(), "Request:", boost::uuids::to_string(id)));
+                Log::Error(Print::composeMessage("Error while writing info to database", response.result_int(), "Request:", id));
                 sendResponse(status, response.body());
             }
         };
@@ -81,7 +80,7 @@ void Service::prepareResponse() {
     }
     else if (method == http::verb::get) {
         Log::Debug("GET request processing");
-        auto callback = [this](const HttpResponse& response, const Session::Id& id) {
+        auto callback = [this](const HttpResponse& response, const Id& id) {
             auto status = response.result();
             if (status == http::status::ok) {
                 Log::Debug("Successfuly get info from database");

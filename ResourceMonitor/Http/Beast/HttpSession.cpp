@@ -5,7 +5,6 @@
 
 #include <boost/asio/strand.hpp>
 #include <boost/beast/version.hpp>
-#include <boost/uuid/uuid_io.hpp>
 
 namespace Http::Beast {
 
@@ -13,7 +12,7 @@ namespace http = boost::beast::http;
 namespace beast = boost::beast;
 
 Session::Session(IoContext& ioc, const std::string& host, unsigned int port, Callback callback) 
-    : mId(Commons::generateId())
+    : mId(generateId())
     , mHost(host)
     , mPort(port)
     , mCallback(callback)
@@ -105,12 +104,12 @@ void Session::readResponse() {
 }
 
 void Session::finish(beast::error_code ec) {
-    Log::Debug(Print::composeMessage("Finish request", boost::uuids::to_string(mId)));
+    Log::Debug(Print::composeMessage("Finish request", mId));
     if (ec == boost::asio::error::operation_aborted) {
         Log::Info(Print::composeMessage("Request was canceled"));
     }
     else if (ec.value() != 0) {
-        auto message = Print::composeMessage("Error occured! Error code =", ec.value(), ". Message:", ec.message(), "Request id:", boost::uuids::to_string(mId));
+        auto message = Print::composeMessage("Error occured! Error code =", ec.value(), ". Message:", ec.message(), "Request id:", mId);
         Log::Error(message);
         mResponse.set(http::field::content_length, "0");
         mResponse.result(http::status::internal_server_error);
@@ -127,7 +126,7 @@ bool Session::isCompleted() {
     return mSelfPtr == nullptr;
 }
 
-const Session::Id& Session::getId() const {
+const Id& Session::getId() const {
     return mId;
 }
 
@@ -135,7 +134,7 @@ void Session::cancel() {
     if (isCompleted()) {
         return;
     }
-    Log::Debug(Print::composeMessage("Cancelling request. Id:", boost::uuids::to_string(mId)));
+    Log::Debug(Print::composeMessage("Cancelling request. Id:", mId));
     mResponse.result(static_cast<boost::beast::http::status>(CANCELED_HTTP_STATUS));
     mCallback(mResponse, mId);
     mIsCanceled = true;

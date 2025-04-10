@@ -27,7 +27,7 @@ public:
 private:
     using IoService = boost::asio::io_service;
     using Work = boost::asio::executor_work_guard<boost::asio::io_context::executor_type>;
-    using RequestStorage = std::map<Request::Id, RequestPtr>;
+    using RequestStorage = std::map<Id, RequestPtr>;
     using OptionalCallback = std::optional<Request::Callback>;
 private:
     OptionalCallback getCallback(const std::string& resource);

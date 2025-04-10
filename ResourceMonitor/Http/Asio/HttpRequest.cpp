@@ -3,12 +3,10 @@
 #include "Utils.h"
 #include "HttpCommons.h"
 
-#include <boost/uuid/uuid_io.hpp>
-
 namespace Http::Asio {
 
 Request::Request(IoService& ios, const std::string& host, unsigned int port, Callback callback)
-    : mId(Commons::generateId())
+    : mId(generateId())
     , mHost(host)
     , mPort(port)
     , mCallback(callback)
@@ -73,7 +71,7 @@ void Request::cancel() {
     if (isCompleted()) {
         return;
     }
-    Log::Debug(Print::composeMessage("Cancelling request. Id:", boost::uuids::to_string(mId)));
+    Log::Debug(Print::composeMessage("Cancelling request. Id:", mId));
     mResponseMessage.setStatusCode(StatusCode::ClientClosedRequest);
     mCallback(mResponseMessage, mId);
     mIsCanceled = true;
@@ -88,7 +86,7 @@ bool Request::isCompleted() {
     return mSelfPtr == nullptr;
 }
 
-const Request::Id& Request::getId() const {
+const Id& Request::getId() const {
     return mId;
 }
 
@@ -267,7 +265,7 @@ void Request::finish(const boost::system::error_code& ec) {
         Log::Info(Print::composeMessage("Request was canceled"));
     }
     else if (ec.value() != 0) {
-        auto message = Print::composeMessage("Error occured! Error code =", ec.value(), ". Message:", ec.message(), "Request id:", boost::uuids::to_string(mId));
+        auto message = Print::composeMessage("Error occured! Error code =", ec.value(), ". Message:", ec.message(), "Request id:", mId);
         Log::Error(message);
         mResponseMessage.addHeader("Content-Length", "0");
         mResponseMessage.setStatusCode(StatusCode::ServerError);

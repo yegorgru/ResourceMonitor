@@ -59,7 +59,7 @@ void Controller::handleCommand(const std::string& command) {
 
         bool isValidEndpoint = false;
         if (validResources.find(resource) != validResources.end()) {
-            auto numberOpt = stringToInt(count, [](int value) { return value > 0; });
+            auto numberOpt = stringToInt<int>(count, [](int value) { return value > 0; });
             if (!numberOpt) {
                 isValidEndpoint = false;
             }

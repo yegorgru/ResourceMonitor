@@ -48,7 +48,7 @@ Config::Config(Http::IServer& server)
 
 void Config::initializeConfigCommands() {
     mConfigCommands["port"] = [this](const std::string& value) {
-        auto portOpt = stringToInt(value, [](int port) { 
+        auto portOpt = stringToInt<int>(value, [](int port) { 
             return isValidPort(port); 
         });
         if (!portOpt) {
@@ -61,7 +61,7 @@ void Config::initializeConfigCommands() {
     mConfigHelp["port"] = "Set server port (e.g., port 3333). Change will be applied after leaving config mode.";
 
     mConfigCommands["threads"] = [this](const std::string& value) {
-        auto threadCountOpt = stringToInt(value, [](int count) { 
+        auto threadCountOpt = stringToInt<int>(value, [](int count) { 
             return count >= 2; 
         });
         if (!threadCountOpt) {
@@ -74,7 +74,7 @@ void Config::initializeConfigCommands() {
     mConfigHelp["threads"] = "Set thread pool size (e.g., threads 4). Change will be applied after leaving config mode.";
 
     mConfigCommands["db-port"] = [this](const std::string& value) {
-        auto dbPortOpt = stringToInt(value, [](int port) { 
+        auto dbPortOpt = stringToInt<int>(value, [](int port) { 
             return port >= 0 && port <= 65535; 
         });
         if (!dbPortOpt) {
