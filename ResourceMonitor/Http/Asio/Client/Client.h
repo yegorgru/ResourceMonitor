@@ -16,12 +16,10 @@ namespace Http::Asio {
 
 class Client : public IClient {
 public:
-    using OptionalRequestId = std::optional<std::string>;
-public:
     Client();
     ~Client();
 public:
-    OptionalRequestId makeRequest(int serverPort, const std::string& serverName, const std::string& resource, const std::string& count, const std::string& ipAddress) override;
+    OptionalRequestId makeRequest(Port serverPort, const std::string& serverName, const std::string& resource, const std::string& count, const std::string& ipAddress) override;
     void cancelRequest(const std::string strId) override;
     void close() override;
 private:

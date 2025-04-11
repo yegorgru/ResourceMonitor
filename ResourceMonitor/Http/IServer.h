@@ -3,11 +3,11 @@
 #include <memory>
 #include <string>
 
+#include "HttpCommon.h"
+
 namespace Http {
 
 class IServer {
-public:
-    using Port = unsigned int;
 public:
     IServer() = default;
     virtual ~IServer() = default;

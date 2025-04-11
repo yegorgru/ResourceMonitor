@@ -4,6 +4,8 @@
 #include <optional>
 #include <memory>
 
+#include "HttpCommon.h"
+
 namespace Http {
 
 class IClient {
@@ -13,7 +15,7 @@ public:
 public:
     using OptionalRequestId = std::optional<std::string>;
 public:
-    virtual OptionalRequestId makeRequest(int serverPort, const std::string& serverName, const std::string& resource, const std::string& count, const std::string& ipAddress) = 0;
+    virtual OptionalRequestId makeRequest(Port serverPort, const std::string& serverName, const std::string& resource, const std::string& count, const std::string& ipAddress) = 0;
     virtual void cancelRequest(const std::string strId) = 0;
     virtual void close() = 0;
 };

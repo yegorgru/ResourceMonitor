@@ -1,6 +1,6 @@
 #include "Client.h"
 #include "Log.h"
-#include "HttpCommons.h"
+#include "HttpCommon.h"
 #include "Utils.h"
 
 namespace Http::Asio {
@@ -21,7 +21,7 @@ Client::~Client()
     }
 }
 
-Client::OptionalRequestId Client::makeRequest(int serverPort, const std::string& serverName, const std::string& resource, const std::string& count, const std::string& ipAddress) {
+Client::OptionalRequestId Client::makeRequest(Port serverPort, const std::string& serverName, const std::string& resource, const std::string& count, const std::string& ipAddress) {
     Log::Debug("Making request");
     auto callback = getCallback(resource);
     if (!callback) {
@@ -44,22 +44,22 @@ void Client::cancelRequest(const std::string strId) {
     auto idOpt = stringToId(strId);
     if (!idOpt) {
         Log::Error(Print::composeMessage("Failed to convert string to valid id. Id:", strId));
+        return;
     }
     auto id = *idOpt;
     std::lock_guard<std::mutex> lg(mRequestsMutex);
     auto found = mRequests.find(id);
     if (found != mRequests.end()) {
+        message = Print::composeMessage("Request canceled. Id:", strId);
         if (!found->second->isCompleted()) {
             found->second->cancel();
-            message = Print::composeMessage("Request canceled. Id:", strId);
             Log::Info(message);
-            mRequests.erase(found);
-            Log::Debug(Print::composeMessage("Canceled request removed from storage. Id:", id));
         }
         else {
-            message = Print::composeMessage("Error: completed request still in storage. Id:", strId);
-            Log::Error(message);
+            Log::Error(Print::composeMessage("Error: completed request still in storage. Id:", strId));
         }
+        mRequests.erase(found);
+        Log::Debug(Print::composeMessage("Canceled request removed from storage. Id:", id));
     }
     else {
         message = Print::composeMessage("No requests with such id in storage. Id:", strId);
@@ -70,13 +70,18 @@ void Client::cancelRequest(const std::string strId) {
 
 void Client::close() {
     Log::Debug("Client close");
+    std::lock_guard<std::mutex> lock(mRequestsMutex);
+    for (auto& [id, request] : mRequests) {
+        request->cancel();
+    }
+    mRequests.clear();
     mWork.reset();
     mThreadIo.join();
 }
 
 Client::OptionalCallback Client::getCallback(const std::string& resource) {
     using json = nlohmann::json;
-    auto printCallback = Http::Commons::getPrintCallback(resource);
+    auto printCallback = Http::getPrintCallback(resource);
     if (!printCallback) {
         return std::nullopt;
     }
@@ -86,11 +91,6 @@ Client::OptionalCallback Client::getCallback(const std::string& resource) {
             if (statusCode == StatusCode::ClientClosedRequest) {
                 Log::Debug("Callback for canceled request");
                 return;
-            }
-            else {
-                std::lock_guard<std::mutex> lg(mRequestsMutex);
-                mRequests.erase(id);
-                Log::Debug(Print::composeMessage("Completed request removed from storage. Id:", id));
             }
             std::string message;
             if (statusCode == StatusCode::Ok) {
@@ -120,6 +120,11 @@ Client::OptionalCallback Client::getCallback(const std::string& resource) {
             auto finishMessage = Print::composeMessage("Finished request:", id);
             Log::Info(finishMessage);
             Print::PrintLine(finishMessage);
+            {
+                std::lock_guard<std::mutex> lg(mRequestsMutex);
+                mRequests.erase(id);
+                Log::Debug(Print::composeMessage("Completed request removed from storage. Id:", id));
+            }
         };
     }
 }

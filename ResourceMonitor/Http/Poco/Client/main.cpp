@@ -52,7 +52,7 @@ bool doRequest(Poco::Net::HTTPClientSession& session, Poco::Net::HTTPRequest& re
 }
 
 
-/*int main(int argc, char** argv)
+int main(int argc, char** argv)
 {
 	if (argc != 2)
 	{
@@ -92,4 +92,4 @@ bool doRequest(Poco::Net::HTTPClientSession& session, Poco::Net::HTTPRequest& re
 		return 1;
 	}
 	return 0;
-}*/
+}

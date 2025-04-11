@@ -4,18 +4,9 @@
 #include <string>
 #include <map>
 
-namespace Http::Asio {
+#include "HttpCommon.h"
 
-enum class StatusCode {
-    Ok = 200, 
-    NotFound = 404,
-    UnsupportedMediaType = 415,
-    RequestEntityTooLarge = 413,
-    ClientClosedRequest = 499,
-    ServerError = 500,
-    NotImplemented = 501,
-    HttpVersionNotSupported = 505
-};
+namespace Http::Asio {
 
 StatusCode intToStatusCode(int value);
 

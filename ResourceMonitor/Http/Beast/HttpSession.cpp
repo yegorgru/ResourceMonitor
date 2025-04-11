@@ -1,7 +1,7 @@
 #include "HttpSession.h"
 #include "Log.h"
 #include "Utils.h"
-#include "HttpCommons.h"
+#include "HttpCommon.h"
 
 #include <boost/asio/strand.hpp>
 #include <boost/beast/version.hpp>
@@ -11,7 +11,7 @@ namespace Http::Beast {
 namespace http = boost::beast::http;
 namespace beast = boost::beast;
 
-Session::Session(IoContext& ioc, const std::string& host, unsigned int port, Callback callback) 
+Session::Session(IoContext& ioc, const std::string& host, Port port, Callback callback) 
     : mId(generateId())
     , mHost(host)
     , mPort(port)

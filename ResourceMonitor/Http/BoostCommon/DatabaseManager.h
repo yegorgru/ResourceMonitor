@@ -8,7 +8,7 @@
 #include <string>
 #include <memory>
 
-namespace Http::Commons {
+namespace Http::Boost::Common {
 
 template <typename IoServiceType, typename RequestType, typename CallbackType = typename RequestType::Callback>
 class DatabaseManager : public Singleton<DatabaseManager<IoServiceType, RequestType, CallbackType>>
@@ -74,4 +74,4 @@ void DatabaseManager<IoServiceType, RequestType, CallbackType>::createTimerForRe
     });
 }
 
-} // namespace Http::Commons
+} // namespace Http::Boost::Common

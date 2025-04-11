@@ -9,7 +9,7 @@
 #include "IServer.h"
 #include "DatabaseManager.h"
 
-namespace Http::Commons {
+namespace Http::Boost::Common {
 
 template <typename IoServiceType, typename ServiceType>
 class Server : public IServer {
@@ -25,7 +25,7 @@ public:
 private:
     using WorkOptional = std::optional<boost::asio::executor_work_guard<boost::asio::io_context::executor_type>>;
     using ThreadPool = std::vector<std::jthread>;
-    using AcceptorOptional = std::optional<Commons::Acceptor<IoServiceType, ServiceType>>;
+    using AcceptorOptional = std::optional<Acceptor<IoServiceType, ServiceType>>;
 private:
     WorkOptional mWork;
     AcceptorOptional mAcceptor;
@@ -44,17 +44,17 @@ Server<IoServiceType, ServiceType>::~Server()
 template <typename IoServiceType, typename ServiceType>
 void Server<IoServiceType, ServiceType>::start(Port portNum, unsigned int threadPoolSize) {
     Log::Info("Start server");
-    Commons::IoService<IoServiceType>::Init();
+    IoService<IoServiceType>::Init();
     if (threadPoolSize < 2) {
         Log::Throw("threadPoolSize should be > 1");
     }
-    mWork.emplace(boost::asio::make_work_guard(Commons::IoService<IoServiceType>::Get().getIoService()));
-    mAcceptor.emplace(Commons::IoService<IoServiceType>::Get().getIoService());
+    mWork.emplace(boost::asio::make_work_guard(IoService<IoServiceType>::Get().getIoService()));
+    mAcceptor.emplace(IoService<IoServiceType>::Get().getIoService());
     mAcceptor->start("127.0.0.1", portNum);
     for (unsigned int i = 0; i < threadPoolSize; i++) {
         mThreadPool.emplace_back(
             [this]() {
-                Commons::IoService<IoServiceType>::Get().getIoService().run();
+                IoService<IoServiceType>::Get().getIoService().run();
             }
         );
     }
@@ -77,15 +77,15 @@ void Server<IoServiceType, ServiceType>::stop() {
         mThreadPool[i].join();
     }
     mThreadPool.clear();
-    Commons::IoService<IoServiceType>::Destroy();
+    IoService<IoServiceType>::Destroy();
     Log::Debug("Server stopped");
 }
 
 template <typename IoServiceType, typename ServiceType>
 void Server<IoServiceType, ServiceType>::configureDatabase(const std::string& dbName, int dbPort) {
-    using DatabaseManager = Commons::DatabaseManager<IoServiceType, ServiceType::RequestType>;
+    using DatabaseManager = DatabaseManager<IoServiceType, ServiceType::RequestType>;
     DatabaseManager::Destroy();
     DatabaseManager::Init(dbName, dbPort);
 }
 
-} // namespace Http::Commons
+} // namespace Http::Boost::Common

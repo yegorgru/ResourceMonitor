@@ -1,6 +1,7 @@
 #include "Service.h"
 #include "Log.h"
 #include "BoostCommon/DatabaseManager.h"
+#include "HttpCommon.h"
 
 #include <boost/algorithm/string/split.hpp>       
 #include <boost/algorithm/string.hpp>
@@ -58,7 +59,7 @@ void Service::readRequest() {
 void Service::prepareResponse() {
     namespace http = boost::beast::http;
     using AsioIoContext = boost::asio::io_context;
-    using DatabaseManager = Commons::DatabaseManager<AsioIoContext, Session>;
+    using DatabaseManager = Boost::Common::DatabaseManager<AsioIoContext, Session>;
     auto method = mRequest.method();
     if (method == http::verb::put) {
         Log::Debug("PUT request processing");
@@ -69,7 +70,7 @@ void Service::prepareResponse() {
                 sendResponse(status, "");
             }
             else {
-                if (status == static_cast<boost::beast::http::status>(Session::CANCELED_HTTP_STATUS)) {
+                if (status == static_cast<boost::beast::http::status>(CANCELED_HTTP_STATUS)) {
                     status = boost::beast::http::status::internal_server_error;
                 }
                 Log::Error(Print::composeMessage("Error while writing info to database", response.result_int(), "Request:", id));
@@ -87,7 +88,7 @@ void Service::prepareResponse() {
                 sendResponse(status, std::move(response.body()));
             }
             else {
-                if (status == static_cast<boost::beast::http::status>(Session::CANCELED_HTTP_STATUS)) {
+                if (status == static_cast<boost::beast::http::status>(CANCELED_HTTP_STATUS)) {
                     status = boost::beast::http::status::internal_server_error;
                 }
                 Log::Error(Print::composeMessage("Error while getting info from database", response.result_int(), response.body()));

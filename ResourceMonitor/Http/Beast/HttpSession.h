@@ -7,6 +7,7 @@
 #include <boost/beast/http.hpp>
 
 #include "Utils.h"
+#include "HttpCommon.h"
 
 namespace Http::Beast {
 
@@ -17,19 +18,14 @@ class Session : public std::enable_shared_from_this<Session> {
 public:
     using tcp = boost::asio::ip::tcp;
     using IoContext = boost::asio::io_context;
-    using Port = unsigned int;
     using HttpResponse = boost::beast::http::response<boost::beast::http::string_body>;
     using Callback = std::function<void(const HttpResponse&, const Id& id)>;
 public:
-    static const Port DEFAULT_PORT = 80;
-    static const unsigned int CANCELED_HTTP_STATUS = 499;
-public:
-    Session(IoContext& ioc, const std::string& host, unsigned int port, Callback callback = [](const HttpResponse&, const Id&) {});
+    Session(IoContext& ioc, const std::string& host, Port port, Callback callback = [](const HttpResponse&, const Id&) {});
     ~Session();
 public:
     void get(const std::string& resource);
     void put(const std::string& resource, const std::string& body);
-public:
     void cancel();
 public:
     const Id& getId() const;
@@ -53,7 +49,7 @@ private:
     SessionPtr mSelfPtr;
 
     std::string mHost;
-    unsigned int mPort;
+    Port mPort;
 
     Callback mCallback;
 
@@ -66,4 +62,4 @@ private:
     HttpResponse mResponse;
 };
 
-} // namespace Http::Asio
+} // namespace Http::Beast

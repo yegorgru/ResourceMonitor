@@ -1,10 +1,10 @@
-#include "HttpCommons.h"
+#include "HttpCommon.h"
 #include "Print.h"
 #include "Utils.h"
 
 #include <map>
 
-namespace Http::Commons {
+namespace Http {
 
 OptionalPrintCallback getPrintCallback(const std::string& resource) {
     using json = nlohmann::json;
@@ -101,4 +101,4 @@ OptionalPrintCallback getPrintCallback(const std::string& resource) {
     return found == callbacks.end() ? std::nullopt : OptionalPrintCallback(found->second);
 }
 
-} // namespace Http::Commons
+} // namespace Http

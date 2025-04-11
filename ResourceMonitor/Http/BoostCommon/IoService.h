@@ -4,7 +4,7 @@
 
 #include <boost/asio.hpp>
 
-namespace Http::Commons {
+namespace Http::Boost::Common {
 
 template <typename IoServiceType>
 class IoService : public Singleton<IoService<IoServiceType>>
@@ -23,4 +23,4 @@ IoServiceType& IoService<IoServiceType>::getIoService() {
 	return mIoService;
 }
 
-} // namespace Http::Commons
+} // namespace Http::Boost::Common

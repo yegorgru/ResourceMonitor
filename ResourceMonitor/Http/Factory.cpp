@@ -46,10 +46,10 @@ ClientPtr createNetworkClient() {
 
 ServerPtr createNetworkServer() {
 #if defined(SERVER_BOOST_ASIO)
-    using ServerType = Commons::Server<boost::asio::io_service, Asio::Service>;
+    using ServerType = Boost::Common::Server<boost::asio::io_service, Asio::Service>;
     return std::make_unique<ServerType>();
 #elif defined(SERVER_BOOST_BEAST)
-    using ServerType = Commons::Server<boost::asio::io_context, Beast::Service>;
+    using ServerType = Boost::Common::Server<boost::asio::io_context, Beast::Service>;
     return std::make_unique<ServerType>();
 #elif defined(SERVER_POCO)
     #error "Poco server not implemented yet."

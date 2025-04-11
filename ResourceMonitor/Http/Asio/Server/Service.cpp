@@ -183,7 +183,7 @@ void Service::processHeadersAndContent() {
 
     auto sendToDbCallback = [this]() {
         using AsioIoService = boost::asio::io_service;
-        using DatabaseManager = Commons::DatabaseManager<AsioIoService, Request>;
+        using DatabaseManager = Boost::Common::DatabaseManager<AsioIoService, Request>;
         auto method = mRequest.getMethod();
         if (method == MessageRequest::Method::PUT) {
             Log::Debug("PUT request processing");

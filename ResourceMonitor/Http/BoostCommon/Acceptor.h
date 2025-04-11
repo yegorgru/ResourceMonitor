@@ -6,12 +6,12 @@
 #include <boost/asio.hpp>
 
 #include "Log.h"
+#include "HttpCommon.h"
 
-namespace Http::Commons {
+namespace Http::Boost::Common {
 
 template <typename Context, typename Service>
 class Acceptor {
-    using Port = unsigned int;
 public:
     Acceptor(Context& ios);
     ~Acceptor() = default;
@@ -81,4 +81,4 @@ void Acceptor<Context, Service>::initAccept() {
     );
 }
 
-} // namespace Http::Commons
+} // namespace Http::Boost::Common
