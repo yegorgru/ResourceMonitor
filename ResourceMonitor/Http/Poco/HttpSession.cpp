@@ -11,13 +11,14 @@
 
 namespace Http::Poco {
 
-Session::Session(const std::string& host, Port port, Callback callback)
+Session::Session(const std::string& host, Port port, Callback callback)    
     : mId(generateId())
     , mCallback(callback)
-    // known issue with loclhost for Poco
+    // known issue with localhost for Poco
     , mSession(host == "localhost" ? "127.0.0.1" : host, port)
     , mCompleted(false)
     , mCanceled(false)
+    , mUseThreadPool(true)
 {
     Log::Debug(Print::composeMessage("Created HTTP session. ID:", idToString(mId), "Host:", host, "Port:", port));
 }
@@ -33,7 +34,7 @@ Session::~Session()
 
 void Session::get(const std::string& endpoint)
 {
-    mRequest = ::Poco::Net::HTTPRequest(HttpRequest::HTTPRequest::HTTP_GET, endpoint, ::Poco::Net::HTTPMessage::HTTP_1_1);
+    mRequest = HttpRequest(HttpRequest::HTTPRequest::HTTP_GET, endpoint, ::Poco::Net::HTTPMessage::HTTP_1_1);
     
     for (const auto& [name, value] : mHeaders) {
         mRequest.set(name, value);
@@ -46,13 +47,12 @@ void Session::put(const std::string& endpoint, const std::string& body)
 {
     mBody = body;
     
-    mRequest = ::Poco::Net::HTTPRequest(HttpRequest::HTTP_PUT, endpoint, ::Poco::Net::HTTPMessage::HTTP_1_1);
+    mRequest = HttpRequest(HttpRequest::HTTP_PUT, endpoint, ::Poco::Net::HTTPMessage::HTTP_1_1);
     
     for (const auto& [name, value] : mHeaders) {
         mRequest.set(name, value);
     }
     mRequest.setContentLength(body.length());
-
     
     execute();
 }
@@ -62,13 +62,22 @@ void Session::addHeader(const std::string& name, const std::string& value)
     mHeaders[name] = value;
 }
 
+void Session::setTimeout(int timeoutSeconds)
+{
+    mSession.setTimeout(::Poco::Timespan(timeoutSeconds, 0));
+}
+
+void Session::setUseThreadPool(bool useThreadPool)
+{
+    mUseThreadPool = useThreadPool;
+    Log::Debug(Print::composeMessage("Session", idToString(mId), "thread pool usage set to:", useThreadPool));
+}
+
 void Session::execute()
 {    
     mSelfPtr = shared_from_this();
     
-    mSession.setTimeout(::Poco::Timespan(30, 0));
-    
-    ThreadPoolManager::Get().enqueue([self = shared_from_this()]() {
+    auto executeSession = [self = shared_from_this()]() {
         try {            
             if (self->mCanceled) {
                 self->finish(false, "Request was canceled before execution");
@@ -100,7 +109,7 @@ void Session::execute()
             
             self->mCallback(response, self->mId);
             self->finish(true);
-        }          
+        }
         catch (const ::Poco::Exception& ex) {
             if (self->mCanceled) {
                 self->finish(false, "Request was canceled");
@@ -128,7 +137,13 @@ void Session::execute()
                 self->finish(false, errorMsg);
             }
         }
-    });
+    };
+    
+    if (mUseThreadPool) {
+        ThreadPoolManager::Get().enqueue(executeSession);
+    } else {
+        executeSession();
+    }
 }
 
 void Session::finish(bool success, const std::string& errorMessage)
@@ -137,9 +152,13 @@ void Session::finish(bool success, const std::string& errorMessage)
         return;
     }
     
-    Log::Debug(Print::composeMessage("Finishing request. Success:", success, 
-                                 "Error:", errorMessage.empty() ? "none" : errorMessage,
-                                 "ID:", idToString(mId)));
+    Log::Debug(
+        Print::composeMessage(
+            "Finishing request. Success:", success, 
+            "Error:", errorMessage.empty() ? "none" : errorMessage,
+            "ID:", idToString(mId)
+        )
+    );
     
     if (!success && !mCanceled) {
         ResponseData errorResponse("", StatusCode::ServerError, errorMessage);

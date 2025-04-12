@@ -25,7 +25,7 @@
 #include "BoostCommon/Server.h"
 #include "Beast/Server/Service.h"
 #elif defined(SERVER_POCO)
-#error "Poco server not implemented yet."
+#include "Poco/Server/Server.h"
 #else 
 #error "No server macro defined. Define one of SERVER_BOOST_ASIO, SERVER_BOOST_BEAST, or SERVER_POCO."
 #endif
@@ -52,7 +52,7 @@ ServerPtr createNetworkServer() {
     using ServerType = Boost::Common::Server<boost::asio::io_context, Beast::Service>;
     return std::make_unique<ServerType>();
 #elif defined(SERVER_POCO)
-    #error "Poco server not implemented yet."
+    return std::make_unique<Poco::Server>();
 #else 
     return nullptr;
 #endif

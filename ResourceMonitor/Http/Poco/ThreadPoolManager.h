@@ -51,7 +51,7 @@ private:
     using TaskQueue = std::queue<RunnableTaskPtr>;
     using AtomicFlag = std::atomic<bool>;
     using ActiveTasksStorage = std::set<RunnableTaskPtr>;
-private:    
+private:
     ThreadPoolPtr mThreadPool;
     TaskQueue mTaskQueue;
     std::mutex mQueueMutex;

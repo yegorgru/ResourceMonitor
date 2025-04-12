@@ -40,6 +40,8 @@ public:
     void put(const std::string& endpoint, const std::string& body);
     void cancel();
     void addHeader(const std::string& name, const std::string& value);
+    void setTimeout(int timeoutSeconds);
+    void setUseThreadPool(bool useThreadPool);
     
 public:
     bool isCompleted() const;
@@ -54,6 +56,7 @@ private:
     using HttpRequest = ::Poco::Net::HTTPRequest;
     using HttpResponse = ::Poco::Net::HTTPResponse;
     using HeaderMap = std::map<std::string, std::string>;
+    using AtomicFlag = std::atomic<bool>;
     
 private:
     Id mId;
@@ -64,9 +67,10 @@ private:
     HttpClientSession mSession;
     HttpRequest mRequest;
     HttpResponse mResponse;
-    
-    std::atomic<bool> mCompleted;
-    std::atomic<bool> mCanceled;
+
+    AtomicFlag mCompleted;
+    AtomicFlag mCanceled;
+    bool mUseThreadPool;
     
     SessionPtr mSelfPtr;
 };

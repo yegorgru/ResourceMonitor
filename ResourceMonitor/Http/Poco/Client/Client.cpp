@@ -115,7 +115,7 @@ Client::OptionalCallback Client::getCallback(const std::string& resource) {
                 }
             }
             else {
-                message = Print::composeMessage("Failed to get info from server", static_cast<int>(response.mStatusCode), response.mStatusMessage, response.mBody);
+                message = Print::composeMessage("Failed to get info from server", static_cast<int>(response.mStatusCode), response.mBody);
                 Log::Error(message);
             }
             

@@ -12,16 +12,6 @@
 
 namespace Http::Asio {
 
-namespace {
-    const std::set<std::string> validResources = {
-        "basic_info",
-        "cpu",
-        "memory",
-        "disks",
-        "network"
-    };
-}
-
 Service::Service(TcpSocketPtr socket)
     : mSocket(socket)
     , mRequestBuf(4096)
@@ -87,33 +77,8 @@ void Service::processRequestLine()
     requestLineStream >> endpoint;
     Log::Debug(Print::composeMessage("Requested resource: ", endpoint));
 
-    std::deque<std::string> splitedEndpoint;
-    boost::algorithm::split(splitedEndpoint, endpoint, boost::is_any_of("/"), boost::token_compress_on);
-    if (splitedEndpoint.front().empty()) {
-        splitedEndpoint.pop_front();
-    }
-    if (splitedEndpoint.back().empty()) {
-        splitedEndpoint.pop_back();
-    }
-    bool isValidEndpoint = false;
-    if (mRequest.getMethod() == MessageRequest::Method::GET && splitedEndpoint.size() == 3) {
-        if (validResources.find(splitedEndpoint[0]) != validResources.end()) {
-            int number;
-            if (boost::conversion::try_lexical_convert<int>(splitedEndpoint[1], number) != false && number > 0) {
-                boost::system::error_code ec;
-                boost::asio::ip::address::from_string(splitedEndpoint[2], ec);
-                isValidEndpoint = ec.value() == 0;
-            }
-        }
-    }
-    else if (mRequest.getMethod() == MessageRequest::Method::PUT && splitedEndpoint.size() == 2) {
-        if (validResources.find(splitedEndpoint[0]) != validResources.end()) {
-            boost::system::error_code ec;
-            boost::asio::ip::address::from_string(splitedEndpoint[1], ec);
-            isValidEndpoint = ec.value() == 0;
-        }
-    }
-    if (!isValidEndpoint) {
+    if (!isValidEndpoint(endpoint, requestMethod)) {
+        Log::Warning(Print::composeMessage("Invalid endpoint:", endpoint));
         sendResponse(StatusCode::NotFound, "");
         return;
     }

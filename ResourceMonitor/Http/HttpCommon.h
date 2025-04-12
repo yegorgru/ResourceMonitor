@@ -27,4 +27,6 @@ using PrintCallback = std::function<void(const nlohmann::json& parsedJson)>;
 using OptionalPrintCallback = std::optional<PrintCallback>;
 OptionalPrintCallback getPrintCallback(const std::string& resource);
 
+bool isValidEndpoint(const std::string& uri, const std::string& method);
+
 } // namespace Http

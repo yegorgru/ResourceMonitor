@@ -3,8 +3,58 @@
 #include "Utils.h"
 
 #include <map>
+#include <set>
+#include <vector>
+#include <sstream>
 
 namespace Http {
+
+const std::set<std::string> validResources = {
+    "basic_info",
+    "cpu",
+    "memory",
+    "disks",
+    "network"
+};
+
+std::vector<std::string> splitString(const std::string& s, char delimiter) {
+    std::vector<std::string> tokens;
+    std::string token;
+    std::istringstream tokenStream(s);
+    
+    while (std::getline(tokenStream, token, delimiter)) {
+        if (!token.empty()) {
+            tokens.push_back(token);
+        }
+    }
+    
+    return tokens;
+}
+
+bool isValidEndpoint(const std::string& uri, const std::string& method) {
+    std::string endpoint = uri;
+    if (endpoint.empty()) {
+        return false;
+    }
+    if (endpoint[0] == '/') {
+        endpoint = endpoint.substr(1);
+    }
+    auto splitEndpoint = splitString(endpoint, '/');
+    
+    if (method == "GET" && splitEndpoint.size() == 3) {
+        if (validResources.find(splitEndpoint[0]) != validResources.end()) {
+            auto numberOpt = stringToInt<int>(splitEndpoint[1], [](int value) { return value > 0; });
+            return numberOpt ? isValidIpAddress(splitEndpoint[2]) : false;
+        }
+    }
+    else if (method == "PUT" && splitEndpoint.size() == 2) {
+        if (validResources.find(splitEndpoint[0]) != validResources.end()) {
+            return isValidIpAddress(splitEndpoint[1]);
+        }
+    }
+    
+    return false;
+}
 
 OptionalPrintCallback getPrintCallback(const std::string& resource) {
     using json = nlohmann::json;

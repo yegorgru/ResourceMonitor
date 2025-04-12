@@ -13,16 +13,6 @@
 
 namespace Http::Beast {
 
-namespace {
-    const std::set<std::string> validResources = {
-        "basic_info",
-        "cpu",
-        "memory",
-        "disks",
-        "network"
-    };
-}
-
 Service::Service(TcpSocketPtr socket)
     : mStream(std::move(*socket))
 {
@@ -61,6 +51,16 @@ void Service::prepareResponse() {
     using AsioIoContext = boost::asio::io_context;
     using DatabaseManager = Boost::Common::DatabaseManager<AsioIoContext, Session>;
     auto method = mRequest.method();
+    
+    std::string methodStr = method == http::verb::get ? "GET" : 
+                           (method == http::verb::put ? "PUT" : "UNKNOWN");
+    
+    if (!isValidEndpoint(mRequest.target(), methodStr)) {
+        Log::Warning(Print::composeMessage("Invalid endpoint:", mRequest.target()));
+        sendResponse(http::status::not_found, "Invalid endpoint");
+        return;
+    }
+    
     if (method == http::verb::put) {
         Log::Debug("PUT request processing");
         auto callback = [this](const HttpResponse& response, const Id& id) {
@@ -96,6 +96,10 @@ void Service::prepareResponse() {
             }
         };
         DatabaseManager::Get().get(mRequest.target(), callback);
+    }
+    else {
+        Log::Warning(Print::composeMessage("Unsupported method:", method));
+        sendResponse(http::status::not_implemented, "Unsupported method");
     }
 }
 
