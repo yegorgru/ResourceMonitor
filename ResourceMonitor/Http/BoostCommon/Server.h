@@ -14,8 +14,6 @@ namespace Http::Boost::Common {
 template <typename IoServiceType, typename ServiceType>
 class Server : public IServer {
 public:
-    using Port = unsigned int;
-public:
     Server() = default;
     ~Server();
 public:
@@ -51,6 +49,7 @@ void Server<IoServiceType, ServiceType>::start(Port portNum, unsigned int thread
     mWork.emplace(boost::asio::make_work_guard(IoService<IoServiceType>::Get().getIoService()));
     mAcceptor.emplace(IoService<IoServiceType>::Get().getIoService());
     mAcceptor->start("127.0.0.1", portNum);
+    mThreadPool.reserve(threadPoolSize);
     for (unsigned int i = 0; i < threadPoolSize; i++) {
         mThreadPool.emplace_back(
             [this]() {
