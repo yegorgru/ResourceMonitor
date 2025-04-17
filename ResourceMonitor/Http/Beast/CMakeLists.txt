@@ -13,11 +13,7 @@ target_include_directories(HttpBeast PUBLIC
 
 target_link_directories(HttpBeast PUBLIC "${BOOST_LIB_DIR}")
 
-if(CLIENT_BOOST_BEAST)
-    add_subdirectory ("Client")
-    target_link_libraries(HttpBeast PUBLIC HttpBeastClient)
-endif()
-if(SERVER_BOOST_BEAST)
-    add_subdirectory ("Server")
-    target_link_libraries(HttpBeast PUBLIC HttpBeastServer)
-endif()
+add_subdirectory ("Client")
+target_link_libraries(HttpBeast PUBLIC HttpBeastClient)
+add_subdirectory ("Server")
+target_link_libraries(HttpBeast PUBLIC HttpBeastServer)

@@ -11,4 +11,4 @@ target_include_directories(CommandLineClient PUBLIC
 )
 
 target_link_directories(CommandLineClient PUBLIC "${BOOST_LIB_DIR}")
-target_link_libraries(CommandLineClient PUBLIC Http)
+target_link_libraries(CommandLineClient PRIVATE Http)

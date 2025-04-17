@@ -7,11 +7,23 @@ endif()
 
 project ("ResourceMonitor")
 
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
 if(EXISTS "${CMAKE_SOURCE_DIR}/config.cmake")
     include("${CMAKE_SOURCE_DIR}/config.cmake")
 else()
     message(WARNING "Config file not found. Please create config.cmake for custom settings.")
 endif()
+
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+
+option(USE_ASIO "Use Boost.Asio implementation" OFF)
+option(USE_BEAST "Use Boost.Beast implementation" OFF)
+option(USE_POCO "Use POCO implementation" ON)
 
 add_subdirectory ("Server")
 add_subdirectory ("CommandLineClient")

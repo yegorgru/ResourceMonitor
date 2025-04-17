@@ -3,51 +3,34 @@ add_library(Http STATIC ${HTTP_SOURCES})
 
 set_property(TARGET Http PROPERTY CXX_STANDARD 20)
 
+if(USE_ASIO)
+    message(STATUS "Using Boost.Asio implementation")
+elseif(USE_BEAST)
+    message(STATUS "Using Boost.Beast implementation")
+elseif(USE_POCO)
+    message(STATUS "Using POCO implementation")
+else()
+    message(FATAL_ERROR "No networking implementation selected. Please enable one of: USE_ASIO, USE_BEAST, or USE_POCO")
+endif()
+
 target_include_directories(Http PUBLIC 
     "${CMAKE_CURRENT_SOURCE_DIR}"
     "${CMAKE_CURRENT_SOURCE_DIR}../RMUtils"
     "${CMAKE_CURRENT_SOURCE_DIR}../ThirdParties"
 )
 
-option(CLIENT_BOOST_ASIO "Use Boost.Asio for client-side networking" OFF)
-option(SERVER_BOOST_ASIO "Use Boost.Asio for server-side networking" OFF)
+target_link_libraries(Http PUBLIC RMUtils)
 
-option(CLIENT_BOOST_BEAST "Use Boost.Beast for client-side networking" OFF)
-option(SERVER_BOOST_BEAST "Use Boost.Beast for server-side networking" OFF)
-
-option(CLIENT_POCO "Use Poco for client-side networking" ON)
-option(SERVER_POCO "Use Poco for server-side networking" ON)
-
-if(CLIENT_BOOST_ASIO OR SERVER_BOOST_ASIO)
+if(USE_ASIO)
     add_subdirectory(Asio)
-    target_link_libraries(Http PUBLIC HttpAsio)
-endif()
-
-if(CLIENT_BOOST_BEAST OR SERVER_BOOST_BEAST)
+    target_compile_definitions(Http PUBLIC USE_ASIO)
+    target_link_libraries(Http PRIVATE HttpAsio)
+elseif(USE_BEAST)
     add_subdirectory(Beast)
-    target_link_libraries(Http PUBLIC HttpBeast)
-endif()
-
-if(CLIENT_POCO OR SERVER_POCO)
+    target_compile_definitions(Http PUBLIC USE_BEAST)
+    target_link_libraries(Http PRIVATE HttpBeast)
+elseif(USE_POCO)
     add_subdirectory(Poco)
-    target_link_libraries(Http PUBLIC HttpPoco)
-endif()
-
-if(CLIENT_BOOST_ASIO)
-    target_compile_definitions(Http PUBLIC CLIENT_BOOST_ASIO)
-endif()
-if(SERVER_BOOST_ASIO)
-    target_compile_definitions(Http PUBLIC SERVER_BOOST_ASIO)
-endif()
-if(CLIENT_BOOST_BEAST)
-    target_compile_definitions(Http PUBLIC CLIENT_BOOST_BEAST)
-endif()
-if(SERVER_BOOST_BEAST)
-    target_compile_definitions(Http PUBLIC SERVER_BOOST_BEAST)
-endif()
-if(CLIENT_POCO)
-    target_compile_definitions(Http PUBLIC CLIENT_POCO)
-endif()
-if(SERVER_POCO)
-    target_compile_definitions(Http PUBLIC SERVER_POCO)
+    target_compile_definitions(Http PUBLIC USE_POCO)
+    target_link_libraries(Http PRIVATE HttpPoco)
 endif()

@@ -12,3 +12,9 @@ target_include_directories(Server PUBLIC
 
 target_link_directories(Server PUBLIC "${BOOST_LIB_DIR}")
 target_link_libraries(Server PUBLIC Http)
+
+if(MSVC)
+    target_compile_options(Server PRIVATE /W4)
+else()
+    target_compile_options(Server PRIVATE -Wall -Wextra -Wpedantic)
+endif()

@@ -20,7 +20,7 @@
             "name": "Debug Server",
             "type": "cppvsdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build/Server/Debug/Server.exe",
+            "program": "${workspaceFolder}/build/bin/Debug/Server.exe",
             "args": [
                 "--port", "3333",
                 "--threads-count", "4",
@@ -39,7 +39,7 @@
             "name": "Debug CommandLineClient",
             "type": "cppvsdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build/CommandLineClient/Debug/CommandLineClient.exe",
+            "program": "${workspaceFolder}/build/bin/Debug/CommandLineClient.exe",
             "args": [
                 "--server-port", "3333",
                 "--server-name", "localhost",
