@@ -116,5 +116,6 @@
         "xutility": "cpp",
         "*.ipp": "cpp",
         "xstddef": "cpp"
-    }
+    },
+    "cmake.sourceDirectory": "D:/GitHub/ResourceMonitor/ResourceMonitor"
 }
