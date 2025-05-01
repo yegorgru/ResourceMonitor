@@ -1,6 +1,7 @@
 #include "Controller.h"
 #include "Log.h"
 #include "Input.h"
+#include "Utils.h"
 
 #include <iostream>
 
@@ -62,18 +63,19 @@ void Controller::run() {
 
     Log::Debug("Logger, printer and reader are initialized");
 
+    const auto& ipAddress = mConfig.getIpAddress();
     const auto port = mConfig.getPort();
     const auto threadCount = mConfig.getThreadCount();
     const auto& dbName = mConfig.getDbName();
     auto dbPort = mConfig.getDbPort();
     
-    Log::Debug(Print::composeMessage("Got command-line arguments:", "Port:", port, "Threads count:", threadCount));
+    Log::Debug(Print::composeMessage("Got command-line arguments:", "IP:", ipAddress, "Port:", port, "Threads count:", threadCount));
     Log::Debug(Print::composeMessage("Got command-line db arguments:", "Port:", dbPort, "Db name:", dbName));
 
     mServer->configureDatabase(dbName, dbPort);
     Log::Debug("Database is initialized");
 
-    mServer->start(port, threadCount);
+    mServer->start(port, ipAddress, threadCount);
 
     while (true) {
         Print::PrintLine("Enter command:");

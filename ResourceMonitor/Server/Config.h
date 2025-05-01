@@ -23,6 +23,7 @@ public:
     int getThreadCount() const;
     int getDbPort() const;
     const std::string& getDbName() const;
+    const std::string& getIpAddress() const;
 private:
     void setPort(int port);
     void setThreadCount(int count);
@@ -30,8 +31,10 @@ private:
     void setDbName(const std::string& name);
     void setLogFilename(const std::string& filename);
     void setLogLevel(const std::string& level);
+    void setIpAddress(const std::string& ip);
 private:
     static void validateLogLevel(const std::string& input);
+    static void validateIp(const std::string& input);
     void showConfigHelp() const;
     void showCurrentConfig() const;
     void initializeConfigCommands();

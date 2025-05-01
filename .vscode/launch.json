@@ -25,9 +25,10 @@
                 "--port", "3333",
                 "--threads-count", "4",
                 "--db-port", "10000",
-                "--db-name", "localhost",
+                "--db-name", "computer.host",
                 //"--log-file", "server.log",
-                "--log-level", "debug"
+                "--log-level", "debug",
+                "--ip", "192.168.0.222"
             ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
@@ -42,7 +43,7 @@
             "program": "${workspaceFolder}/build/bin/Debug/CommandLineClient.exe",
             "args": [
                 "--server-port", "3333",
-                "--server-name", "localhost",
+                "--server-name", "laptop.host",
                 //"--log-file", "client.log",
                 //"--print-file", "print.txt",
                 //"--input-file", "a.txt",

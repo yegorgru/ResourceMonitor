@@ -4,7 +4,7 @@ import socket
 LOG_LEVEL = logging.INFO
 LOG_FORMAT = '%(filename)s:%(lineno)d [%(levelname)s] %(message)s'
 
-DB_SERVER_URL = "http://localhost:3333"
+DB_SERVER_URL = "http://192.168.0.222:3333"
 
 def get_ip():
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)

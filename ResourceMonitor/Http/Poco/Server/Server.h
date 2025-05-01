@@ -19,7 +19,7 @@ public:
     Server();
     ~Server();
 public:
-    void start(Port portNum, unsigned int threadPoolSize) override;
+    void start(Port portNum, const std::string& ipAddress, unsigned int threadPoolSize) override;
     void stop() override;
     void configureDatabase(const std::string& dbName, int dbPort) override;
 private:

@@ -12,7 +12,7 @@ public:
     IServer() = default;
     virtual ~IServer() = default;
 public:
-    virtual void start(Port portNum, unsigned int threadPoolSize) = 0;
+    virtual void start(Port portNum, const std::string& ipAddress, unsigned int threadPoolSize) = 0;
     virtual void stop() = 0;
     virtual void configureDatabase(const std::string& dbName, int dbPort) = 0;
 };

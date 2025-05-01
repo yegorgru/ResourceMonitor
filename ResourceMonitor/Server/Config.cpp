@@ -41,7 +41,8 @@ Config::Config(Http::IServer& server)
         ("port,p", po::value<int>()->default_value(3333), "server's port")
         ("log-level,l", po::value<std::string>()->default_value("info")->notifier(Config::validateLogLevel), "logging level: throw/error/warning/info/debug")
         ("log-file,L", po::value<std::string>()->default_value(""), "logging file")
-        ("threads-count,t", po::value<int>()->default_value(2), "number of threads in server's pool");
+        ("threads-count,t", po::value<int>()->default_value(2), "number of threads in server's pool")
+        ("ip,i", po::value<std::string>()->default_value("127.0.0.1")->notifier(Config::validateIp), "server's IP address");
 
     initializeConfigCommands();
 }
@@ -109,6 +110,16 @@ void Config::initializeConfigCommands() {
     };
     mConfigHelp["log-file"] = "Set log file path (e.g., log-file server.log)";
 
+    mConfigCommands["ip"] = [this](const std::string& value) {
+        if (!isValidIpAddress(value)) {
+            Print::PrintLine("Invalid IP address: " + value + ". Must be a valid IPv4 address.");
+            return;
+        }
+        setIpAddress(value);
+        Print::PrintLine("Server IP address set to: " + value);
+    };
+    mConfigHelp["ip"] = "Set server bind IP address (e.g., ip 127.0.0.1). Change will be applied after leaving config mode.";
+
     mConfigCommands["show"] = [this](const std::string&) {
         showCurrentConfig();
     };
@@ -143,6 +154,10 @@ void Config::initializeConfigCommands() {
         else if (value == "log-file") {
             setLogFilename(getDefaultValue<std::string>(mDescription, "log-file"));
             Print::PrintLine("Log file reset to default (console output)");
+        }
+        else if (value == "ip") {
+            setIpAddress(getDefaultValue<std::string>(mDescription, "ip"));
+            Print::PrintLine("Server IP address reset to default: " + getIpAddress());
         }
         else {
             Print::PrintLine("Unknown config option: " + value);
@@ -201,6 +216,7 @@ void Config::showCurrentConfig() const {
     Print::PrintLine("  Log level: " + mVariablesMap["log-level"].as<std::string>());
     const auto& logFile = getLogFilename();
     Print::PrintLine("  Log file: " + (logFile.empty() ? "(console output)" : logFile));
+    Print::PrintLine("  IP Address: " + getIpAddress());
     Print::PrintLine("");
 }
 
@@ -246,6 +262,10 @@ int Config::getDbPort() const {
 
 const std::string& Config::getDbName() const {
     return mVariablesMap["db-name"].as<std::string>();
+}
+
+const std::string& Config::getIpAddress() const {
+    return mVariablesMap["ip"].as<std::string>();
 }
 
 void Config::setPort(int port) {
@@ -301,10 +321,25 @@ void Config::setLogLevel(const std::string& level) {
     reinitializeLogger();
 }
 
+void Config::setIpAddress(const std::string& ip) {
+    namespace po = boost::program_options;
+    po::variable_value v(ip, false);
+    mVariablesMap.erase("ip");
+    mVariablesMap.insert(std::make_pair("ip", v));
+    restartServer();
+}
+
 void Config::validateLogLevel(const std::string& input) {
     namespace po = boost::program_options;
     if (logLevelMap.find(input) == logLevelMap.end()) {
         throw po::validation_error(po::validation_error::invalid_option_value, "log-level", input);
+    }
+}
+
+void Config::validateIp(const std::string& input) {
+    namespace po = boost::program_options;
+    if (!isValidIpAddress(input)) {
+        throw po::validation_error(po::validation_error::invalid_option_value, "ip", input);
     }
 }
 
@@ -324,7 +359,7 @@ void Config::reinitializeLogger() {
 void Config::restartServer() {
     Print::PrintLine("Restarting server to apply configuration changes...");
     mServer.stop();
-    mServer.start(getPort(), getThreadCount());
+    mServer.start(getPort(), getIpAddress(), getThreadCount());
     Print::PrintLine("Server restarted successfully");
 }
 

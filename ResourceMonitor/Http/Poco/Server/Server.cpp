@@ -22,7 +22,7 @@ Server::~Server()
     }
 }
 
-void Server::start(Port portNum, unsigned int threadPoolSize)
+void Server::start(Port portNum, const std::string& ipAddress, unsigned int threadPoolSize)
 {
     if (mIsStarted) {
         Log::Warning("Poco server already started");
@@ -37,12 +37,13 @@ void Server::start(Port portNum, unsigned int threadPoolSize)
         params->setMaxThreads(threadPoolSize);
         params->setKeepAlive(true);
 
-        mSocket = std::make_unique<Socket>(portNum);
+        ::Poco::Net::SocketAddress socketAddress(ipAddress, portNum);
+        mSocket = std::make_unique<Socket>(socketAddress);
         auto factory = new RequestHandlerFactory;
-        
+
         //params and factory are owned by the server
         mServer = std::make_unique<PocoServer>(factory, *mSocket, params);
-        
+
         mServerThread = std::jthread([this]() {
             try {
                 mServer->start();
@@ -51,10 +52,10 @@ void Server::start(Port portNum, unsigned int threadPoolSize)
                 Log::Error(Print::composeMessage("Error in server thread:", e.what()));
             }
         });
-        
+
         mIsStarted = true;
-        
-        Log::Info(Print::composeMessage("Poco server started on port", portNum, "with", threadPoolSize, "threads"));
+
+        Log::Info(Print::composeMessage("Poco server started on", ipAddress, ":", portNum, "with", threadPoolSize, "threads"));
     }
     catch (const std::exception& e) {
         Log::Error(Print::composeMessage("Error starting Poco server:", e.what()));

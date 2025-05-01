@@ -17,7 +17,7 @@ public:
     Server() = default;
     ~Server();
 public:
-    void start(Port portNum, unsigned int threadPoolSize) override;
+    void start(Port portNum, const std::string& ipAddress, unsigned int threadPoolSize) override;
     void stop() override;
     void configureDatabase(const std::string& dbName, int dbPort) override;
 private:
@@ -40,7 +40,7 @@ Server<IoServiceType, ServiceType>::~Server()
 }
 
 template <typename IoServiceType, typename ServiceType>
-void Server<IoServiceType, ServiceType>::start(Port portNum, unsigned int threadPoolSize) {
+void Server<IoServiceType, ServiceType>::start(Port portNum, const std::string& ipAddress, unsigned int threadPoolSize) {
     Log::Info("Start server");
     IoService<IoServiceType>::Init();
     if (threadPoolSize < 2) {
@@ -48,7 +48,7 @@ void Server<IoServiceType, ServiceType>::start(Port portNum, unsigned int thread
     }
     mWork.emplace(boost::asio::make_work_guard(IoService<IoServiceType>::Get().getIoService()));
     mAcceptor.emplace(IoService<IoServiceType>::Get().getIoService());
-    mAcceptor->start("127.0.0.1", portNum);
+    mAcceptor->start(ipAddress, portNum);
     mThreadPool.reserve(threadPoolSize);
     for (unsigned int i = 0; i < threadPoolSize; i++) {
         mThreadPool.emplace_back(
