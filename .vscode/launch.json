@@ -64,6 +64,14 @@
             "justMyCode": true
         },
         {
+            "name": "Python: Mock DB Agent",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/PythonDbAgent/mock.py",
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
+        {
             "name": "Python: Resource Agent",
             "type": "debugpy",
             "request": "launch",
@@ -91,7 +99,7 @@
                 "--db-port", "10000",
                 "--db-name", "computer.host",
                 //"--log-file", "server.log",
-                "--log-level", "debug",
+                "--log-level", "error",
                 "--ip", "192.168.0.222"
             ],
             "stopAtEntry": false,

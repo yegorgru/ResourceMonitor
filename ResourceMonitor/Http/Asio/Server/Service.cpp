@@ -90,7 +90,7 @@ void Service::processRequestLine()
 
     Log::Debug(Print::composeMessage("Request http version: ", requestHttpVersion));
 
-    if (requestHttpVersion != Message::STANDARD) {
+    if (requestHttpVersion != "HTTP/1.1" && requestHttpVersion != "HTTP/1.0") {
         Log::Error(Print::composeMessage("Incorrect standard:", requestHttpVersion));
         sendResponse(StatusCode::HttpVersionNotSupported, "");
         return;

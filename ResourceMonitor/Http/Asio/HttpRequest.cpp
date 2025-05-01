@@ -166,7 +166,7 @@ void Request::readStatusLine()
 
     Log::Debug(Print::composeMessage("Http version:", httpVersion));
 
-    if (httpVersion != "HTTP/1.1") {
+    if (httpVersion != "HTTP/1.1" && httpVersion != "HTTP/1.0") {
         Log::Error(Print::composeMessage("Unsupported HTTP version:", httpVersion));
         finish(boost::system::errc::make_error_code(boost::system::errc::protocol_error));
         return;
