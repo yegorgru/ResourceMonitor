@@ -44,9 +44,13 @@ Acceptor<Context, Service>::Acceptor(Context& ios)
 template <typename Context, typename Service>
 void Acceptor<Context, Service>::start(const std::string& rawIp, Port portNum) {
     Log::Info("Start Acceptor");
-    mAcceptor = std::make_unique<TcpAcceptor>(mIos, boost::asio::ip::tcp::endpoint(boost::asio::ip::address::from_string(rawIp), portNum));
-    mAcceptor->listen();
-    initAccept();
+    try {
+        mAcceptor = std::make_unique<TcpAcceptor>(mIos, boost::asio::ip::tcp::endpoint(boost::asio::ip::address::from_string(rawIp), portNum));
+        mAcceptor->listen();
+        initAccept();
+    } catch (const boost::system::system_error& e) {
+        Log::Throw(Print::composeMessage("Can't listen on specified ip and port. IP: ", rawIp, "Port:", portNum,". Error: ", e.what()));
+    }
 }
 
 template <typename Context, typename Service>
@@ -55,7 +59,9 @@ void Acceptor<Context, Service>::stop() {
     if (mNextSocket) {
         mNextSocket->close();
     }
-    mAcceptor->close();
+    if (mAcceptor) {
+        mAcceptor->close();
+    }
     mIsStopped = true;
 }
 
