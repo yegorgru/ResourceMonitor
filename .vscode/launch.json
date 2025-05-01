@@ -81,20 +81,82 @@
             "console": "integratedTerminal"
         },
         {
-            "name": "Launch CommandLineClientBeast",
+            "name": "Release Server",
             "type": "cppvsdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build/CommandLineClientBeast/Debug/CommandLineClientBeast.exe",
+            "program": "${workspaceFolder}/build/bin/Release/Server.exe",
             "args": [
-                "localhost",
-                "3333",
-                "cpu/5/1.2.3.4"
+                "--port", "3333",
+                "--threads-count", "4",
+                "--db-port", "10000",
+                "--db-name", "computer.host",
+                //"--log-file", "server.log",
+                "--log-level", "debug",
+                "--ip", "192.168.0.222"
             ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],
             "console": "externalTerminal",
-            "preLaunchTask": "Build CommandLineClientBeast"
+            "preLaunchTask": "Build Server Release"
+        },
+        {
+            "name": "Release CommandLineClient",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/bin/Release/CommandLineClient.exe",
+            "args": [
+                "--server-port", "3333",
+                "--server-name", "computer.host",
+                //"--log-file", "client.log",
+                //"--print-file", "print.txt",
+                //"--input-file", "a.txt",
+                "--log-level", "debug"
+            ],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "console": "externalTerminal",
+            "preLaunchTask": "Build CommandLineClient Release"
+        },
+        {
+            "name": "RelWithDebInfo Server",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/bin/RelWithDebInfo/Server.exe",
+            "args": [
+                "--port", "3333",
+                "--threads-count", "4",
+                "--db-port", "10000",
+                "--db-name", "computer.host",
+                //"--log-file", "server.log",
+                "--log-level", "debug",
+                "--ip", "192.168.0.222"
+            ],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "console": "externalTerminal",
+            "preLaunchTask": "Build Server RelWithDebInfo"
+        },
+        {
+            "name": "RelWithDebInfo CommandLineClient",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/bin/RelWithDebInfo/CommandLineClient.exe",
+            "args": [
+                "--server-port", "3333",
+                "--server-name", "computer.host",
+                //"--log-file", "client.log",
+                //"--print-file", "print.txt",
+                //"--input-file", "a.txt",
+                "--log-level", "debug"
+            ],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "console": "externalTerminal",
+            "preLaunchTask": "Build CommandLineClient RelWithDebInfo"
         }
     ]
 }

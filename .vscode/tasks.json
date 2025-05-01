@@ -74,16 +74,121 @@
             "dependsOn": ["CMake Configure"]
         },
         {
-            "label": "Build CommandLineClientBeast",
+            "label": "Build Server Release",
             "type": "shell",
             "command": "cmake",
             "args": [
                 "--build",
                 "${workspaceFolder}/build",
                 "--config",
-                "Debug",
+                "Release",
                 "--target",
-                "CommandLineClientBeast"
+                "Server"
+            ],
+            "group": "build",
+            "dependsOn": ["CMake Configure"]
+        },
+        {
+            "label": "Build CommandLineClient Release",
+            "type": "shell",
+            "command": "cmake",
+            "args": [
+                "--build",
+                "${workspaceFolder}/build",
+                "--config",
+                "Release",
+                "--target",
+                "CommandLineClient"
+            ],
+            "group": "build",
+            "dependsOn": ["CMake Configure"]
+        },
+        {
+            "label": "Build RMUtils Release",
+            "type": "shell",
+            "command": "cmake",
+            "args": [
+                "--build",
+                "${workspaceFolder}/build",
+                "--config",
+                "Release",
+                "--target",
+                "RMUtils"
+            ],
+            "group": "build",
+            "dependsOn": ["CMake Configure"]
+        },
+        {
+            "label": "Build Http Release",
+            "type": "shell",
+            "command": "cmake",
+            "args": [
+                "--build",
+                "${workspaceFolder}/build",
+                "--config",
+                "Release",
+                "--target",
+                "Http"
+            ],
+            "group": "build",
+            "dependsOn": ["CMake Configure"]
+        },
+        {
+            "label": "Build Server RelWithDebInfo",
+            "type": "shell",
+            "command": "cmake",
+            "args": [
+                "--build",
+                "${workspaceFolder}/build",
+                "--config",
+                "RelWithDebInfo",
+                "--target",
+                "Server"
+            ],
+            "group": "build",
+            "dependsOn": ["CMake Configure"]
+        },
+        {
+            "label": "Build CommandLineClient RelWithDebInfo",
+            "type": "shell",
+            "command": "cmake",
+            "args": [
+                "--build",
+                "${workspaceFolder}/build",
+                "--config",
+                "RelWithDebInfo",
+                "--target",
+                "CommandLineClient"
+            ],
+            "group": "build",
+            "dependsOn": ["CMake Configure"]
+        },
+        {
+            "label": "Build RMUtils RelWithDebInfo",
+            "type": "shell",
+            "command": "cmake",
+            "args": [
+                "--build",
+                "${workspaceFolder}/build",
+                "--config",
+                "RelWithDebInfo",
+                "--target",
+                "RMUtils"
+            ],
+            "group": "build",
+            "dependsOn": ["CMake Configure"]
+        },
+        {
+            "label": "Build Http RelWithDebInfo",
+            "type": "shell",
+            "command": "cmake",
+            "args": [
+                "--build",
+                "${workspaceFolder}/build",
+                "--config",
+                "RelWithDebInfo",
+                "--target",
+                "Http"
             ],
             "group": "build",
             "dependsOn": ["CMake Configure"]
@@ -96,6 +201,7 @@
                 "/c",
                 "rmdir /s /q ${workspaceFolder}\\build && mkdir ${workspaceFolder}\\build"
             ],
+            
             "group": {
                 "kind": "build",
                 "isDefault": false
