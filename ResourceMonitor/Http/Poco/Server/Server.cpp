@@ -33,7 +33,7 @@ void Server::start(Port portNum, const std::string& ipAddress, unsigned int thre
 
     try {
         auto params = new ::Poco::Net::HTTPServerParams;
-        params->setMaxQueued(100);
+        params->setMaxQueued(600);
         params->setMaxThreads(threadPoolSize);
         params->setKeepAlive(true);
 
